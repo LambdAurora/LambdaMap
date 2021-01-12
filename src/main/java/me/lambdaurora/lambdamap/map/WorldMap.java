@@ -19,11 +19,14 @@ package me.lambdaurora.lambdamap.map;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import me.lambdaurora.lambdamap.map.storage.MapRegionFile;
 import net.minecraft.util.math.ChunkPos;
-import org.jetbrains.annotations.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Represents the world map.
@@ -33,7 +36,10 @@ import java.io.File;
  * @since 1.0.0
  */
 public class WorldMap {
-    private final Long2ObjectMap<MapRegion> regions = new Long2ObjectOpenHashMap<>();
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
     private final File directory;
 
     public WorldMap(File directory) {
@@ -42,19 +48,12 @@ public class WorldMap {
             this.directory.mkdirs();
     }
 
-    private static long chunkToRegion(long pos) {
-        return ChunkPos.toLong(ChunkPos.getPackedX(pos) >> 3, ChunkPos.getPackedZ(pos) >> 3);
-    }
-
     public MapChunk getChunk(int x, int y) {
         return this.getChunk(ChunkPos.toLong(x, y));
     }
 
     public MapChunk getChunk(long pos) {
-        MapRegion region = this.regions.get(chunkToRegion(pos));
-        if (region != null)
-            return region.getChunk(pos);
-        return null;
+        return this.chunks.get(pos);
     }
 
     public @Nullable MapChunk getChunkOrLoad(int x, int y) {
@@ -62,41 +61,57 @@ public class WorldMap {
     }
 
     public @Nullable MapChunk getChunkOrLoad(long pos) {
-        long regionPos = chunkToRegion(pos);
-        MapRegion region = this.regions.get(regionPos);
-        if (region == null) {
-            region = this.tryLoad(ChunkPos.getPackedX(regionPos), ChunkPos.getPackedZ(regionPos));
-            if (region == null)
-                return null;
-            this.regions.put(regionPos, region);
+        MapChunk chunk = this.getChunk(pos);
+        if (chunk == null) {
+            int x = ChunkPos.getPackedX(pos);
+            int z = ChunkPos.getPackedZ(pos);
+            chunk = MapChunk.load(getOrLoadRegion(x, z), x, z);
+            if (chunk != null)
+                this.chunks.put(pos, chunk);
         }
-        return region.getChunkOrCreate(pos);
+        return chunk;
     }
 
     public MapChunk getChunkOrCreate(int x, int z) {
-        return this.getChunkOrCreate(ChunkPos.toLong(x, z));
+        long pos = ChunkPos.toLong(x, z);
+        MapChunk chunk = this.getChunk(pos);
+        if (chunk == null) {
+            chunk = MapChunk.loadOrCreate(getOrLoadRegion(x, z), x, z);
+            this.chunks.put(pos, chunk);
+        }
+        return chunk;
     }
 
     public MapChunk getChunkOrCreate(long pos) {
-        long regionPos = chunkToRegion(pos);
-        MapRegion region = this.regions.get(regionPos);
-        if (region == null) {
-            region = this.tryLoadOrCreate(ChunkPos.getPackedX(regionPos), ChunkPos.getPackedZ(regionPos));
-            this.regions.put(regionPos, region);
+        MapChunk chunk = this.getChunk(pos);
+        if (chunk == null) {
+            int x = ChunkPos.getPackedX(pos);
+            int z = ChunkPos.getPackedZ(pos);
+            chunk = MapChunk.loadOrCreate(getOrLoadRegion(x, z), x, z);
+            this.chunks.put(pos, chunk);
         }
-        return region.getChunkOrCreate(pos);
+        return chunk;
     }
 
-    public MapRegion getRegion(long pos) {
-        return this.regions.get(pos);
+    public MapRegionFile getOrLoadRegion(int x, int z) {
+        x >>= 3;
+        z >>= 3;
+        MapRegionFile regionFile = this.regionFiles.get(ChunkPos.toLong(x, z));
+
+        if (regionFile == null) {
+            try {
+                regionFile = MapRegionFile.loadOrCreate(this, x, z);
+            } catch (IOException e) {
+                LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
+                return null;
+            }
+        }
+
+        return regionFile;
     }
 
-    public @Nullable MapRegion tryLoad(int x, int y) {
-        return MapRegion.load(this, x, y);
-    }
-
-    public @NotNull MapRegion tryLoadOrCreate(int x, int y) {
-        return MapRegion.loadOrCreate(this, x, y);
+    public void unloadRegion(MapRegionFile regionFile) {
+        this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(),regionFile.getZ()));
     }
 
     public File getDirectory() {
@@ -104,6 +119,14 @@ public class WorldMap {
     }
 
     public void save() {
-        this.regions.forEach((pos, region) -> region.save());
+        this.chunks.forEach((pos, chunk) -> chunk.save());
+
+        this.regionFiles.forEach((pos, region) -> {
+            try {
+                region.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
