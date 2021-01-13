@@ -36,7 +36,7 @@ import java.util.TimerTask;
 public class MapChunk implements AutoCloseable {
     private final int x;
     private final int z;
-    public byte[] colors = new byte[16384];
+    private byte[] colors = new byte[16384];
     private final MapRegionFile regionFile;
     private final Timer saveTimer;
     private boolean locked = false;
@@ -78,12 +78,30 @@ public class MapChunk implements AutoCloseable {
         return this.z;
     }
 
+    /**
+     * Returns block X coordinate at the start of the map chunk.
+     *
+     * @return the block X coordinate
+     */
     public int getStartX() {
         return this.x << 7;
     }
 
+    /**
+     * Returns block Z coordinate at the start of the map chunk.
+     *
+     * @return the block Z coordinate
+     */
     public int getStartZ() {
         return this.z << 7;
+    }
+
+    public int getCenterX() {
+        return this.getStartX() + 64;
+    }
+
+    public int getCenterZ() {
+        return this.getStartZ() + 64;
     }
 
     public int getStartChunkX() {
@@ -98,6 +116,12 @@ public class MapChunk implements AutoCloseable {
         int startX = this.getStartX();
         int startZ = this.getStartZ();
         return startX <= x && startZ <= z && startX + 128 > x && startZ + 128 > z;
+    }
+
+    public boolean isCenterInBox(int startBoxX, int startBoxZ, int endBoxX, int endBoxZ) {
+        int centerX = this.getCenterX();
+        int centerZ = this.getCenterZ();
+        return startBoxX <= centerX && centerX < endBoxX && startBoxZ <= centerZ && centerZ < endBoxZ;
     }
 
     public void lock() {
@@ -120,15 +144,33 @@ public class MapChunk implements AutoCloseable {
         return tag;
     }
 
+    private int getColorIndex(int x, int z) {
+        return (x & 127) + (z & 127) * 128;
+    }
+
     public boolean putColor(int x, int z, byte color) {
         if (this.locked)
             return false;
-        if (this.colors[x + z * 128] != color) {
-            this.colors[x + z * 128] = color;
+        int index = this.getColorIndex(x, z);
+        if (this.colors[index] != color) {
+            this.colors[index] = color;
             this.markDirty();
             return this.dirty;
         }
         return false;
+    }
+
+    /**
+     * Returns the color data at the specified coordinates.
+     * <p>
+     * Coordinates can be absolute.
+     *
+     * @param x the X coordinate
+     * @param z the Z coordinate
+     * @return the color data
+     */
+    public byte getColor(int x, int z) {
+        return this.colors[this.getColorIndex(x, z)];
     }
 
     /**

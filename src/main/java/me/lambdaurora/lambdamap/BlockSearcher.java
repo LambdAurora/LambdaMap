@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 
 /**
@@ -56,7 +57,7 @@ public class BlockSearcher {
         return this.waterDepth;
     }
 
-    public void searchForBlock(WorldChunk chunk, Heightmap surfaceHeightmap, int x, int z, int chunkStartX, int chunkStartZ) {
+    public void searchForBlock(Chunk chunk, Heightmap surfaceHeightmap, int x, int z, int chunkStartX, int chunkStartZ) {
         this.height = surfaceHeightmap.get(x & 15, z & 15);
         this.pos.set(chunkStartX + x, this.height, chunkStartZ + z);
         int sectionCount = this.world.getSectionCount();
@@ -70,7 +71,7 @@ public class BlockSearcher {
         }
     }
 
-    public void calcWaterDepth(WorldChunk chunk) {
+    public void calcWaterDepth(Chunk chunk) {
         int heightTemp = this.height - 1;
         this.waterDepth = 0;
         this.depthTestPos.set(this.pos);
@@ -85,7 +86,7 @@ public class BlockSearcher {
         this.state = this.getFluidStateIfVisible(this.world, this.state, this.depthTestPos);
     }
 
-    public void searchForBlockCeil(WorldChunk chunk, int x, int z, int chunkStartX, int chunkStartZ) {
+    public void searchForBlockCeil(Chunk chunk, int x, int z, int chunkStartX, int chunkStartZ) {
         this.height = 85;
         boolean brokeThroughCeil = false;
         this.pos.set(chunkStartX + x, this.height, chunkStartZ + z);

@@ -17,6 +17,8 @@
 
 package me.lambdaurora.lambdamap;
 
+import me.lambdaurora.lambdamap.gui.MapHud;
+import me.lambdaurora.lambdamap.gui.WorldMapScreen;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
 import me.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
@@ -32,8 +34,6 @@ import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -42,6 +42,8 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
@@ -63,8 +65,6 @@ public class LambdaMap implements ClientModInitializer {
     private KeyBinding mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
     private WorldMap map = null;
     public MapHud hud = null;
-    private int lastX;
-    private int lastZ;
 
     @Override
     public void onInitializeClient() {
@@ -75,18 +75,15 @@ public class LambdaMap implements ClientModInitializer {
         });
 
         HudRenderCallback.EVENT.register((matrices, delta) -> {
-            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-            this.hud.render(matrices, immediate, LightmapTextureManager.pack(15, 15));
-            immediate.draw();
+            this.hud.render(matrices, LightmapTextureManager.pack(15, 15));
         });
 
         ClientTickEvents.START_WORLD_TICK.register(world -> {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (this.lastX != client.player.getBlockX() || this.lastZ != client.player.getBlockZ()) {
+            if (this.map.updatePlayerViewPos(client.player.getBlockX(), client.player.getBlockZ())) {
                 this.hud.markDirty();
             }
-            this.lastX = client.player.getBlockX();
-            this.lastZ = client.player.getBlockZ();
+            this.map.tick();
             this.updateChunks(world, client.player);
 
             if (this.hudKeybind.wasPressed()) {
@@ -122,8 +119,8 @@ public class LambdaMap implements ClientModInitializer {
 
     public void updateChunks(World world, PlayerEntity entity) {
         ChunkPos pos = entity.getChunkPos();
-        for (int x = pos.x - 3; x < pos.x + 4; x++) {
-            for (int z = pos.z - 3; z < pos.z + 4; z++) {
+        for (int x = pos.x - 4; x < pos.x + 5; x++) {
+            for (int z = pos.z - 4; z < pos.z + 5; z++) {
                 this.updateChunk(world, x, z);
             }
         }
@@ -141,23 +138,21 @@ public class LambdaMap implements ClientModInitializer {
         BlockSearcher searcher = new BlockSearcher(world);
         boolean hasCeiling = world.getDimension().hasCeiling();
 
-        WorldChunk chunkBefore = world.getChunk(chunkX, chunkZ - 1);
+        WorldChunk chunkBefore = (WorldChunk) world.getChunk(chunkX, chunkZ - 1, ChunkStatus.SURFACE, false);
         ChunkPos chunkPosBefore = new ChunkPos(chunkX, chunkZ - 1);
-        Heightmap chunkBeforeHeightmap = null;
-        if (chunkBefore != null) {
-            chunkBeforeHeightmap = chunkBefore.getHeightmap(Heightmap.Type.WORLD_SURFACE);
-        }
+        Heightmap chunkBeforeHeightmap;
+        if (chunkBefore != null) chunkBeforeHeightmap = chunkBefore.getHeightmap(Heightmap.Type.WORLD_SURFACE);
+        else return;
 
         int[] lastHeights = new int[16];
 
-        WorldChunk chunk = world.getChunk(chunkX, chunkZ);
-        if (chunk == null) {
+        Chunk chunk = world.getChunk(chunkX, chunkZ, ChunkStatus.SURFACE, false);
+        if (chunk == null)
             return;
-        }
         Heightmap chunkHeightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
 
         for (int xOffset = 0; xOffset < 16; xOffset++) {
-            if (chunkBefore != null && !chunkBefore.isEmpty()) {
+            if (!chunkBefore.isEmpty()) {
                 // Get first line, to calculate proper shade
                 if (hasCeiling) {
                     searcher.searchForBlockCeil(chunkBefore, xOffset, 15, chunkPosBefore.getStartX(), chunkPosBefore.getStartZ());
@@ -203,7 +198,9 @@ public class LambdaMap implements ClientModInitializer {
                 }
 
                 lastHeights[xOffset] = searcher.getHeight();
-                mapChunk.putColor(mapChunkStartX + xOffset, mapChunkStartZ + zOffset, (byte) (mapColor.id * 4 + shade));
+                if (mapChunk.putColor(mapChunkStartX + xOffset, mapChunkStartZ + zOffset, (byte) (mapColor.id * 4 + shade))) {
+                    this.hud.markDirty();
+                }
             }
         }
     }

@@ -15,14 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap;
+package me.lambdaurora.lambdamap.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import me.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -32,10 +34,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
+import org.lwjgl.opengl.GL11;
 
 public class MapHud implements AutoCloseable {
     private final MinecraftClient client;
-    private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128, 128, true);
+    private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
     private final RenderLayer mapRenderLayer;
     private boolean visible = true;
     private boolean dirty = true;
@@ -60,29 +63,28 @@ public class MapHud implements AutoCloseable {
     }
 
     public void updateTexture(WorldMap map) {
-        if (!this.visible || this.client.currentScreen != null)
+        if (!this.visible || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
         if (!this.dirty) return;
         else this.dirty = false;
 
-        BlockPos corner = this.client.player.getBlockPos().add(-64, 0, -64);
-        for (int z = 0; z < 128; ++z) {
+        int width = this.texture.getImage().getWidth();
+        int height = this.texture.getImage().getHeight();
+        BlockPos corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
+        for (int z = 0; z < width; ++z) {
             int absoluteZ = corner.getZ() + z;
             int chunkZ = absoluteZ >> 7;
-            int chunkInnerZ = absoluteZ & 127;
-            for (int x = 0; x < 128; ++x) {
+            for (int x = 0; x < height; ++x) {
                 int absoluteX = corner.getX() + x;
                 int chunkX = absoluteX >> 7;
-                int chunkInnerX = absoluteX & 127;
 
-                MapChunk chunk = map.getChunk(chunkX, chunkZ);
+                MapChunk chunk = map.getChunkOrLoad(chunkX, chunkZ);
                 if (chunk == null) {
                     this.texture.getImage().setPixelColor(x, z, 0x00000000);
                     continue;
                 }
 
-                int pos = chunkInnerX + chunkInnerZ * 128;
-                int color = chunk.colors[pos] & 255;
+                int color = chunk.getColor(absoluteX, absoluteZ) & 255;
                 if (color / 4 == 0) {
                     this.texture.getImage().setPixelColor(x, z, 0);
                 } else {
@@ -94,38 +96,54 @@ public class MapHud implements AutoCloseable {
         this.texture.upload();
     }
 
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-        if (!this.visible || this.client.currentScreen != null)
+    public void render(MatrixStack matrices, int light) {
+        if (!this.visible || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
 
         float scaleFactor = (float) this.client.getWindow().getScaleFactor();
-        float newScaleFactor;
+        float newScaleFactor = scaleFactor;
         float scaleCompensation = 1.f;
         if (!(scaleFactor <= 2)) {
             newScaleFactor = (float) (this.client.getWindow().getScaleFactor() - 1);
             scaleCompensation = newScaleFactor / scaleFactor;
         }
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glScissor((int) (client.getWindow().getFramebufferWidth() - 128 * newScaleFactor), (int) (this.client.getWindow().getFramebufferHeight() - 128 * newScaleFactor), (int) (128 * newScaleFactor), (int) (128 * newScaleFactor));
         int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
         matrices.push();
         matrices.translate(width - 128 * scaleCompensation, 0, 1);
         matrices.scale(scaleCompensation, scaleCompensation, 0);
         RenderSystem.enableTexture();
-        Matrix4f model = matrices.peek().getModel();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(this.mapRenderLayer);
-        this.vertex(vertexConsumer, model, 0.f, 128.f, 0.f, 1.f, light);
-        this.vertex(vertexConsumer, model, 128.f, 128.f, 1.f, 1.f, light);
-        this.vertex(vertexConsumer, model, 128.f, 0.f, 1.f, 0.f, light);
-        this.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
 
-        this.renderPlayerIcon(matrices, vertexConsumers, light);
+        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+
+        int textureWidth = this.texture.getImage().getWidth();
+        int textureHeight = this.texture.getImage().getHeight();
 
         matrices.push();
+        matrices.push();
+        matrices.translate(64, 64, 0);
+        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
+        matrices.translate(-64 - 32, -64 - 32, 0);
+        Matrix4f model = matrices.peek().getModel();
+        VertexConsumer vertexConsumer = immediate.getBuffer(this.mapRenderLayer);
+        this.vertex(vertexConsumer, model, 0.f, textureHeight, 0.f, 1.f, light);
+        this.vertex(vertexConsumer, model, textureWidth, textureHeight, 1.f, 1.f, light);
+        this.vertex(vertexConsumer, model, textureWidth, 0.f, 1.f, 0.f, light);
+        this.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
+        matrices.pop();
+
+        this.renderPlayerIcon(matrices, immediate, light);
+        matrices.pop();
+        immediate.draw();
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+
         BlockPos pos = this.client.player.getBlockPos();
         String str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
         int strWidth = this.client.textRenderer.getWidth(str);
-        this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, model, vertexConsumers, false, 0, light);
+        this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate, false, 0, light);
         matrices.pop();
-        matrices.pop();
+        immediate.draw();
     }
 
     private void vertex(VertexConsumer vertexConsumer, Matrix4f model, float x, float y,
@@ -137,7 +155,7 @@ public class MapHud implements AutoCloseable {
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
         matrices.translate(64.f, 64.f, .1f);
-        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw));
+        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180));
         matrices.scale(4.f, 4.f, 3.f);
         matrices.translate(-0.125, 0.125, 0.0);
         byte playerIconId = MapIcon.Type.PLAYER.getId();

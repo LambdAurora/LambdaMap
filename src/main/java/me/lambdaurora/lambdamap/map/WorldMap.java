@@ -19,7 +19,9 @@ package me.lambdaurora.lambdamap.map;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import me.lambdaurora.lambdamap.gui.WorldMapScreen;
 import me.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +40,47 @@ import java.io.IOException;
 public class WorldMap {
     private static final Logger LOGGER = LogManager.getLogger();
 
+    private static final int PLAYER_RANGE = 128 + 32;
+    private static final int VIEW_RANGE = 12800;
+
     private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
     private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
+    private final MinecraftClient client = MinecraftClient.getInstance();
     private final File directory;
+
+    private int viewX = 0;
+    private int viewZ = 0;
+    private int playerViewX = 0;
+    private int playerViewZ = 0;
 
     public WorldMap(File directory) {
         this.directory = directory;
         if (!this.directory.exists())
             this.directory.mkdirs();
+    }
+
+    public int getViewX() {
+        return this.viewX;
+    }
+
+    public int getViewZ() {
+        return this.viewZ;
+    }
+
+    public boolean updateViewPos(int viewX, int viewZ) {
+        boolean changed = viewX != this.viewX || viewZ != this.viewZ;
+        this.viewX = viewX;
+        this.viewZ = viewZ;
+        return changed;
+    }
+
+    public boolean updatePlayerViewPos(int viewX, int viewZ) {
+        boolean changed = viewX != this.playerViewX || viewZ != this.playerViewZ;
+        this.playerViewX = viewX;
+        this.playerViewZ = viewZ;
+        if (!(client.currentScreen instanceof WorldMapScreen))
+            this.updateViewPos(viewX, viewZ);
+        return changed;
     }
 
     public MapChunk getChunk(int x, int y) {
@@ -57,7 +92,7 @@ public class WorldMap {
     }
 
     public @Nullable MapChunk getChunkOrLoad(int x, int y) {
-        return this.getChunk(ChunkPos.toLong(x, y));
+        return this.getChunkOrLoad(ChunkPos.toLong(x, y));
     }
 
     public @Nullable MapChunk getChunkOrLoad(long pos) {
@@ -113,7 +148,28 @@ public class WorldMap {
     }
 
     public void unloadRegion(MapRegionFile regionFile) {
-        this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(),regionFile.getZ()));
+        this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(), regionFile.getZ()));
+    }
+
+    public void tick() {
+        int playerViewStartX = this.playerViewX - PLAYER_RANGE;
+        int playerViewStartZ = this.playerViewZ - PLAYER_RANGE;
+        int playerViewEndX = this.playerViewX + PLAYER_RANGE;
+        int playerViewEndZ = this.playerViewZ + PLAYER_RANGE;
+
+        int viewStartX = this.viewX - VIEW_RANGE;
+        int viewStartZ = this.viewZ - VIEW_RANGE;
+        int viewEndX = this.viewX + VIEW_RANGE;
+        int viewEndZ = this.viewZ + VIEW_RANGE;
+
+        boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
+        for (Long2ObjectMap.Entry<MapChunk> entry : this.chunks.long2ObjectEntrySet()) {
+            if (!(entry.getValue().isCenterInBox(playerViewStartX, playerViewStartZ, playerViewEndX, playerViewEndZ)
+                    || (hasViewer && entry.getValue().isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
+                entry.getValue().unload();
+                this.chunks.remove(entry.getLongKey());
+            }
+        }
     }
 
     public File getDirectory() {
