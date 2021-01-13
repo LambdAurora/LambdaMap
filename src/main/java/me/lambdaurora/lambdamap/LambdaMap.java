@@ -115,6 +115,11 @@ public class LambdaMap implements ClientModInitializer {
         this.map = new WorldMap(directory);
     }
 
+    public void unloadMap() {
+        this.map.unload();
+        this.map = null;
+    }
+
     public void updateChunks(World world, PlayerEntity entity) {
         ChunkPos pos = entity.getChunkPos();
         for (int x = pos.x - 3; x < pos.x + 4; x++) {

@@ -23,11 +23,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * Represents a region file.
@@ -66,13 +69,23 @@ public class MapRegionFile implements Closeable {
         this.loadedChunks++;
     }
 
+    /**
+     * Loads the region file if found, or create a new one.
+     *
+     * @param worldMap the world map
+     * @param x the region X-coordinate
+     * @param z the region Z-coordinate
+     * @return the region file
+     * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
+     */
     public static MapRegionFile loadOrCreate(WorldMap worldMap, int x, int z) throws IOException {
         File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
         boolean exists = file.exists();
 
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
 
-        Header header = new Header(raf, x, z);
+        raf.seek(0);
+        Header header = new Header(raf.getChannel(), x, z);
         if (!exists) {
             header.writeDefault();
         } else {
@@ -110,7 +123,7 @@ public class MapRegionFile implements Closeable {
         return null;
     }
 
-    public MapChunk loadChunkOrCreate(int x, int z) {
+    public @NotNull MapChunk loadChunkOrCreate(int x, int z) {
         MapChunk chunk = this.loadChunk(x, z);
         if (chunk == null) {
             chunk = new MapChunk(this, x, z);
@@ -144,7 +157,7 @@ public class MapRegionFile implements Closeable {
         int size = stream.size();
         long chunkPos = this.header.getChunkEntry(chunk.getX(), chunk.getZ());
         if (chunkPos == INVALID_CHUNK) {
-            chunkPos = this.raf.length();
+            chunkPos = Math.max(this.raf.length(), HEADER_SIZE);
             this.header.writeChunkEntry(chunk.getX(), chunk.getZ(), chunkPos - HEADER_SIZE);
         } else {
             chunkPos += HEADER_SIZE;
@@ -158,6 +171,7 @@ public class MapRegionFile implements Closeable {
         this.raf.seek(chunkPos);
         this.raf.writeInt(size);
         this.raf.write(stream.toByteArray());
+        this.header.write();
         stream.close();
     }
 
@@ -169,38 +183,59 @@ public class MapRegionFile implements Closeable {
         }
 
         for (int i = 0; i < this.header.getEntriesCount(); i++) {
-            long offset = this.header.chunkEntries[i];
-            if (pos > offset + HEADER_SIZE) {
+            long offset = this.header.getChunkEntry(i);
+            if (offset != INVALID_CHUNK && pos < offset + HEADER_SIZE) {
                 this.header.writeChunkEntry(i, offset + delta);
             }
         }
 
         long size = this.raf.length() - pos - oldSize;
-        LOGGER.info("LENGTH {}, POS {}, OLD SIZE {}, NEW SIZE {}, TO SHIFT {}", this.raf.length(), pos, oldSize, newSize, size);
 
         this.raf.seek(pos + oldSize);
         // Hopefully the data to shift is small enough.
         // If the data is too big then shift by blocks of 512 or 1024 bytes.
         byte[] dataToShift = new byte[(int) size];
-        this.raf.read(dataToShift);
+        int readBytes = this.raf.read(dataToShift);
         this.raf.seek(pos + newSize);
         this.raf.write(dataToShift);
     }
 
     @Override
     public void close() throws IOException {
+        this.header.write();
         this.raf.close();
         this.worldMap.unloadRegion(this);
     }
 
+    /**
+     * Represents the header of a region file.
+     * <p>
+     * The header is a 1024 bytes space containing:
+     * <ul>
+     *     <li>The UTF-8 string {@code "LambdaMapRegion "}</li>
+     *     <li>The version as a 16-bit unsigned integer</li>
+     *     <li>An ASCII space {@code ' '}</li>
+     *     <li>The X-coordinate as a 32-bit signed integer</li>
+     *     <li>The Z-coordinate as a 32-bit signed integer</li>
+     *     <li>Starting at the 32th byte, ordered list (size 64) of chunk offset from the Header as 64-bit unsigned integers</li>
+     * </ul>
+     *
+     * @version 1.0.0
+     * @since 1.0.0
+     */
     static class Header {
-        private final RandomAccessFile raf;
-        private final long[] chunkEntries = new long[CHUNKS * CHUNKS];
+        private final FileChannel channel;
+        private final ByteBuffer header;
+        private final LongBuffer chunkData;
         private final int x;
         private final int z;
 
-        private Header(RandomAccessFile raf, int x, int z) {
-            this.raf = raf;
+        private Header(FileChannel channel, int x, int z) {
+            this.channel = channel;
+            this.header = ByteBuffer.allocateDirect(HEADER_SIZE);
+            this.header.position(32);
+            this.chunkData = this.header.asLongBuffer();
+            this.chunkData.limit(CHUNKS * CHUNKS);
             this.x = x;
             this.z = z;
         }
@@ -214,58 +249,60 @@ public class MapRegionFile implements Closeable {
         }
 
         public long getEntriesCount() {
-            return this.chunkEntries.length;
+            return this.chunkData.limit();
         }
 
         public void writeDefault() throws IOException {
-            Arrays.fill(this.chunkEntries, INVALID_CHUNK);
+            this.header.position(0);
+            for (int i = 0; i < 32; i++) {
+                this.header.put((byte) 0);
+            }
+            this.chunkData.position(0);
+            for (int i = 0; i < this.chunkData.limit(); i++) {
+                this.chunkData.put(INVALID_CHUNK);
+            }
             this.write();
         }
 
         public void write() throws IOException {
-            this.raf.seek(0);
-
             // Header start
-            this.raf.write("LambdaMapRegion ".getBytes(StandardCharsets.UTF_8));
-            this.raf.writeByte(VERSION);
-            this.raf.writeByte(' ');
-            this.raf.writeInt(this.x);
-            this.raf.writeInt(this.z);
-            this.raf.writeByte(' ');
+            this.header.position(0);
+            this.header.put("LambdaMapRegion ".getBytes(StandardCharsets.UTF_8));
+            this.header.putShort((short) VERSION);
+            this.header.put((byte) ' ');
+            this.header.putInt(this.x);
+            this.header.putInt(this.z);
 
-            // Chunk entries
-            for (long entry : this.chunkEntries) {
-                this.raf.writeLong(entry);
-            }
+            this.header.position(0);
+            this.channel.write(this.header, 0L);
         }
 
         public void read() throws IOException {
-            this.raf.seek(16);
+            this.header.position(0);
+            this.channel.read(this.header, 0L);
 
-            byte version = this.raf.readByte();
-            this.raf.skipBytes(1);
-            this.raf.readInt();
-            this.raf.readInt();
-            this.raf.skipBytes(1);
+            this.header.position(16);
 
-            for (int i = 0; i < this.chunkEntries.length; i++) {
-                long offset = this.raf.readLong();
-                this.chunkEntries[i] = offset;
-            }
+            short version = this.header.getShort();
+            this.header.get();
+            this.header.getInt();
+            this.header.getInt();
         }
 
-        public void writeChunkEntry(int index, long offset) throws IOException {
-            this.chunkEntries[index] = offset;
-            this.raf.seek(27 + index * 8L);
-            this.raf.writeLong(offset);
+        public void writeChunkEntry(int index, long offset) {
+            this.chunkData.put(index, offset);
         }
 
-        public void writeChunkEntry(int x, int z, long offset) throws IOException {
+        public void writeChunkEntry(int x, int z, long offset) {
             this.writeChunkEntry((z & 7) * CHUNKS + (x & 7), offset);
         }
 
+        public long getChunkEntry(int index) {
+            return this.chunkData.get(index);
+        }
+
         public long getChunkEntry(int x, int z) {
-            return this.chunkEntries[(z & 7) * CHUNKS + (x & 7)];
+            return this.getChunkEntry((z & 7) * CHUNKS + (x & 7));
         }
 
         public boolean hasChunk(int x, int z) {

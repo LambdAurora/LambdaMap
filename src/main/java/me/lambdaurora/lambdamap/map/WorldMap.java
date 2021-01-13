@@ -96,11 +96,13 @@ public class WorldMap {
     public MapRegionFile getOrLoadRegion(int x, int z) {
         x >>= 3;
         z >>= 3;
-        MapRegionFile regionFile = this.regionFiles.get(ChunkPos.toLong(x, z));
+        long pos = ChunkPos.toLong(x, z);
+        MapRegionFile regionFile = this.regionFiles.get(pos);
 
         if (regionFile == null) {
             try {
                 regionFile = MapRegionFile.loadOrCreate(this, x, z);
+                this.regionFiles.put(pos, regionFile);
             } catch (IOException e) {
                 LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
                 return null;
@@ -118,15 +120,9 @@ public class WorldMap {
         return this.directory;
     }
 
-    public void save() {
-        this.chunks.forEach((pos, chunk) -> chunk.save());
-
-        this.regionFiles.forEach((pos, region) -> {
-            try {
-                region.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    public void unload() {
+        this.chunks.forEach((pos, chunk) -> chunk.unload());
+        this.chunks.clear();
+        this.regionFiles.clear();
     }
 }

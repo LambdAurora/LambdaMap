@@ -20,7 +20,6 @@ package me.lambdaurora.lambdamap.mixin;
 import me.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.server.integrated.IntegratedServer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,7 +38,7 @@ public abstract class MinecraftClientMixin {
         MinecraftClient client = (MinecraftClient) (Object) this;
 
         if (this.world != null) {
-            LambdaMap.get().getMap().save();
+            LambdaMap.get().unloadMap();
         }
 
         LambdaMap.get().loadMap(client, world.getRegistryKey());
@@ -48,6 +47,6 @@ public abstract class MinecraftClientMixin {
     @Inject(method = "setWorld", at = @At("HEAD"))
     private void onDisconnect(ClientWorld world, CallbackInfo ci) {
         if (LambdaMap.get().getMap() != null && world == null)
-            LambdaMap.get().getMap().save();
+            LambdaMap.get().unloadMap();
     }
 }
