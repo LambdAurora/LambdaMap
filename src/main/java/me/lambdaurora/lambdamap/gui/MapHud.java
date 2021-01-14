@@ -73,10 +73,10 @@ public class MapHud implements AutoCloseable {
         BlockPos corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
         for (int z = 0; z < width; ++z) {
             int absoluteZ = corner.getZ() + z;
-            int chunkZ = absoluteZ >> 7;
+            int chunkZ = MapChunk.blockToChunk(absoluteZ);
             for (int x = 0; x < height; ++x) {
                 int absoluteX = corner.getX() + x;
-                int chunkX = absoluteX >> 7;
+                int chunkX = MapChunk.blockToChunk(absoluteX);
 
                 MapChunk chunk = map.getChunkOrLoad(chunkX, chunkZ);
                 if (chunk == null) {
@@ -127,10 +127,10 @@ public class MapHud implements AutoCloseable {
         matrices.translate(-64 - 32, -64 - 32, 0);
         Matrix4f model = matrices.peek().getModel();
         VertexConsumer vertexConsumer = immediate.getBuffer(this.mapRenderLayer);
-        this.vertex(vertexConsumer, model, 0.f, textureHeight, 0.f, 1.f, light);
-        this.vertex(vertexConsumer, model, textureWidth, textureHeight, 1.f, 1.f, light);
-        this.vertex(vertexConsumer, model, textureWidth, 0.f, 1.f, 0.f, light);
-        this.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, 0.f, textureHeight, 0.f, 1.f, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, textureHeight, 1.f, 1.f, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, 0.f, 1.f, 0.f, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
         matrices.pop();
 
         this.renderPlayerIcon(matrices, immediate, light);
@@ -146,12 +146,6 @@ public class MapHud implements AutoCloseable {
         immediate.draw();
     }
 
-    private void vertex(VertexConsumer vertexConsumer, Matrix4f model, float x, float y,
-                        float u, float v, int light) {
-        vertexConsumer.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
-                .texture(u, v).light(light).next();
-    }
-
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
         matrices.translate(64.f, 64.f, .1f);
@@ -165,10 +159,10 @@ public class MapHud implements AutoCloseable {
         float n = (float) (playerIconId / 16 + 1) / 16.f;
         Matrix4f model = matrices.peek().getModel();
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(LambdaMap.MAP_ICONS);
-        this.vertex(vertexConsumer, model, -1.f, 1.f, g, h, light);
-        this.vertex(vertexConsumer, model, 1.f, 1.f, m, h, light);
-        this.vertex(vertexConsumer, model, 1.f, -1.f, m, n, light);
-        this.vertex(vertexConsumer, model, -1.f, -1.f, g, n, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, 1.f, g, h, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, 1.f, m, h, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, -1.f, m, n, light);
+        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, -1.f, g, n, light);
         matrices.pop();
     }
 

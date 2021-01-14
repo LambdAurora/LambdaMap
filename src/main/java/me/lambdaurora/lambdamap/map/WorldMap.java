@@ -163,13 +163,14 @@ public class WorldMap {
         int viewEndZ = this.viewZ + VIEW_RANGE;
 
         boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
-        for (Long2ObjectMap.Entry<MapChunk> entry : this.chunks.long2ObjectEntrySet()) {
+        this.chunks.long2ObjectEntrySet().removeIf(entry -> {
             if (!(entry.getValue().isCenterInBox(playerViewStartX, playerViewStartZ, playerViewEndX, playerViewEndZ)
                     || (hasViewer && entry.getValue().isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
                 entry.getValue().unload();
-                this.chunks.remove(entry.getLongKey());
+                return true;
             }
-        }
+            return false;
+        });
     }
 
     public File getDirectory() {

@@ -212,6 +212,10 @@ public class MapChunk implements AutoCloseable {
                 '}';
     }
 
+    public static int blockToChunk(int coordinate) {
+        return coordinate >> 7;
+    }
+
     public static MapChunk fromTag(MapRegionFile regionFile, CompoundTag tag) {
         MapChunk chunk = new MapChunk(regionFile, tag.getInt("x"), tag.getInt("z"));
         byte[] colors = tag.getByteArray("colors");

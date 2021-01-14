@@ -18,6 +18,7 @@
 package me.lambdaurora.lambdamap;
 
 import me.lambdaurora.lambdamap.gui.MapHud;
+import me.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import me.lambdaurora.lambdamap.gui.WorldMapScreen;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
@@ -61,8 +62,9 @@ public class LambdaMap implements ClientModInitializer {
     public static final Identifier MAP_ICONS_TEXTURE = new Identifier("textures/map/map_icons.png");
     public static final RenderLayer MAP_ICONS = RenderLayer.getText(MAP_ICONS_TEXTURE);
     private static LambdaMap INSTANCE;
-    private KeyBinding hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.misc"));
-    private KeyBinding mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
+    private final KeyBinding hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.misc"));
+    private final KeyBinding mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
+    private final WorldMapRenderer renderer = new WorldMapRenderer(this);
     private WorldMap map = null;
     public MapHud hud = null;
 
@@ -102,6 +104,10 @@ public class LambdaMap implements ClientModInitializer {
         return this.map;
     }
 
+    public WorldMapRenderer getRenderer() {
+        return this.renderer;
+    }
+
     public void loadMap(MinecraftClient client, RegistryKey<World> worldKey) {
         File directory;
         if (client.getServer() != null) {
@@ -110,6 +116,7 @@ public class LambdaMap implements ClientModInitializer {
             directory = getWorldMapDirectoryMP(client, worldKey);
         }
         this.map = new WorldMap(directory);
+        this.renderer.setWorldMap(this.map);
     }
 
     public void unloadMap() {
