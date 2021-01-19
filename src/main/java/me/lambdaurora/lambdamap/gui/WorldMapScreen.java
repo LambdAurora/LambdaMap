@@ -52,7 +52,7 @@ public class WorldMapScreen extends SpruceScreen {
         tabs.addTabEntry(new LiteralText("World Map"), new LiteralText("explore the world!").formatted(Formatting.GRAY),
                 (width, height) -> new WorldMapWidget(Position.origin(), width, height));
         tabs.addTabEntry(new LiteralText("Markers"), new LiteralText("mark places in your world!").formatted(Formatting.GRAY),
-                (width, height) -> new SpruceContainerWidget(Position.origin(), width, height));
+                (width, height) -> new MarkerListWidget(Position.origin(), width, height, this.mod.getMap().getMarkerManager()));
         tabs.addTabEntry(new LiteralText("Config"), new LiteralText("mod configuration").formatted(Formatting.GRAY), this::buildConfigTab);
     }
 

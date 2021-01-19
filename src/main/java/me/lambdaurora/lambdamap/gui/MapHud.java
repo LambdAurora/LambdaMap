@@ -17,7 +17,6 @@
 
 package me.lambdaurora.lambdamap.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import me.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
@@ -115,15 +114,13 @@ public class MapHud implements AutoCloseable {
         int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
         matrices.push();
         matrices.translate(width - 128 * scaleCompensation, 0, 1);
-        matrices.scale(scaleCompensation, scaleCompensation, 0);
-        RenderSystem.enableTexture();
+        matrices.scale(scaleCompensation, scaleCompensation, 1);
 
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
 
         int textureWidth = this.texture.getImage().getWidth();
         int textureHeight = this.texture.getImage().getHeight();
 
-        matrices.push();
         matrices.push();
         matrices.translate(64, 64, 0);
         matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
@@ -134,10 +131,26 @@ public class MapHud implements AutoCloseable {
         WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, textureHeight, 1.f, 1.f, light);
         WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, 0.f, 1.f, 0.f, light);
         WorldMapRenderer.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
+
+        {
+            double cornerX = this.client.player.getX() - (textureWidth / 2.f);
+            double cornerZ = this.client.player.getZ() - (textureWidth / 2.f);
+            LambdaMap.get().getMap().getMarkerManager().streamMarkersInBox((int) cornerX, (int) cornerZ, textureWidth, textureHeight)
+                    .forEach(marker -> {
+                        matrices.push();
+
+                        float x = (float) (marker.getX() - cornerX);
+                        float z = (float) (marker.getZ() - cornerZ);
+
+                        matrices.translate(x, z, 1.f);
+                        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
+                        marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
+                        matrices.pop();
+                    });
+        }
         matrices.pop();
 
         this.renderPlayerIcon(matrices, immediate, light);
-        matrices.pop();
         immediate.draw();
         ScissorManager.pop();
 
@@ -152,7 +165,7 @@ public class MapHud implements AutoCloseable {
 
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
-        matrices.translate(64.f, 64.f, .1f);
+        matrices.translate(64.f, 64.f, 1.1f);
         MarkerType.PLAYER.render(matrices, vertexConsumers, 180, null, light);
         matrices.pop();
     }

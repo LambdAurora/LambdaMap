@@ -30,6 +30,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
@@ -173,7 +174,7 @@ public class WorldMapRenderer {
             return;
 
         matrices.push();
-        matrices.translate(pos.getX() - this.cornerViewX, pos.getZ() - this.cornerViewZ, .1f);
+        matrices.translate(pos.getX() - this.cornerViewX, pos.getZ() - this.cornerViewZ, 1.1f);
         MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.yaw, null, light);
         matrices.pop();
     }

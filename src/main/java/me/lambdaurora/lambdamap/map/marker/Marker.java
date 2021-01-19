@@ -24,6 +24,8 @@ import net.minecraft.item.map.MapBannerMarker;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,14 +40,16 @@ import java.util.Objects;
  */
 public class Marker {
     private MarkerType type;
+    private MarkerSource source;
     private int x;
     private int y;
     private int z;
     private float rotation;
     private @Nullable Text name;
 
-    public Marker(MarkerType type, int x, int y, int z, float rotation, @Nullable Text name) {
+    public Marker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text name) {
         this.type = type;
+        this.source = source;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -59,6 +63,14 @@ public class Marker {
 
     public void setType(MarkerType type) {
         this.type = type;
+    }
+
+    public MarkerSource getSource() {
+        return this.source;
+    }
+
+    public void setSource(MarkerSource source) {
+        this.source = source;
     }
 
     public int getX() {
@@ -85,11 +97,23 @@ public class Marker {
         this.z = z;
     }
 
+    public BlockPos getPos() {
+        return new BlockPos(this.getX(), this.getY(), this.getZ());
+    }
+
+    public int getChunkX() {
+        return ChunkSectionPos.getSectionCoord(this.getX());
+    }
+
+    public int getChunkZ() {
+        return ChunkSectionPos.getSectionCoord(this.getZ());
+    }
+
     public float getRotation() {
         return this.rotation;
     }
 
-    public void setRotation(byte rotation) {
+    public void setRotation(float rotation) {
         this.rotation = rotation;
     }
 
@@ -114,6 +138,7 @@ public class Marker {
     public CompoundTag toTag() {
         CompoundTag tag = new CompoundTag();
         tag.putString("type", this.type.getKey());
+        tag.putString("source", this.source.getId());
         tag.putInt("x", this.x);
         tag.putInt("y", this.y);
         tag.putInt("z", this.z);
@@ -122,6 +147,19 @@ public class Marker {
             tag.putString("name", Text.Serializer.toJson(this.name));
         }
         return tag;
+    }
+
+    @Override
+    public String toString() {
+        return "Marker{" +
+                "type=" + this.getType() +
+                ", source=" + this.getSource() +
+                ", x=" + this.getX() +
+                ", y=" + this.getY() +
+                ", z=" + this.getZ() +
+                ", rotation=" + this.getRotation() +
+                ", name=" + this.getName() +
+                '}';
     }
 
     @Override
@@ -142,7 +180,8 @@ public class Marker {
         if (bannerMarker == null)
             return null;
 
-        return new Marker(MarkerType.getVanillaMarkerType(bannerMarker.getIconType()), pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
+        return new Marker(MarkerType.getVanillaMarkerType(bannerMarker.getIconType()), MarkerSource.BANNER,
+                pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
     }
 
     public static Marker fromTag(CompoundTag tag) {
@@ -150,6 +189,7 @@ public class Marker {
         Text name = null;
         if (tag.contains("name", NbtType.STRING))
             name = Text.Serializer.fromJson(tag.getString("name"));
-        return new Marker(type, tag.getInt("x"), tag.getInt("y"), tag.getInt("z"), tag.getFloat("rotation"), name);
+        return new Marker(type, MarkerSource.fromId(tag.getString("source")),
+                tag.getInt("x"), tag.getInt("y"), tag.getInt("z"), tag.getFloat("rotation"), name);
     }
 }

@@ -92,9 +92,21 @@ public class MarkerType {
             matrices.translate(-textWidth * scale / 2.0f, 4.f, 0.02500000037252903D);
             matrices.scale(scale, scale, -1.f);
             matrices.translate(0.f, 0.f, 0.10000000149011612D);
-            textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, matrices.peek().getModel(), vertexConsumers, false, 0xaa000000, light);
+
+            model = matrices.peek().getModel();
+            textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, false, 0xaa000000, light);
             matrices.pop();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "MarkerType{" +
+                "key='" + this.key + '\'' +
+                ", renderLayer=" + this.renderLayer +
+                ", u=" + this.u +
+                ", v=" + this.v +
+                '}';
     }
 
     public static @Nullable MarkerType getMarkerType(String key) {

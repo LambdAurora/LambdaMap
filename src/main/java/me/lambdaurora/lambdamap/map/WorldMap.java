@@ -20,9 +20,14 @@ package me.lambdaurora.lambdamap.map;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import me.lambdaurora.lambdamap.gui.WorldMapScreen;
+import me.lambdaurora.lambdamap.map.marker.Marker;
 import me.lambdaurora.lambdamap.map.marker.MarkerManager;
+import me.lambdaurora.lambdamap.map.marker.MarkerType;
 import me.lambdaurora.lambdamap.map.storage.MapRegionFile;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.map.MapIcon;
+import net.minecraft.item.map.MapState;
 import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Represents the world map.
@@ -59,7 +65,7 @@ public class WorldMap {
         this.directory = directory;
         if (!this.directory.exists())
             this.directory.mkdirs();
-        this.markerManager = new MarkerManager(this, new File(this.directory, "markers.nbt"));
+        this.markerManager = new MarkerManager(this);
         this.markerManager.load();
     }
 
@@ -183,7 +189,43 @@ public class WorldMap {
         this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(), regionFile.getZ()));
     }
 
-    public void tick() {
+    public void importMapState(MapState mapState, List<Marker> markers) {
+        int scale = 1 << mapState.scale;
+
+        int cornerX = mapState.xCenter - 64 * scale;
+        int cornerZ = mapState.zCenter - 64 * scale;
+
+        Marker marker = markers.get(0);
+        for (MapIcon icon : mapState.method_32373()) {
+            if (marker.getType() == MarkerType.getVanillaMarkerType(icon.getType())) {
+                int iconX = (int) (icon.getX() / 2.f + 64) * scale;
+                int iconZ = (int) (icon.getZ() / 2.f + 64) * scale;
+
+                cornerX = marker.getX() - iconX;
+                cornerZ = marker.getZ() - iconZ;
+            }
+        }
+
+        for (int z = 0; z < 128 * scale; z++) {
+            int i = z / scale;
+            int chunkZ = MapChunk.blockToChunk(cornerZ + z);
+
+            for (int x = 0; x < 128 * scale; x++) {
+                byte color = mapState.colors[x / scale + i * 128];
+                if (color / 4 == 0)
+                    continue;
+
+                int chunkX = MapChunk.blockToChunk(cornerX + x);
+                MapChunk chunk = this.getChunkOrCreate(chunkX, chunkZ);
+
+                if (chunk.getColor(cornerX + x, cornerZ + z) / 4 == 0) {
+                    chunk.putColor(cornerX + x, cornerZ + z, color);
+                }
+            }
+        }
+    }
+
+    public void tick(@Nullable ClientWorld world) {
         int playerViewStartX = this.playerViewX - PLAYER_RANGE;
         int playerViewStartZ = this.playerViewZ - PLAYER_RANGE;
         int playerViewEndX = this.playerViewX + PLAYER_RANGE;
@@ -203,6 +245,10 @@ public class WorldMap {
             }
             return false;
         });
+
+        if (world != null) {
+            this.getMarkerManager().tick(world);
+        }
     }
 
     public void unload() {
