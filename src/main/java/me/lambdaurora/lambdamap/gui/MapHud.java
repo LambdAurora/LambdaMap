@@ -21,6 +21,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import me.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
+import me.lambdaurora.lambdamap.map.marker.MarkerType;
+import me.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -29,12 +31,10 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.map.MapIcon;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
-import org.lwjgl.opengl.GL11;
 
 public class MapHud implements AutoCloseable {
     private final MinecraftClient client;
@@ -107,8 +107,11 @@ public class MapHud implements AutoCloseable {
             newScaleFactor = (float) (this.client.getWindow().getScaleFactor() - 1);
             scaleCompensation = newScaleFactor / scaleFactor;
         }
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor((int) (client.getWindow().getFramebufferWidth() - 128 * newScaleFactor), (int) (this.client.getWindow().getFramebufferHeight() - 128 * newScaleFactor), (int) (128 * newScaleFactor), (int) (128 * newScaleFactor));
+        {
+            int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
+            int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
+            ScissorManager.push(scaledWidth - 128, 0, 128, 128, newScaleFactor);
+        }
         int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
         matrices.push();
         matrices.translate(width - 128 * scaleCompensation, 0, 1);
@@ -136,7 +139,7 @@ public class MapHud implements AutoCloseable {
         this.renderPlayerIcon(matrices, immediate, light);
         matrices.pop();
         immediate.draw();
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        ScissorManager.pop();
 
         BlockPos pos = this.client.player.getBlockPos();
         String str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
@@ -144,25 +147,13 @@ public class MapHud implements AutoCloseable {
         this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate, false, 0, light);
         matrices.pop();
         immediate.draw();
+        ScissorManager.popScaleFactor();
     }
 
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
         matrices.translate(64.f, 64.f, .1f);
-        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180));
-        matrices.scale(4.f, 4.f, 3.f);
-        matrices.translate(-0.125, 0.125, 0.0);
-        byte playerIconId = MapIcon.Type.PLAYER.getId();
-        float g = (float) (playerIconId % 16) / 16.f;
-        float h = (float) (playerIconId / 16) / 16.f;
-        float m = (float) (playerIconId % 16 + 1) / 16.f;
-        float n = (float) (playerIconId / 16 + 1) / 16.f;
-        Matrix4f model = matrices.peek().getModel();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(LambdaMap.MAP_ICONS);
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, 1.f, g, h, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, 1.f, m, h, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, -1.f, m, n, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, -1.f, g, n, light);
+        MarkerType.PLAYER.render(matrices, vertexConsumers, 180, null, light);
         matrices.pop();
     }
 

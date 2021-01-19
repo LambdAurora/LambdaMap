@@ -18,14 +18,19 @@
 package me.lambdaurora.lambdamap.gui;
 
 import me.lambdaurora.lambdamap.LambdaMap;
+import me.lambdaurora.spruceui.Position;
+import me.lambdaurora.spruceui.background.EmptyBackground;
+import me.lambdaurora.spruceui.background.SimpleColorBackground;
+import me.lambdaurora.spruceui.screen.SpruceScreen;
+import me.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
+import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
+import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
-public class WorldMapScreen extends Screen {
+public class WorldMapScreen extends SpruceScreen {
     private final LambdaMap mod = LambdaMap.get();
     private final WorldMapRenderer renderer = this.mod.getRenderer();
 
@@ -40,8 +45,21 @@ public class WorldMapScreen extends Screen {
 
     @Override
     protected void init() {
-        this.renderer.allocate(this.width - 50, this.height - 50);
-        this.renderer.setWorldMap(mod.getMap());
+        super.init();
+
+        SpruceTabbedWidget tabs = this.addChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
+        tabs.getList().setBackground(new SimpleColorBackground(-1072689136));
+        tabs.addTabEntry(new LiteralText("World Map"), new LiteralText("explore the world!").formatted(Formatting.GRAY),
+                (width, height) -> new WorldMapWidget(Position.origin(), width, height));
+        tabs.addTabEntry(new LiteralText("Markers"), new LiteralText("mark places in your world!").formatted(Formatting.GRAY),
+                (width, height) -> new SpruceContainerWidget(Position.origin(), width, height));
+        tabs.addTabEntry(new LiteralText("Config"), new LiteralText("mod configuration").formatted(Formatting.GRAY), this::buildConfigTab);
+    }
+
+    private SpruceOptionListWidget buildConfigTab(int width, int height) {
+        SpruceOptionListWidget list = new SpruceOptionListWidget(Position.origin(), width, height);
+        list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
+        return list;
     }
 
     @Override
@@ -68,30 +86,6 @@ public class WorldMapScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-            int viewX = this.mod.getMap().getViewX();
-            int viewZ = this.mod.getMap().getViewZ();
-            this.renderer.updateView((int) (viewX - deltaX), (int) (viewZ - deltaY));
-        }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-    }
-
-    @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.render(matrices, mouseX, mouseY, delta);
-        this.renderBackgroundTexture(0);
-        matrices.push();
-        matrices.translate(25, 25, 0);
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-        this.renderer.render(matrices, immediate);
-        immediate.draw();
-        matrices.pop();
-
-        int mouseXOffset = mouseX - 25;
-        int mouseYOffset = mouseY - 25;
-        if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() && mouseYOffset > 0 && mouseYOffset < this.renderer.height()) {
-            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %d Z: %d", this.renderer.cornerX() + mouseXOffset, this.renderer.cornerZ() + mouseYOffset),
-                    this.width / 2, this.height - 15, 0xffffffff);
-        }
     }
 }

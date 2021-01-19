@@ -9,6 +9,7 @@ group = project.maven_group
 version = "${project.mod_version}+${project.minecraft_version}"
 archivesBaseName = project.archives_base_name
 Set<String> modules = [
+        'fabric-api-base',
         'fabric-key-binding-api-v1',
         'fabric-lifecycle-events-v1',
         'fabric-rendering-v1',
@@ -17,10 +18,12 @@ Set<String> modules = [
 
 repositories {
     maven {
-        url "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
+        name 'AperLambda'
+        url 'https://aperlambda.github.io/maven'
+    }
+    maven {
+        name 'Jitpack'
+        url 'https://jitpack.io'
     }
 }
 
@@ -37,6 +40,9 @@ dependencies {
         modImplementation it
         include it
     }
+
+    modImplementation "com.github.lambdaurora:spruceui:${project.spruceui_version}"
+    include "com.github.lambdaurora:spruceui:${project.spruceui_version}"
 }
 
 tasks.withType(JavaCompile) {

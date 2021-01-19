@@ -3,6 +3,7 @@
   "package": "me.lambdaurora.lambdamap.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "ClientPlayerInteractionManagerMixin",
     "MinecraftClientMixin",
     "PersistentStateManagerAccessor"
   ],

@@ -69,17 +69,7 @@ public class MapRegionFile implements Closeable {
         this.loadedChunks++;
     }
 
-    /**
-     * Loads the region file if found, or create a new one.
-     *
-     * @param worldMap the world map
-     * @param x the region X-coordinate
-     * @param z the region Z-coordinate
-     * @return the region file
-     * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
-     */
-    public static MapRegionFile loadOrCreate(WorldMap worldMap, int x, int z) throws IOException {
-        File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
+    private static MapRegionFile open(WorldMap worldMap, int x, int z, File file) throws IOException {
         boolean exists = file.exists();
 
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -93,6 +83,36 @@ public class MapRegionFile implements Closeable {
         }
 
         return new MapRegionFile(worldMap, raf, header);
+    }
+
+    /**
+     * Loads the region file if found.
+     *
+     * @param worldMap the world map
+     * @param x the region X-coordinate
+     * @param z the region Z-coordinate
+     * @return the region file if exists, else {@code null}
+     * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
+     */
+    public static @Nullable MapRegionFile load(WorldMap worldMap, int x, int z) throws IOException {
+        File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
+        if (file.exists())
+            return open(worldMap, x, z, file);
+        return null;
+    }
+
+    /**
+     * Loads the region file if found, or create a new one.
+     *
+     * @param worldMap the world map
+     * @param x the region X-coordinate
+     * @param z the region Z-coordinate
+     * @return the region file
+     * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
+     */
+    public static MapRegionFile loadOrCreate(WorldMap worldMap, int x, int z) throws IOException {
+        File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
+        return open(worldMap, x, z, file);
     }
 
     public synchronized @Nullable MapChunk loadChunk(int x, int z) {

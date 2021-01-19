@@ -20,6 +20,7 @@ package me.lambdaurora.lambdamap.map;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import me.lambdaurora.lambdamap.gui.WorldMapScreen;
+import me.lambdaurora.lambdamap.map.marker.MarkerManager;
 import me.lambdaurora.lambdamap.map.storage.MapRegionFile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.ChunkPos;
@@ -47,6 +48,7 @@ public class WorldMap {
     private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final File directory;
+    private final MarkerManager markerManager;
 
     private int viewX = 0;
     private int viewZ = 0;
@@ -57,6 +59,16 @@ public class WorldMap {
         this.directory = directory;
         if (!this.directory.exists())
             this.directory.mkdirs();
+        this.markerManager = new MarkerManager(this, new File(this.directory, "markers.nbt"));
+        this.markerManager.load();
+    }
+
+    public File getDirectory() {
+        return this.directory;
+    }
+
+    public MarkerManager getMarkerManager() {
+        return this.markerManager;
     }
 
     public int getViewX() {
@@ -100,7 +112,7 @@ public class WorldMap {
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.load(getOrLoadRegion(x, z), x, z);
+            chunk = MapChunk.load(this.getOrLoadRegion(x, z), x, z);
             if (chunk != null)
                 this.chunks.put(pos, chunk);
         }
@@ -111,7 +123,7 @@ public class WorldMap {
         long pos = ChunkPos.toLong(x, z);
         MapChunk chunk = this.getChunk(pos);
         if (chunk == null) {
-            chunk = MapChunk.loadOrCreate(getOrLoadRegion(x, z), x, z);
+            chunk = MapChunk.loadOrCreate(this.getOrCreateRegion(x, z), x, z);
             this.chunks.put(pos, chunk);
         }
         return chunk;
@@ -122,13 +134,33 @@ public class WorldMap {
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.loadOrCreate(getOrLoadRegion(x, z), x, z);
+            chunk = MapChunk.loadOrCreate(this.getOrCreateRegion(x, z), x, z);
             this.chunks.put(pos, chunk);
         }
         return chunk;
     }
 
-    public MapRegionFile getOrLoadRegion(int x, int z) {
+    public @Nullable MapRegionFile getOrLoadRegion(int x, int z) {
+        x >>= 3;
+        z >>= 3;
+        long pos = ChunkPos.toLong(x, z);
+        MapRegionFile regionFile = this.regionFiles.get(pos);
+
+        if (regionFile == null) {
+            try {
+                regionFile = MapRegionFile.load(this, x, z);
+                if (regionFile != null)
+                    this.regionFiles.put(pos, regionFile);
+            } catch (IOException e) {
+                LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
+                return null;
+            }
+        }
+
+        return regionFile;
+    }
+
+    public MapRegionFile getOrCreateRegion(int x, int z) {
         x >>= 3;
         z >>= 3;
         long pos = ChunkPos.toLong(x, z);
@@ -173,11 +205,8 @@ public class WorldMap {
         });
     }
 
-    public File getDirectory() {
-        return this.directory;
-    }
-
     public void unload() {
+        this.markerManager.save();
         this.chunks.forEach((pos, chunk) -> chunk.unload());
         this.chunks.clear();
         this.regionFiles.clear();

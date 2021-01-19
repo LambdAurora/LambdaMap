@@ -22,12 +22,15 @@ import me.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import me.lambdaurora.lambdamap.gui.WorldMapScreen;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
+import me.lambdaurora.lambdamap.map.marker.Marker;
+import me.lambdaurora.lambdamap.map.marker.MarkerType;
 import me.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
@@ -36,6 +39,10 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.map.MapIcon;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
@@ -97,6 +104,20 @@ public class LambdaMap implements ClientModInitializer {
             }
 
             this.hud.updateTexture(this.getMap());
+
+            // @TODO move this to marker manager directly
+            ItemStack stack = client.player.getMainHandStack();
+            if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasTag()) {
+                CompoundTag tag = stack.getTag();
+                tag.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((CompoundTag) decoration)).forEach(decoration -> {
+                    MapIcon.Type type = MapIcon.Type.byId(decoration.getByte("type"));
+                    if (type.isAlwaysRendered()) {
+                        this.map.getMarkerManager().addMarker(new Marker(MarkerType.getVanillaMarkerType(type),
+                                (int) decoration.getDouble("x"), 64, (int) decoration.getDouble("z"),
+                                decoration.getFloat("rot"), null));
+                    }
+                });
+            }
         });
     }
 

@@ -20,6 +20,7 @@ package me.lambdaurora.lambdamap.gui;
 import me.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.lambdamap.map.WorldMap;
+import me.lambdaurora.lambdamap.map.marker.MarkerType;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
@@ -29,11 +30,9 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.map.MapIcon;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,6 +157,10 @@ public class WorldMapRenderer {
 
         int light = LightmapTextureManager.pack(15, 15);
         this.textureManager.render(matrices, vertexConsumers, light);
+
+        this.worldMap.getMarkerManager().streamMarkersInBox(this.cornerViewX - 5, this.cornerViewZ - 5, this.width + 10, this.height + 10)
+                .forEach(marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f, light));
+
         this.renderPlayerIcon(matrices, vertexConsumers, light);
     }
 
@@ -171,25 +174,12 @@ public class WorldMapRenderer {
 
         matrices.push();
         matrices.translate(pos.getX() - this.cornerViewX, pos.getZ() - this.cornerViewZ, .1f);
-        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(client.player.yaw));
-        matrices.scale(4.f, 4.f, 3.f);
-        matrices.translate(-0.125, 0.125, 0.0);
-        byte playerIconId = MapIcon.Type.PLAYER.getId();
-        float g = (float) (playerIconId % 16) / 16.f;
-        float h = (float) (playerIconId / 16) / 16.f;
-        float m = (float) (playerIconId % 16 + 1) / 16.f;
-        float n = (float) (playerIconId / 16 + 1) / 16.f;
-        Matrix4f model = matrices.peek().getModel();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(LambdaMap.MAP_ICONS);
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, 1.f, g, h, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, 1.f, m, h, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, -1.f, m, n, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, -1.f, g, n, light);
+        MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.yaw, null, light);
         matrices.pop();
     }
 
-    static void vertex(VertexConsumer vertexConsumer, Matrix4f model, float x, float y,
-                       float u, float v, int light) {
+    public static void vertex(VertexConsumer vertexConsumer, Matrix4f model, float x, float y,
+                              float u, float v, int light) {
         vertexConsumer.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
                 .texture(u, v).light(light).next();
     }
