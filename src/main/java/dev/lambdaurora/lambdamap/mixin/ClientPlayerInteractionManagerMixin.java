@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.mixin;
+package dev.lambdaurora.lambdamap.mixin;
 
-import me.lambdaurora.lambdamap.LambdaMap;
-import me.lambdaurora.lambdamap.map.WorldMap;
-import me.lambdaurora.lambdamap.map.marker.Marker;
+import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.marker.Marker;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map.marker;
+package dev.lambdaurora.lambdamap.map.marker;
 
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -24,7 +24,6 @@ import net.minecraft.item.map.MapBannerMarker;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;

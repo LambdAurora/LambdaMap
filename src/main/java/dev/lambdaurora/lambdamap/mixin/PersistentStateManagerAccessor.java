@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.mixin;
+package dev.lambdaurora.lambdamap.mixin;
 
 import net.minecraft.world.PersistentStateManager;
 import org.spongepowered.asm.mixin.Mixin;

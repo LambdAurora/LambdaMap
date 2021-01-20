@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map.marker;
+package dev.lambdaurora.lambdamap.map.marker;
 
 import java.util.Locale;
 

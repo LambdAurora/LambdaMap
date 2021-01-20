@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.mixin;
+package dev.lambdaurora.lambdamap.mixin;
 
-import me.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import org.jetbrains.annotations.Nullable;

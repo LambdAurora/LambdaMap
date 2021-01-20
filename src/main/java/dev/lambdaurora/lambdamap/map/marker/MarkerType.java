@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map.marker;
+package dev.lambdaurora.lambdamap.map.marker;
 
+import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import me.lambdaurora.lambdamap.LambdaMap;
-import me.lambdaurora.lambdamap.gui.WorldMapRenderer;
+import dev.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.RenderLayer;

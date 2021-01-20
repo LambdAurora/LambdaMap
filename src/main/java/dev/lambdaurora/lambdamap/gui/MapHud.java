@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.gui;
+package dev.lambdaurora.lambdamap.gui;
 
-import me.lambdaurora.lambdamap.LambdaMap;
-import me.lambdaurora.lambdamap.map.MapChunk;
-import me.lambdaurora.lambdamap.map.WorldMap;
-import me.lambdaurora.lambdamap.map.marker.MarkerType;
+import dev.lambdaurora.lambdamap.map.MapChunk;
+import dev.lambdaurora.lambdamap.map.marker.MarkerType;
+import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.WorldMap;
 import me.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;

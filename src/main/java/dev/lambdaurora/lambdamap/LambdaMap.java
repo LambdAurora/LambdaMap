@@ -15,23 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap;
+package dev.lambdaurora.lambdamap;
 
-import me.lambdaurora.lambdamap.gui.MapHud;
-import me.lambdaurora.lambdamap.gui.WorldMapRenderer;
-import me.lambdaurora.lambdamap.gui.WorldMapScreen;
-import me.lambdaurora.lambdamap.map.MapChunk;
-import me.lambdaurora.lambdamap.map.WorldMap;
-import me.lambdaurora.lambdamap.map.marker.Marker;
-import me.lambdaurora.lambdamap.map.marker.MarkerSource;
-import me.lambdaurora.lambdamap.map.marker.MarkerType;
-import me.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
+import dev.lambdaurora.lambdamap.gui.MapHud;
+import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
+import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
+import dev.lambdaurora.lambdamap.map.MapChunk;
+import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
+import dev.lambdaurora.lambdamap.map.WorldMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
@@ -39,14 +35,7 @@ import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.map.MapIcon;
-import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
@@ -60,8 +49,6 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents the LambdaMap mod.

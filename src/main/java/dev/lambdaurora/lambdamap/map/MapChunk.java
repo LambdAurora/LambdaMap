@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map;
+package dev.lambdaurora.lambdamap.map;
 
-import me.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

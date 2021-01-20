@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map.marker;
+package dev.lambdaurora.lambdamap.map.marker;
 
-import me.lambdaurora.lambdamap.map.WorldMap;
+import dev.lambdaurora.lambdamap.map.WorldMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;

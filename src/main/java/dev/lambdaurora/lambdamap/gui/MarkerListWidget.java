@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.gui;
+package dev.lambdaurora.lambdamap.gui;
 
-import me.lambdaurora.lambdamap.map.marker.Marker;
-import me.lambdaurora.lambdamap.map.marker.MarkerManager;
+import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
+import dev.lambdaurora.lambdamap.map.marker.Marker;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
 import me.lambdaurora.spruceui.widget.SpruceButtonWidget;

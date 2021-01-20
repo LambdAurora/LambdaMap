@@ -18,7 +18,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "me.lambdaurora.lambdamap.LambdaMap"
+      "dev.lambdaurora.lambdamap.LambdaMap"
     ]
   },
   "mixins": [

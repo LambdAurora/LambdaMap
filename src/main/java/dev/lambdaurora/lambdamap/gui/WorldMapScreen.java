@@ -15,14 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.gui;
+package dev.lambdaurora.lambdamap.gui;
 
-import me.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
 import me.lambdaurora.spruceui.background.SimpleColorBackground;
 import me.lambdaurora.spruceui.screen.SpruceScreen;
-import me.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
 import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
 import net.minecraft.client.gui.screen.Screen;

@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap.map.storage;
+package dev.lambdaurora.lambdamap.map.storage;
 
-import me.lambdaurora.lambdamap.map.MapChunk;
-import me.lambdaurora.lambdamap.map.WorldMap;
+import dev.lambdaurora.lambdamap.map.MapChunk;
+import dev.lambdaurora.lambdamap.map.WorldMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import org.apache.logging.log4j.LogManager;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.lambdaurora.lambdamap;
+package dev.lambdaurora.lambdamap;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
