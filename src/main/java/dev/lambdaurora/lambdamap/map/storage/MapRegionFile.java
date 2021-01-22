@@ -136,7 +136,7 @@ public class MapRegionFile implements Closeable {
             }
 
             CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(chunkBytes));
-            return MapChunk.fromTag(this, tag);
+            return MapChunk.fromNbt(this, tag);
         } catch (IOException e) {
             LOGGER.error("Failed to load chunk (" + x + ", " + z + ")", e);
         }
@@ -171,7 +171,7 @@ public class MapRegionFile implements Closeable {
     public synchronized void saveChunk(MapChunk chunk) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(8096);
         chunk.lock();
-        NbtIo.writeCompressed(chunk.toTag(), stream);
+        NbtIo.writeCompressed(chunk.toNbt(), stream);
         chunk.unlock();
 
         int size = stream.size();

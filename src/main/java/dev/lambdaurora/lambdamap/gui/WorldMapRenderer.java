@@ -158,8 +158,8 @@ public class WorldMapRenderer {
         int light = LightmapTextureManager.pack(15, 15);
         this.textureManager.render(matrices, vertexConsumers, light);
 
-        this.worldMap.getMarkerManager().streamMarkersInBox(this.cornerViewX - 5, this.cornerViewZ - 5, this.width + 10, this.height + 10)
-                .forEach(marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f, light));
+        this.worldMap.getMarkerManager().forEachInBox(this.cornerViewX - 5, this.cornerViewZ - 5, this.width + 10, this.height + 10,
+                marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f, light));
 
         this.renderPlayerIcon(matrices, vertexConsumers, light);
     }
@@ -178,9 +178,9 @@ public class WorldMapRenderer {
         matrices.pop();
     }
 
-    public static void vertex(VertexConsumer vertexConsumer, Matrix4f model, float x, float y,
+    public static void vertex(VertexConsumer vertices, Matrix4f model, float x, float y,
                               float u, float v, int light) {
-        vertexConsumer.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
+        vertices.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
                 .texture(u, v).light(light).next();
     }
 
@@ -332,20 +332,20 @@ public class WorldMapRenderer {
 
         public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int originX, int originY, int offsetX, int offsetY, int width, int height, int light) {
             Matrix4f model = matrices.peek().getModel();
-            VertexConsumer consumer = vertexConsumers.getBuffer(this.mapRenderLayer);
+            VertexConsumer vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
             float uOffset = offsetX / 128.f;
             float vOffset = offsetY / 128.f;
             float uWidth = width / 128.f;
             float vHeight = height / 128.f;
 
-            vertex(consumer, model, originX + offsetX, originY + height,
+            vertex(vertices, model, originX + offsetX, originY + height,
                     uOffset, vHeight, light);
-            vertex(consumer, model, originX + width, originY + height,
+            vertex(vertices, model, originX + width, originY + height,
                     uWidth, vHeight, light);
-            vertex(consumer, model, originX + width, originY + offsetY,
+            vertex(vertices, model, originX + width, originY + offsetY,
                     uWidth, vOffset, light);
-            vertex(consumer, model, originX + offsetX, originY + offsetY,
+            vertex(vertices, model, originX + offsetX, originY + offsetY,
                     uOffset, vOffset, light);
         }
     }

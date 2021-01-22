@@ -17,10 +17,10 @@
 
 package dev.lambdaurora.lambdamap.map.marker;
 
+import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import dev.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.RenderLayer;
@@ -50,23 +50,27 @@ public class MarkerType {
     public static final MarkerType PLAYER = registerVanilla(MapIcon.Type.PLAYER);
     public static final MarkerType TARGET_POINT = registerVanilla(MapIcon.Type.TARGET_POINT);
 
-    private final String key;
+    private final String id;
     private final RenderLayer renderLayer;
-    private final float u;
-    private final float v;
+    private final float uMin;
+    private final float vMin;
+    private final float uMax;
+    private final float vMax;
 
-    MarkerType(String key, RenderLayer renderLayer, float u, float v) {
-        this.key = key;
+    MarkerType(String id, RenderLayer renderLayer, float uMin, float vMin, float uMax, float vMax) {
+        this.id = id;
         this.renderLayer = renderLayer;
-        this.u = u;
-        this.v = v;
+        this.uMin = uMin;
+        this.vMin = vMin;
+        this.uMax = uMax;
+        this.vMax = vMax;
 
-        if (!TYPES.containsKey(this.key))
-            TYPES.put(this.key, this);
+        if (!TYPES.containsKey(this.id))
+            TYPES.put(this.id, this);
     }
 
-    public String getKey() {
-        return this.key;
+    public String getId() {
+        return this.id;
     }
 
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float rotation, @Nullable Text text, int light) {
@@ -74,14 +78,12 @@ public class MarkerType {
         matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(rotation));
         matrices.scale(4.f, 4.f, 3.f);
         matrices.translate(-0.125, 0.125, 0.0);
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(this.renderLayer);
+        VertexConsumer vertices = vertexConsumers.getBuffer(this.renderLayer);
         Matrix4f model = matrices.peek().getModel();
-        float right = this.u + 0.0625f;
-        float bottom = this.v + 0.0625f;
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, 1.f, this.u, this.v, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, 1.f, right, this.v, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 1.f, -1.f, right, bottom, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, -1.f, -1.f, this.u, bottom, light);
+        WorldMapRenderer.vertex(vertices, model, -1.f, 1.f, this.uMin, this.vMin, light);
+        WorldMapRenderer.vertex(vertices, model, 1.f, 1.f, this.uMax, this.vMin, light);
+        WorldMapRenderer.vertex(vertices, model, 1.f, -1.f, this.uMax, this.vMax, light);
+        WorldMapRenderer.vertex(vertices, model, -1.f, -1.f, this.uMin, this.vMax, light);
         matrices.pop();
 
         if (text != null) {
@@ -102,10 +104,12 @@ public class MarkerType {
     @Override
     public String toString() {
         return "MarkerType{" +
-                "key='" + this.key + '\'' +
+                "key='" + this.id + '\'' +
                 ", renderLayer=" + this.renderLayer +
-                ", u=" + this.u +
-                ", v=" + this.v +
+                ", uMin=" + this.uMin +
+                ", vMin=" + this.vMin +
+                ", uMax=" + this.uMax +
+                ", vMax=" + this.vMax +
                 '}';
     }
 
@@ -118,12 +122,18 @@ public class MarkerType {
     }
 
     public static MarkerType register(String key, Identifier texture, float u, float v) {
-        return new MarkerType(key, RenderLayer.getText(texture), u, v);
+        return register(key, texture, u, v, u + 0.0625f, v + 0.0625f);
+    }
+
+    public static MarkerType register(String key, Identifier texture, float uMin, float vMin, float uMax, float vMax) {
+        return new MarkerType(key, RenderLayer.getText(texture), uMin, vMin, uMax, vMax);
     }
 
     private static MarkerType registerVanilla(MapIcon.Type type) {
         byte id = type.getId();
-        return new MarkerType(type.name().toLowerCase(Locale.ROOT), LambdaMap.MAP_ICONS, (id % 16) / 16.f, (id / 16) / 16.f);
+        float uMin = (id % 16) / 16.f;
+        float vMin = (id / 16) / 16.f;
+        return new MarkerType(type.name().toLowerCase(Locale.ROOT), LambdaMap.MAP_ICONS, uMin, vMin, uMin + 0.0625f, vMin + 0.0625f);
     }
 
     static {

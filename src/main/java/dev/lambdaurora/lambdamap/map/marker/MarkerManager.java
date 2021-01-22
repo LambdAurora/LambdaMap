@@ -35,6 +35,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -42,7 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 /**
  * Manages the markers of a world map.
@@ -51,7 +52,7 @@ import java.util.stream.Stream;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class MarkerManager {
+public class MarkerManager implements Iterable<Marker> {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private final List<Marker> markers = new ArrayList<>();
@@ -84,14 +85,19 @@ public class MarkerManager {
         this.markers.remove(marker);
     }
 
-    public Stream<Marker> streamMarkers() {
-        return this.markers.stream();
+    @NotNull
+    @Override
+    public Iterator<Marker> iterator() {
+        return this.markers.iterator();
     }
 
-    public Stream<Marker> streamMarkersInBox(int startX, int startZ, int width, int height) {
-        int endX = startX + width;
-        int endZ = startZ + height;
-        return this.streamMarkers().filter(marker -> marker.getX() >= startX && marker.getZ() >= startZ && marker.getX() < endX && marker.getZ() < endZ);
+    public void forEachInBox(int minX, int minZ, int sizeX, int sizeZ, Consumer<Marker> consumer) {
+        int maxX = minX + sizeX;
+        int maxZ = minZ + sizeZ;
+        for (Marker marker : this.markers) {
+            if (marker.isIn(minX, minZ, maxX, maxZ))
+                consumer.accept(marker);
+        }
     }
 
     public void tick(ClientWorld world) {
@@ -143,7 +149,7 @@ public class MarkerManager {
     public void load() {
         if (this.file.exists()) {
             try {
-                this.fromTag(NbtIo.readCompressed(this.file));
+                this.fromNbt(NbtIo.readCompressed(this.file));
             } catch (IOException e) {
                 LOGGER.error("Failed to read markers from " + this.file + ".", e);
             }
@@ -152,21 +158,21 @@ public class MarkerManager {
 
     public void save() {
         try {
-            NbtIo.writeCompressed(this.toTag(), this.file);
+            NbtIo.writeCompressed(this.toNbt(), this.file);
         } catch (IOException e) {
             LOGGER.error("Failed to save markers to " + this.file + ".", e);
         }
     }
 
-    public void fromTag(CompoundTag tag) {
+    public void fromNbt(CompoundTag tag) {
         ListTag list = tag.getList("markers", NbtType.COMPOUND);
-        list.forEach(child -> this.markers.add(Marker.fromTag((CompoundTag) child)));
+        list.forEach(child -> this.markers.add(Marker.fromNbt((CompoundTag) child)));
     }
 
-    public CompoundTag toTag() {
+    public CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
         ListTag list = new ListTag();
-        this.markers.stream().map(Marker::toTag).forEach(list::add);
+        this.markers.stream().map(Marker::toNbt).forEach(list::add);
         tag.put("markers", list);
         return tag;
     }

@@ -54,7 +54,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
     public void rebuildList() {
         this.clearEntries();
-        this.markerManager.streamMarkers().forEach(this::addMarker);
+        this.markerManager.forEach(this::addMarker);
     }
 
     public void addMarker(Marker marker) {

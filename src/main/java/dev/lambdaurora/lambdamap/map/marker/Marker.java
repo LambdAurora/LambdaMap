@@ -124,6 +124,19 @@ public class Marker {
         this.name = name;
     }
 
+    /**
+     * Returns whether this marker is in the specified box.
+     *
+     * @param minX the minimum X-coordinate of the box
+     * @param minZ the minimum Z-coordinate of the box
+     * @param maxX the maximum X-coordinate of the box
+     * @param maxZ the maximum Z-coordinate of the box
+     * @return {@code true} if the marker is in the box, else {@code false}
+     */
+    public boolean isIn(int minX, int minZ, int maxX, int maxZ) {
+        return this.getX() >= minX && this.getZ() >= minZ && this.getX() < maxX && this.getZ() < maxZ;
+    }
+
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scaleCompensation, int light) {
         matrices.push();
         int x = this.getX() - startX;
@@ -134,9 +147,9 @@ public class Marker {
         matrices.pop();
     }
 
-    public CompoundTag toTag() {
+    public CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("type", this.type.getKey());
+        tag.putString("type", this.type.getId());
         tag.putString("source", this.source.getId());
         tag.putInt("x", this.x);
         tag.putInt("y", this.y);
@@ -166,7 +179,8 @@ public class Marker {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Marker marker = (Marker) o;
-        return x == marker.x && y == marker.y && z == marker.z && rotation == marker.rotation && Objects.equals(type, marker.type) && Objects.equals(name, marker.name);
+        return this.x == marker.x && this.y == marker.y && this.z == marker.z && this.rotation == marker.rotation
+                && Objects.equals(this.type, marker.type) && Objects.equals(this.name, marker.name);
     }
 
     @Override
@@ -183,7 +197,7 @@ public class Marker {
                 pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
     }
 
-    public static Marker fromTag(CompoundTag tag) {
+    public static Marker fromNbt(CompoundTag tag) {
         MarkerType type = MarkerType.getMarkerType(tag.getString("type"));
         Text name = null;
         if (tag.contains("name", NbtType.STRING))

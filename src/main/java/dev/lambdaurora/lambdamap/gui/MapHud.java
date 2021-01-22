@@ -17,10 +17,10 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
-import dev.lambdaurora.lambdamap.map.MapChunk;
-import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.lambdamap.map.WorldMap;
+import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import me.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
@@ -126,27 +126,26 @@ public class MapHud implements AutoCloseable {
         matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
         matrices.translate(-64 - 32, -64 - 32, 0);
         Matrix4f model = matrices.peek().getModel();
-        VertexConsumer vertexConsumer = immediate.getBuffer(this.mapRenderLayer);
-        WorldMapRenderer.vertex(vertexConsumer, model, 0.f, textureHeight, 0.f, 1.f, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, textureHeight, 1.f, 1.f, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, textureWidth, 0.f, 1.f, 0.f, light);
-        WorldMapRenderer.vertex(vertexConsumer, model, 0.f, 0.f, 0.f, 0.f, light);
+        VertexConsumer vertices = immediate.getBuffer(this.mapRenderLayer);
+        WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, 0.f, 1.f, light);
+        WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, 1.f, 1.f, light);
+        WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, 1.f, 0.f, light);
+        WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, 0.f, 0.f, light);
 
         {
             double cornerX = this.client.player.getX() - (textureWidth / 2.f);
             double cornerZ = this.client.player.getZ() - (textureWidth / 2.f);
-            LambdaMap.get().getMap().getMarkerManager().streamMarkersInBox((int) cornerX, (int) cornerZ, textureWidth, textureHeight)
-                    .forEach(marker -> {
-                        matrices.push();
+            LambdaMap.get().getMap().getMarkerManager().forEachInBox((int) cornerX, (int) cornerZ, textureWidth, textureHeight, marker -> {
+                matrices.push();
 
-                        float x = (float) (marker.getX() - cornerX);
-                        float z = (float) (marker.getZ() - cornerZ);
+                float x = (float) (marker.getX() - cornerX);
+                float z = (float) (marker.getZ() - cornerZ);
 
-                        matrices.translate(x, z, 1.f);
-                        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
-                        marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
-                        matrices.pop();
-                    });
+                matrices.translate(x, z, 1.f);
+                matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
+                marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
+                matrices.pop();
+            });
         }
         matrices.pop();
 

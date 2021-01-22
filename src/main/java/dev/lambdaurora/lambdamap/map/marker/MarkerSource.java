@@ -35,6 +35,11 @@ public enum MarkerSource {
         return this.name().toLowerCase(Locale.ROOT);
     }
 
+    @Override
+    public String toString() {
+        return this.getId();
+    }
+
     public static MarkerSource fromId(String id) {
         for (MarkerSource source : values()) {
             if (source.getId().equalsIgnoreCase(id))

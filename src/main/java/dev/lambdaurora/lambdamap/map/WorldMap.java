@@ -196,7 +196,7 @@ public class WorldMap {
         int cornerZ = mapState.zCenter - 64 * scale;
 
         Marker marker = markers.get(0);
-        for (MapIcon icon : mapState.method_32373()) {
+        for (MapIcon icon : mapState.getIcons()) {
             if (marker.getType() == MarkerType.getVanillaMarkerType(icon.getType())) {
                 int iconX = (int) (icon.getX() / 2.f + 64) * scale;
                 int iconZ = (int) (icon.getZ() / 2.f + 64) * scale;
@@ -237,10 +237,10 @@ public class WorldMap {
         int viewEndZ = this.viewZ + VIEW_RANGE;
 
         boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
-        this.chunks.long2ObjectEntrySet().removeIf(entry -> {
-            if (!(entry.getValue().isCenterInBox(playerViewStartX, playerViewStartZ, playerViewEndX, playerViewEndZ)
-                    || (hasViewer && entry.getValue().isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
-                entry.getValue().unload();
+        this.chunks.values().removeIf(chunk -> {
+            if (!(chunk.isCenterInBox(playerViewStartX, playerViewStartZ, playerViewEndX, playerViewEndZ)
+                    || (hasViewer && chunk.isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
+                chunk.unload();
                 return true;
             }
             return false;

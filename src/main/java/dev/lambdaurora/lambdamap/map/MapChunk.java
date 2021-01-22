@@ -136,7 +136,7 @@ public class MapChunk implements AutoCloseable {
         this.dirty = true;
     }
 
-    public CompoundTag toTag() {
+    public CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("x", this.x);
         tag.putInt("z", this.z);
@@ -216,7 +216,7 @@ public class MapChunk implements AutoCloseable {
         return coordinate >> 7;
     }
 
-    public static MapChunk fromTag(MapRegionFile regionFile, CompoundTag tag) {
+    public static MapChunk fromNbt(MapRegionFile regionFile, CompoundTag tag) {
         MapChunk chunk = new MapChunk(regionFile, tag.getInt("x"), tag.getInt("z"));
         byte[] colors = tag.getByteArray("colors");
         if (colors.length == 16384) {
