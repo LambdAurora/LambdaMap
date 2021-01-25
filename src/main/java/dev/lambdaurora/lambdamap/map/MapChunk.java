@@ -40,6 +40,7 @@ public class MapChunk implements AutoCloseable {
     private final MapRegionFile regionFile;
     private final Timer saveTimer;
     private boolean locked = false;
+    private boolean empty = true;
     private boolean dirty = false;
 
     public MapChunk(MapRegionFile regionFile, int x, int z) {
@@ -132,6 +133,10 @@ public class MapChunk implements AutoCloseable {
         this.locked = false;
     }
 
+    public boolean isEmpty() {
+        return this.empty;
+    }
+
     public void markDirty() {
         this.dirty = true;
     }
@@ -151,6 +156,8 @@ public class MapChunk implements AutoCloseable {
     public boolean putColor(int x, int z, byte color) {
         if (this.locked)
             return false;
+        if (color != 0 && this.empty)
+            this.empty = false;
         int index = this.getColorIndex(x, z);
         if (this.colors[index] != color) {
             this.colors[index] = color;
@@ -177,7 +184,7 @@ public class MapChunk implements AutoCloseable {
      * Saves the chunk if it's dirty.
      */
     public void save() {
-        if (!this.dirty || this.regionFile == null)
+        if (this.empty || !this.dirty || this.regionFile == null)
             return;
         try {
             this.lock();
@@ -205,10 +212,11 @@ public class MapChunk implements AutoCloseable {
     @Override
     public String toString() {
         return "MapChunk{" +
-                "x=" + x +
-                ", z=" + z +
-                ", locked=" + locked +
-                ", dirty=" + dirty +
+                "x=" + this.x +
+                ", z=" + this.z +
+                ", locked=" + this.locked +
+                ", empty=" + this.empty +
+                ", dirty=" + this.dirty +
                 '}';
     }
 
@@ -222,6 +230,7 @@ public class MapChunk implements AutoCloseable {
         if (colors.length == 16384) {
             chunk.colors = colors;
         }
+        chunk.empty = false;
         return chunk;
     }
 

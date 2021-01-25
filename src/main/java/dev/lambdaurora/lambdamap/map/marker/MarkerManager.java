@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Manages the markers of a world map.
@@ -165,15 +166,15 @@ public class MarkerManager implements Iterable<Marker> {
     }
 
     public void fromNbt(CompoundTag tag) {
+        this.markers.clear();
+
         ListTag list = tag.getList("markers", NbtType.COMPOUND);
         list.forEach(child -> this.markers.add(Marker.fromNbt((CompoundTag) child)));
     }
 
     public CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
-        ListTag list = new ListTag();
-        this.markers.stream().map(Marker::toNbt).forEach(list::add);
-        tag.put("markers", list);
+        tag.put("markers", this.markers.stream().map(Marker::toNbt).collect(Collectors.toCollection(ListTag::new)));
         return tag;
     }
 }

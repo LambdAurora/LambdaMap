@@ -101,16 +101,16 @@ public class WorldMap {
         return changed;
     }
 
-    public MapChunk getChunk(int x, int y) {
-        return this.getChunk(ChunkPos.toLong(x, y));
+    public MapChunk getChunk(int x, int z) {
+        return this.getChunk(ChunkPos.toLong(x, z));
     }
 
     public MapChunk getChunk(long pos) {
         return this.chunks.get(pos);
     }
 
-    public @Nullable MapChunk getChunkOrLoad(int x, int y) {
-        return this.getChunkOrLoad(ChunkPos.toLong(x, y));
+    public @Nullable MapChunk getChunkOrLoad(int x, int z) {
+        return this.getChunkOrLoad(ChunkPos.toLong(x, z));
     }
 
     public @Nullable MapChunk getChunkOrLoad(long pos) {

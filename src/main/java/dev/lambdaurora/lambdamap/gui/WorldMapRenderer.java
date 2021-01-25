@@ -33,6 +33,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,8 @@ import java.util.List;
  * @since 1.0.0
  */
 public class WorldMapRenderer {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     /**
      * Stores all the registered world map chunk textures.
      */
@@ -60,6 +64,8 @@ public class WorldMapRenderer {
     private int cornerViewX;
     private int cornerViewZ;
 
+    private int scale = 0;
+
     public WorldMapRenderer(LambdaMap mod) {
 
     }
@@ -73,11 +79,22 @@ public class WorldMapRenderer {
     public void allocate(int width, int height) {
         this.width = width;
         this.height = height;
+        this.scale = 1;
 
         int texturesX = this.width / 128 + 2;
         int texturesZ = this.height / 128 + 2;
 
         this.textureManager = new ChunkTextureManager(texturesZ, texturesX);
+    }
+
+    public void scale(int scale) {
+        this.scale = 1 << scale;
+
+        this.updateView(this.worldMap.getViewX(), this.worldMap.getViewZ());
+    }
+
+    public int scale() {
+        return this.scale;
     }
 
     /**
@@ -107,7 +124,7 @@ public class WorldMapRenderer {
     }
 
     /**
-     * Returns the width of the area .
+     * Returns the width of the area.
      *
      * @return the width
      */
@@ -115,23 +132,39 @@ public class WorldMapRenderer {
         return this.width;
     }
 
+    public int scaledWidth() {
+        return this.width() * this.scale();
+    }
+
+    /**
+     * Returns the height of the area.
+     *
+     * @return the height
+     */
     public int height() {
         return this.height;
+    }
+
+    public int scaledHeight() {
+        return this.height() * this.scale();
     }
 
     public void updateView(int x, int z) {
         this.worldMap.updateViewPos(x, z);
 
-        x -= this.width / 2;
-        z -= this.height / 2;
+        x -= (this.scaledWidth() / 2);
+        z -= (this.scaledHeight() / 2);
 
+        boolean shouldUpdate = false;
         if (this.cornerViewX != x && this.textureManager != null) {
             int oldChunkX = this.getCornerMapChunkX();
             int newChunkX = MapChunk.blockToChunk(x);
 
             if (oldChunkX != newChunkX) {
-                if (newChunkX < oldChunkX) this.textureManager.shiftLeft();
-                else this.textureManager.shiftRight();
+                int offset = Math.abs(newChunkX - oldChunkX);
+                //if (newChunkX < oldChunkX) for (int i = 0; i < offset; i++) this.textureManager.shiftLeft();
+                // else for (int i = 0; i < offset; i++) this.textureManager.shiftRight();
+                shouldUpdate = true;
             }
         }
 
@@ -140,15 +173,17 @@ public class WorldMapRenderer {
             int newChunkZ = MapChunk.blockToChunk(z);
 
             if (oldChunkZ != newChunkZ) {
-                if (newChunkZ < oldChunkZ) this.textureManager.shiftUp();
-                else this.textureManager.shiftDown();
+                int offset = Math.abs(newChunkZ - oldChunkZ);
+                //if (newChunkZ < oldChunkZ) for (int i = 0; i < offset; i++) this.textureManager.shiftUp();
+                //else for (int i = 0; i < offset; i++) this.textureManager.shiftDown();
+                shouldUpdate = true;
             }
         }
 
         this.cornerViewX = x;
         this.cornerViewZ = z;
 
-        if (this.textureManager != null)
+        if (this.textureManager != null && shouldUpdate)
             this.textureManager.updateTextures();
     }
 
@@ -158,8 +193,9 @@ public class WorldMapRenderer {
         int light = LightmapTextureManager.pack(15, 15);
         this.textureManager.render(matrices, vertexConsumers, light);
 
-        this.worldMap.getMarkerManager().forEachInBox(this.cornerViewX - 5, this.cornerViewZ - 5, this.width + 10, this.height + 10,
-                marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f, light));
+        this.worldMap.getMarkerManager().forEachInBox(this.cornerViewX - 5, this.cornerViewZ - 5,
+                this.scaledWidth() + 10, this.scaledHeight() + 10,
+                marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f / (float) this.scale, light));
 
         this.renderPlayerIcon(matrices, vertexConsumers, light);
     }
@@ -169,11 +205,12 @@ public class WorldMapRenderer {
 
         BlockPos pos = client.player.getBlockPos();
 
-        if (this.cornerViewX > pos.getX() || this.cornerViewZ > pos.getZ() || this.cornerViewX + this.width < pos.getX() || this.cornerViewZ + this.height < pos.getZ())
+        if (this.cornerViewX > pos.getX() || this.cornerViewZ > pos.getZ()
+                || this.cornerViewX + this.scaledWidth() < pos.getX() || this.cornerViewZ + this.scaledHeight() < pos.getZ())
             return;
 
         matrices.push();
-        matrices.translate(pos.getX() - this.cornerViewX, pos.getZ() - this.cornerViewZ, 1.1f);
+        matrices.translate((pos.getX() - this.cornerViewX) / (float) this.scale, (pos.getZ() - this.cornerViewZ) / (float) this.scale, 1.1f);
         MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.yaw, null, light);
         matrices.pop();
     }
@@ -247,18 +284,28 @@ public class WorldMapRenderer {
             int chunkX = WorldMapRenderer.this.getCornerMapChunkX();
             int chunkZ = WorldMapRenderer.this.getCornerMapChunkZ();
 
+            int scale = WorldMapRenderer.this.scale;
+            int count = 0;
+
+            long start = System.currentTimeMillis();
             for (int z = 0; z < this.textures.length; z++) {
                 ChunkTexture[] line = this.textures[z];
                 for (int x = 0; x < line.length; x++) {
-                    MapChunk chunk = WorldMapRenderer.this.worldMap.getChunkOrLoad(chunkX + x, chunkZ + z);
-                    line[x].update(chunk);
+                    line[x].update(WorldMapRenderer.this.worldMap, chunkX + x * scale, chunkZ + z * scale, scale);
+                    count++;
                 }
             }
+
+            LOGGER.debug("Took {}ms to update {} textures.", (System.currentTimeMillis() - start), count);
         }
 
         public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-            int originX = -((WorldMapRenderer.this.cornerX() & 127));
-            int originZ = -((WorldMapRenderer.this.cornerZ() & 127));
+            int scale = WorldMapRenderer.this.scale;
+            int cornerViewX = WorldMapRenderer.this.worldMap.getViewX() - width() / 2;
+            int cornerViewZ = WorldMapRenderer.this.worldMap.getViewZ() - height() / 2;
+            int limit = 127;
+            int originX = -((cornerViewX & limit));
+            int originZ = -((cornerViewZ & limit));
             int offsetZ = -originZ;
 
             for (int z = 0; z < this.textures.length; z++) {
@@ -311,23 +358,36 @@ public class WorldMapRenderer {
             TEXTURES.add(this);
         }
 
-        public void update(MapChunk chunk) {
-            for (int z = 0; z < 128; z++) {
-                for (int x = 0; x < 128; x++) {
-                    if (chunk == null) {
-                        texture.getImage().setPixelColor(x, z, 0x00000000);
+        public void update(WorldMap map, int chunkStartX, int chunkStartZ, int scale) {
+            MapChunk chunk = null;
+            for (int textureZ = 0; textureZ < 128; textureZ++) {
+                int z = textureZ * scale;
+                int chunkZ = chunkStartZ + z / 128;
+                for (int textureX = 0; textureX < 128; textureX++) {
+                    int x = textureX * scale;
+                    int chunkX = chunkStartX + x / 128;
+
+                    if (chunk == null || chunk.getX() != chunkX || chunk.getZ() != chunkZ) {
+                        chunk = map.getChunkOrCreate(chunkX, chunkZ);
+                    }
+
+                    if (chunk.isEmpty()) {
+                        texture.getImage().setPixelColor(textureX, textureZ, 0x00000000);
                     } else {
-                        int color = chunk.getColor(x, z) & 255;
-                        if (color / 4 == 0) {
-                            this.texture.getImage().setPixelColor(x, z, 0);
-                        } else {
-                            this.texture.getImage().setPixelColor(x, z, MapColor.COLORS[color / 4].getRenderColor(color & 3));
-                        }
+                        this.texture.getImage().setPixelColor(textureX, textureZ, this.getColor(chunk, x, z, scale));
                     }
                 }
             }
 
             this.texture.upload();
+        }
+
+        private int getColor(MapChunk chunk, int x, int z, int scale) {
+            int color = chunk.getColor(x, z) & 255;
+            if (color / 4 == 0)
+                return 0;
+            else
+                return MapColor.COLORS[color / 4].getRenderColor(color & 3);
         }
 
         public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int originX, int originY, int offsetX, int offsetY, int width, int height, int light) {

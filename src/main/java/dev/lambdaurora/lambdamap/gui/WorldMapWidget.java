@@ -24,12 +24,15 @@ import me.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 public class WorldMapWidget extends AbstractSpruceWidget {
     private final LambdaMap mod = LambdaMap.get();
     private final WorldMapRenderer renderer = this.mod.getRenderer();
+    private int intScale = 0;
+    private float scale = 1.f;
 
     public WorldMapWidget(@NotNull Position position, int width, int height) {
         super(position);
@@ -39,6 +42,29 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         this.renderer.allocate(this.getWidth(), this.getHeight() - 10);
         this.renderer.setWorldMap(this.mod.getMap());
     }
+
+    private void rescale(int amount) {
+        this.intScale = MathHelper.clamp(this.intScale + amount, -4, 3);
+
+        this.applyScale();
+    }
+
+    private void applyScale() {
+        float oldScale = this.scale;
+        if (this.intScale < 0)
+            this.scale = -this.intScale;
+        else
+            this.scale = 1.f;
+
+        if (oldScale != this.scale) {
+            float scaleCompensation = 1.f / this.scale;
+            this.renderer.allocate((int) (this.getWidth() * scaleCompensation), (int) ((this.getHeight() - 10) * scaleCompensation));
+        }
+
+        this.renderer.scale(Math.max(0, this.intScale));
+    }
+
+    /* Input */
 
     @Override
     protected boolean onMouseClick(double mouseX, double mouseY, int button) {
@@ -50,17 +76,30 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
             int viewX = this.mod.getMap().getViewX();
             int viewZ = this.mod.getMap().getViewZ();
-            this.renderer.updateView((int) (viewX - deltaX), (int) (viewZ - deltaY));
+            float scaleCompensation = 1.f / this.scale;
+            if (this.renderer.scale() != 1) {
+                scaleCompensation = this.renderer.scale();
+            }
+            this.renderer.updateView((int) (viewX - deltaX *this.renderer.scale()), (int) (viewZ - deltaY ));
             return true;
         }
         return super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
+    protected boolean onMouseScroll(double mouseX, double mouseY, double amount) {
+        this.rescale((int) -amount);
+        return true;
+    }
+
+    /* Rendering */
+
+    @Override
     protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         ScissorManager.push(this.getX(), this.getY(), this.getWidth(), this.getHeight() - 10);
         matrices.push();
         matrices.translate(this.getX(), this.getY(), 0);
+        matrices.scale(this.scale, this.scale, 1.f);
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         this.renderer.render(matrices, immediate);
         immediate.draw();
@@ -69,9 +108,19 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 
         int mouseXOffset = mouseX - 25;
         int mouseYOffset = mouseY - 25;
-        if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() && mouseYOffset > 0 && mouseYOffset < this.renderer.height()) {
-            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %d Z: %d", this.renderer.cornerX() + mouseXOffset, this.renderer.cornerZ() + mouseYOffset),
-                    this.getX() + this.getWidth() / 2, this.getHeight() - 9, 0xffffffff);
+        float scaleCompensation = 1.f / this.scale;
+        if (this.renderer.scale() != 1) {
+            scaleCompensation = this.renderer.scale();
         }
+        if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
+            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", this.renderer.cornerX() + mouseXOffset * scaleCompensation, this.renderer.cornerZ() + mouseYOffset * scaleCompensation),
+                    this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
+        }
+
+        String scale = "1:" + this.renderer.scale();
+        if (this.intScale < 0) {
+            scale = -this.intScale + ":1";
+        }
+        this.client.textRenderer.drawWithShadow(matrices, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
     }
 }
