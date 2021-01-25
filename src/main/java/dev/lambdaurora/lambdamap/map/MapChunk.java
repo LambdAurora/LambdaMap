@@ -18,6 +18,7 @@
 package dev.lambdaurora.lambdamap.map;
 
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import net.minecraft.block.MapColor;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -178,6 +179,23 @@ public class MapChunk implements AutoCloseable {
      */
     public byte getColor(int x, int z) {
         return this.colors[this.getColorIndex(x, z)];
+    }
+
+    /**
+     * Returns the ARGB color at the specified coordinates.
+     * <p>
+     * Coordinates can be absolute.
+     *
+     * @param x the X coordinate
+     * @param z the Z coordinate
+     * @return the ARGB color
+     */
+    public int getRenderColor(int x, int z) {
+        int color = this.getColor(x, z) & 255;
+        if (color / 4 == 0)
+            return 0;
+        else
+            return MapColor.COLORS[color / 4].getRenderColor(color & 3);
     }
 
     /**

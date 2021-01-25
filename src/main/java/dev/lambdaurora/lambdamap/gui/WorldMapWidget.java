@@ -80,7 +80,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             if (this.renderer.scale() != 1) {
                 scaleCompensation = this.renderer.scale();
             }
-            this.renderer.updateView((int) (viewX - deltaX *this.renderer.scale()), (int) (viewZ - deltaY ));
+            this.renderer.updateView((int) (viewX - deltaX * scaleCompensation), (int) (viewZ - deltaY * scaleCompensation));
             return true;
         }
         return super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);
