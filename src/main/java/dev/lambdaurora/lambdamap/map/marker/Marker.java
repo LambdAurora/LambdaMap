@@ -137,12 +137,12 @@ public class Marker {
         return this.getX() >= minX && this.getZ() >= minZ && this.getX() < maxX && this.getZ() < maxZ;
     }
 
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scaleCompensation, int light) {
+    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
         matrices.push();
         int x = this.getX() - startX;
         int z = this.getZ() - startZ;
 
-        matrices.translate(x * scaleCompensation, z * scaleCompensation, 1.f);
+        matrices.translate(x / scale, z / scale, 1.f);
         this.getType().render(matrices, vertexConsumers, this.getRotation(), this.getName(), light);
         matrices.pop();
     }

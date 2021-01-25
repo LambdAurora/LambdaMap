@@ -195,7 +195,7 @@ public class WorldMapRenderer {
 
         this.worldMap.getMarkerManager().forEachInBox(this.cornerViewX - 5, this.cornerViewZ - 5,
                 this.scaledWidth() + 10, this.scaledHeight() + 10,
-                marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, 1.f / (float) this.scale, light));
+                marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, this.scale, light));
 
         this.renderPlayerIcon(matrices, vertexConsumers, light);
     }

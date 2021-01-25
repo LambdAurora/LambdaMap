@@ -106,8 +106,8 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         matrices.pop();
         ScissorManager.pop();
 
-        int mouseXOffset = mouseX - 25;
-        int mouseYOffset = mouseY - 25;
+        int mouseXOffset = mouseX - this.getX();
+        int mouseYOffset = mouseY - this.getY();
         float scaleCompensation = 1.f / this.scale;
         if (this.renderer.scale() != 1) {
             scaleCompensation = this.renderer.scale();
