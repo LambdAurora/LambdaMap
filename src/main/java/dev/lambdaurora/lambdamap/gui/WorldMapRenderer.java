@@ -64,7 +64,7 @@ public class WorldMapRenderer {
     private int cornerViewX;
     private int cornerViewZ;
 
-    private int scale = 0;
+    private int scale = 1;
 
     public WorldMapRenderer(LambdaMap mod) {
 

@@ -20,7 +20,6 @@ package dev.lambdaurora.lambdamap.gui;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
-import me.lambdaurora.spruceui.background.SimpleColorBackground;
 import me.lambdaurora.spruceui.screen.SpruceScreen;
 import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
 import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
@@ -47,7 +46,7 @@ public class WorldMapScreen extends SpruceScreen {
         super.init();
 
         SpruceTabbedWidget tabs = this.addChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
-        tabs.getList().setBackground(new SimpleColorBackground(-1072689136));
+        tabs.getList().setBackground(RandomPrideFlagBackground.random());
         tabs.addTabEntry(new LiteralText("World Map"), new LiteralText("explore the world!").formatted(Formatting.GRAY),
                 (width, height) -> new WorldMapWidget(Position.origin(), width, height));
         tabs.addTabEntry(new LiteralText("Markers"), new LiteralText("mark places in your world!").formatted(Formatting.GRAY),
