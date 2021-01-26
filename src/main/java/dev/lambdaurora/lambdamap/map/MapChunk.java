@@ -484,7 +484,10 @@ public class MapChunk implements AutoCloseable {
      * @return {@code true} if the block state can be saved, else {@code false}
      */
     private static boolean filterBlockState(BlockState state) {
-        if (state.getBlock() == Blocks.GRASS_BLOCK)
+        if (state.getBlock() == Blocks.GRASS_BLOCK
+                || state.getBlock() == Blocks.GRASS
+                || state.getBlock() == Blocks.TALL_GRASS
+                || state.getBlock() == Blocks.VINE)
             return true;
         return state.isIn(BlockTags.LEAVES);
     }
