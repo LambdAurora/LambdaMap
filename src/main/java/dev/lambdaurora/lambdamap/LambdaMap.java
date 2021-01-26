@@ -21,8 +21,8 @@ import dev.lambdaurora.lambdamap.gui.MapHud;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
 import dev.lambdaurora.lambdamap.map.MapChunk;
-import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
 import dev.lambdaurora.lambdamap.map.WorldMap;
+import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -43,6 +43,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -181,6 +182,7 @@ public class LambdaMap implements ClientModInitializer {
                 }
 
                 MapColor mapColor = searcher.getState().getMapColor(world, searcher.pos);
+                Biome biome = world.getBiome(searcher.pos);
                 int shade;
 
                 if (mapColor == MapColor.WATER_BLUE) {
@@ -205,7 +207,11 @@ public class LambdaMap implements ClientModInitializer {
                 }
 
                 lastHeights[xOffset] = searcher.getHeight();
-                if (mapChunk.putColor(mapChunkStartX + xOffset, mapChunkStartZ + zOffset, (byte) (mapColor.id * 4 + shade))) {
+                int x = mapChunkStartX + xOffset;
+                int z = mapChunkStartZ + zOffset;
+                if (mapChunk.putColor(x, z, (byte) (mapColor.id * 4 + shade))
+                        || mapChunk.putBiome(x, z, biome)
+                        || mapChunk.putBlockState(x, z, searcher.getState())) {
                     this.hud.markDirty();
                 }
             }

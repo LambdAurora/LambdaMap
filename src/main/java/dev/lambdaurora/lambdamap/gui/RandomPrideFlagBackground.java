@@ -42,7 +42,7 @@ public class RandomPrideFlagBackground implements Background {
     private static final int[] TRANS_FLAG = new int[]{0xff5bcefa, 0xfff5a9b8, 0xffffffff, 0xfff5a9b8, 0xff5bcefa};
     private static final int[][] FLAGS = new int[][]{
             {}, // Show nothing
-            {0xff292929, 0xff784e16, 0xffd62900, 0xfffe8a00, 0xffffd800, 0xff3da542, 0xff5541ef, 0xff5541ef}, // LGBTQ+
+            {0xff292929, 0xff784e16, 0xffd62900, 0xfffe8a00, 0xffffd800, 0xff3da542, 0xff5541ef, 0xffad00dd}, // LGBTQ+
             {0xffd52d00, 0xffff9a56, 0xffffffff, 0xffd362a4, 0xff8a0253}, // lesbian
             {0xffd60270, 0xffd60270, 0xff9b4f96, 0xff0038a8, 0xff0038a8}, // bi
             TRANS_FLAG,

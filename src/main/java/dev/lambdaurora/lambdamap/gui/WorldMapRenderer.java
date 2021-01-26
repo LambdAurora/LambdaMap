@@ -18,10 +18,10 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
-import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -368,7 +368,6 @@ public class WorldMapRenderer {
         }
 
         public void update(WorldMap map, int chunkStartX, int chunkStartZ, int scale) {
-            MapChunk chunk = null;
             for (int textureZ = 0; textureZ < 128; textureZ++) {
                 int z = textureZ * scale;
                 int chunkZ = chunkStartZ + z / 128;
@@ -376,22 +375,16 @@ public class WorldMapRenderer {
                     int x = textureX * scale;
                     int chunkX = chunkStartX + x / 128;
 
-                    if (chunk == null || chunk.getX() != chunkX || chunk.getZ() != chunkZ) {
-                        chunk = map.getChunkOrCreate(chunkX, chunkZ);
-                    }
-
-                    if (chunk.isEmpty()) {
-                        texture.getImage().setPixelColor(textureX, textureZ, 0x00000000);
-                    } else {
-                        this.texture.getImage().setPixelColor(textureX, textureZ, chunk.getRenderColor(x, z));
-                    }
+                    this.texture.getImage().setPixelColor(textureX, textureZ, map.getRenderColor((chunkX << 7) + (x & 127), (chunkZ << 7) + (z & 127),
+                            ChunkGetterMode.CREATE));
                 }
             }
 
             this.texture.upload();
         }
 
-        public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY, float offsetX, float offsetY,
+        public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
+                           int offsetX, int offsetY,
                            float width, float height, int light) {
             Matrix4f model = matrices.peek().getModel();
             VertexConsumer vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
@@ -401,13 +394,18 @@ public class WorldMapRenderer {
             float uWidth = width / 128.f;
             float vHeight = height / 128.f;
 
-            vertex(vertices, model, originX + offsetX, originY + height,
+            float startX = originX + offsetX;
+            float startY = originY + offsetY;
+            float endX = originX + width;
+            float endY = originY + height;
+
+            vertex(vertices, model, startX, endY,
                     uOffset, vHeight, light);
-            vertex(vertices, model, originX + width, originY + height,
+            vertex(vertices, model, endX, originY + height,
                     uWidth, vHeight, light);
-            vertex(vertices, model, originX + width, originY + offsetY,
+            vertex(vertices, model, endX, originY + offsetY,
                     uWidth, vOffset, light);
-            vertex(vertices, model, originX + offsetX, originY + offsetY,
+            vertex(vertices, model, startX, startY,
                     uOffset, vOffset, light);
         }
     }

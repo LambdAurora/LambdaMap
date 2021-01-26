@@ -18,6 +18,7 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
@@ -72,23 +73,9 @@ public class MapHud implements AutoCloseable {
         BlockPos corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
         for (int z = 0; z < width; ++z) {
             int absoluteZ = corner.getZ() + z;
-            int chunkZ = MapChunk.blockToChunk(absoluteZ);
             for (int x = 0; x < height; ++x) {
                 int absoluteX = corner.getX() + x;
-                int chunkX = MapChunk.blockToChunk(absoluteX);
-
-                MapChunk chunk = map.getChunkOrLoad(chunkX, chunkZ);
-                if (chunk == null) {
-                    this.texture.getImage().setPixelColor(x, z, 0x00000000);
-                    continue;
-                }
-
-                int color = chunk.getColor(absoluteX, absoluteZ) & 255;
-                if (color / 4 == 0) {
-                    this.texture.getImage().setPixelColor(x, z, 0);
-                } else {
-                    this.texture.getImage().setPixelColor(x, z, MapColor.COLORS[color / 4].getRenderColor(color & 3));
-                }
+                this.texture.getImage().setPixelColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
             }
         }
 

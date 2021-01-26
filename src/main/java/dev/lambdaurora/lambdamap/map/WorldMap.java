@@ -18,17 +18,23 @@
 package dev.lambdaurora.lambdamap.map;
 
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
+import dev.lambdaurora.lambdamap.map.marker.Marker;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import dev.lambdaurora.lambdamap.util.ClientWorldWrapper;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import dev.lambdaurora.lambdamap.map.marker.Marker;
+import me.lambdaurora.spruceui.util.ColorUtil;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -99,6 +105,108 @@ public class WorldMap {
         if (!(client.currentScreen instanceof WorldMapScreen))
             this.updateViewPos(viewX, viewZ);
         return changed;
+    }
+
+    /**
+     * Returns the ARGB color at the specified coordinates.
+     * <p>
+     * Coordinates are absolute.
+     *
+     * @param x the X coordinate
+     * @param z the Z coordinate
+     * @param mode the chunk getter mode
+     * @return the ARGB color
+     */
+    public int getRenderColor(int x, int z, ChunkGetterMode mode) {
+        MapChunk chunk = mode.getChunk(this, MapChunk.blockToChunk(x), MapChunk.blockToChunk(z));
+        if (chunk == null || chunk.isEmpty())
+            return 0;
+        int index = chunk.getIndex(x, z);
+        int color = chunk.getColor(index) & 255;
+        if (color / 4 == 0)
+            return 0;
+        else {
+            MapColor mapColor = MapColor.COLORS[color / 4];
+            if (mapColor == MapColor.WATER_BLUE) {
+                Biome biome = chunk.getBiome(index);
+                if (biome != null) {
+                    return this.calculateWaterColor(x, z, biome, color & 3, mode);
+                }
+            } else {
+                BlockState state = chunk.getBlockState(index);
+                if (x >= 248 && x < 270 && z == 343) {
+                    System.out.printf("(%d, %d) %s %s %n", x, z, state, chunk);
+                }
+                if (state != null) {
+                    int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
+                    int[] blockColor = ColorUtil.unpackARGBColor(argb);
+                    blockColor[0] *= .7f;
+                    blockColor[1] *= .7f;
+                    blockColor[2] *= .7f;
+                    return applyShade(ColorUtil.packARGBColor(blockColor[0], blockColor[1], blockColor[2], blockColor[3]), color & 3);
+                }
+            }
+            return applyShade(mapColor.color, color & 3);
+        }
+    }
+
+    private int calculateWaterColor(int x, int z, Biome sourceBiome, int shade, ChunkGetterMode mode) {
+        int biomeBlendRadius = this.client.options.biomeBlendRadius;
+        if (biomeBlendRadius == 0) {
+            int[] waterColor = ColorUtil.unpackARGBColor(sourceBiome.getWaterColor());
+            waterColor[0] *= .7f;
+            waterColor[1] *= .7f;
+            waterColor[2] *= .7f;
+            return applyShade(ColorUtil.packARGBColor(waterColor[0], waterColor[1], waterColor[2], waterColor[3]), shade);
+        } else {
+            biomeBlendRadius = 2;
+            int multiplier = (biomeBlendRadius * 2 + 1) * (biomeBlendRadius * 2 + 1);
+            int r = 0;
+            int g = 0;
+            int b = 0;
+
+            for (int offsetZ = -biomeBlendRadius; offsetZ < biomeBlendRadius; offsetZ++) {
+                int resolveZ = z + offsetZ;
+                for (int offsetX = -biomeBlendRadius; offsetX < biomeBlendRadius; offsetX++) {
+                    int resolveX = x + offsetX;
+                    MapChunk chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
+                    if (chunk != null) {
+                        Biome biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
+                        int waterColor = MapColor.WATER_BLUE.color;
+                        if (biome != null) waterColor = biome.getWaterColor();
+                        r += (waterColor & 0x00ff0000) >> 16;
+                        g += (waterColor & 0x0000ff00) >> 8;
+                        b += waterColor & 0xff;
+                    } else multiplier--;
+                }
+            }
+
+            return applyShade(ColorUtil.packARGBColor(r / multiplier & 255, g / multiplier & 255, b / multiplier & 255, 0xff), shade);
+        }
+    }
+
+    private static int applyShade(int color, int shade) {
+        int modifier = 220;
+        if (shade == 3) {
+            modifier = 135;
+        }
+
+        if (shade == 2) {
+            modifier = 255;
+        }
+
+        if (shade == 1) {
+            modifier = 220;
+        }
+
+        if (shade == 0) {
+            modifier = 180;
+        }
+
+        int j = (color >> 16 & 255) * modifier / 255;
+        int k = (color >> 8 & 255) * modifier / 255;
+        int l = (color & 255) * modifier / 255;
+        return -16777216 | l << 16 | k << 8 | j;
     }
 
     public MapChunk getChunk(int x, int z) {

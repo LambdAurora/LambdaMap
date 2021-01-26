@@ -18,14 +18,29 @@
 package dev.lambdaurora.lambdamap.map;
 
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
-import net.minecraft.block.MapColor;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.PackedIntegerArray;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Represents a map chunk. A map chunk is 128x128 blocks represented by color IDs and shade value for height differences.
@@ -35,9 +50,13 @@ import java.util.TimerTask;
  * @since 1.0.0
  */
 public class MapChunk implements AutoCloseable {
+    private static final int SIZE = 16384;
+
     private final int x;
     private final int z;
-    private byte[] colors = new byte[16384];
+    private byte[] colors = new byte[SIZE];
+    private final Biome[] biomes = new Biome[SIZE];
+    private final BlockState[] blockStates = new BlockState[SIZE];
     private final MapRegionFile regionFile;
     private final Timer saveTimer;
     private boolean locked = false;
@@ -142,30 +161,18 @@ public class MapChunk implements AutoCloseable {
         this.dirty = true;
     }
 
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("x", this.x);
-        tag.putInt("z", this.z);
-        tag.putByteArray("colors", this.colors);
-        return tag;
-    }
-
-    private int getColorIndex(int x, int z) {
+    protected int getIndex(int x, int z) {
         return (x & 127) + (z & 127) * 128;
     }
 
-    public boolean putColor(int x, int z, byte color) {
-        if (this.locked)
-            return false;
-        if (color != 0 && this.empty)
-            this.empty = false;
-        int index = this.getColorIndex(x, z);
-        if (this.colors[index] != color) {
-            this.colors[index] = color;
-            this.markDirty();
-            return this.dirty;
-        }
-        return false;
+    /**
+     * Returns the color data at the specified index.
+     *
+     * @param index the index
+     * @return the color data
+     */
+    protected byte getColor(int index) {
+        return this.colors[index];
     }
 
     /**
@@ -178,24 +185,171 @@ public class MapChunk implements AutoCloseable {
      * @return the color data
      */
     public byte getColor(int x, int z) {
-        return this.colors[this.getColorIndex(x, z)];
+        return this.getColor(this.getIndex(x, z));
+    }
+
+    public boolean putColor(int x, int z, byte color) {
+        if (this.locked)
+            return false;
+        if (color != 0 && this.empty)
+            this.empty = false;
+        int index = this.getIndex(x, z);
+        if (this.colors[index] != color) {
+            this.colors[index] = color;
+            this.markDirty();
+            return this.dirty;
+        }
+        return false;
+    }
+
+    protected @Nullable Biome getBiome(int index) {
+        return this.biomes[index];
     }
 
     /**
-     * Returns the ARGB color at the specified coordinates.
+     * Returns the biome at the specified coordinates.
      * <p>
      * Coordinates can be absolute.
      *
      * @param x the X coordinate
      * @param z the Z coordinate
-     * @return the ARGB color
+     * @return the biome if present, else {@code null}
      */
-    public int getRenderColor(int x, int z) {
-        int color = this.getColor(x, z) & 255;
-        if (color / 4 == 0)
-            return 0;
-        else
-            return MapColor.COLORS[color / 4].getRenderColor(color & 3);
+    public @Nullable Biome getBiome(int x, int z) {
+        return this.getBiome(this.getIndex(x, z));
+    }
+
+    public boolean putBiome(int x, int z, @Nullable Biome biome) {
+        if (this.locked)
+            return false;
+        int index = this.getIndex(x, z);
+        if (this.biomes[index] != biome) {
+            this.biomes[index] = biome;
+            this.markDirty();
+            return this.dirty;
+        }
+        return false;
+    }
+
+    protected @Nullable BlockState getBlockState(int index) {
+        return this.blockStates[index];
+    }
+
+    /**
+     * Returns the block state at the specified coordinates.
+     * <p>
+     * Coordinates can be absolute.
+     *
+     * @param x the X coordinate
+     * @param z the Z coordinate
+     * @return the block state if present, else {@code null}
+     */
+    public @Nullable BlockState getBlockState(int x, int z) {
+        return this.getBlockState(this.getIndex(x, z));
+    }
+
+    public boolean putBlockState(int x, int z, @Nullable BlockState state) {
+        if (this.locked)
+            return false;
+
+        if (state != null && !filterBlockState(state)) {
+            state = null; // Do not save unnecessary block states.
+        }
+
+        int index = this.getIndex(x, z);
+        if (this.blockStates[index] != state) {
+            this.blockStates[index] = state;
+            this.markDirty();
+            return this.dirty;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the map chunk as NBT.
+     *
+     * @return the map chunk as NBT
+     */
+    public CompoundTag toNbt() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("x", this.x);
+        tag.putInt("z", this.z);
+        tag.putByteArray("colors", this.colors);
+
+        this.writeBiomesNbt(tag);
+        this.writeBlockPaletteNbt(tag);
+
+        return tag;
+    }
+
+    /**
+     * Writes the biomes to the NBT.
+     *
+     * @param tag the parent compound tag
+     */
+    private void writeBiomesNbt(CompoundTag tag) {
+        Registry<Biome> registry = getBiomesRegistry();
+        if (registry != null) {
+            Map<Biome, IntList> biomes = new Object2ObjectOpenHashMap<>();
+            for (int i = 0; i < this.biomes.length; i++) {
+                Biome biome = this.biomes[i];
+                biomes.computeIfAbsent(biome, o -> new IntArrayList()).add(i);
+            }
+
+            ListTag biomeList = new ListTag();
+            biomes.forEach((biome, indices) -> {
+                if (biome == null)
+                    return;
+                Identifier id = registry.getId(biome);
+                if (indices.size() == SIZE) {
+                    if (id != null)
+                        tag.putString("biome", id.toString());
+                } else if (id != null) {
+                    BitSet bitSet = new BitSet(SIZE);
+
+                    for (int i : indices) {
+                        bitSet.set(i);
+                    }
+
+                    CompoundTag biomeTag = new CompoundTag();
+                    biomeTag.putString("biome", id.toString());
+                    biomeTag.putByteArray("mask", bitSet.toByteArray());
+                    biomeList.add(biomeTag);
+                }
+            });
+            if (!biomeList.isEmpty())
+                tag.put("biomes", biomeList);
+        }
+    }
+
+    /**
+     * Writes the block palette as NBT.
+     *
+     * @param tag the parent compound tag
+     */
+    private void writeBlockPaletteNbt(CompoundTag tag) {
+        List<BlockState> palette = new ArrayList<>();
+        for (BlockState state : this.blockStates) {
+            if (state != null) {
+                if (!palette.contains(state))
+                    palette.add(state);
+            }
+        }
+
+        ListTag paletteTag = new ListTag();
+        palette.forEach(state -> paletteTag.add(NbtHelper.fromBlockState(state)));
+        tag.put("palette", paletteTag);
+
+        int bits = Math.max(4, MathHelper.log2DeBruijn(paletteTag.size() + 1));
+        PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE);
+
+        for (int i = 0; i < SIZE; i++) {
+            BlockState state = this.blockStates[i];
+            if (state == null) blockStates.set(i, 0);
+            else blockStates.set(i, palette.indexOf(state) + 1);
+        }
+
+        tag.putLongArray("block_states", blockStates.getStorage());
     }
 
     /**
@@ -245,10 +399,60 @@ public class MapChunk implements AutoCloseable {
     public static MapChunk fromNbt(MapRegionFile regionFile, CompoundTag tag) {
         MapChunk chunk = new MapChunk(regionFile, tag.getInt("x"), tag.getInt("z"));
         byte[] colors = tag.getByteArray("colors");
-        if (colors.length == 16384) {
+        if (colors.length == SIZE) {
             chunk.colors = colors;
         }
         chunk.empty = false;
+
+        return readBlockPaletteNbt(readBiomesNbt(chunk, tag), tag);
+    }
+
+    private static MapChunk readBiomesNbt(MapChunk chunk, CompoundTag tag) {
+        Registry<Biome> registry = getBiomesRegistry();
+        if (registry != null) {
+            if (tag.contains("biome", NbtType.STRING)) {
+                Identifier id = new Identifier(tag.getString("biome"));
+                Biome biome = registry.get(id);
+                if (biome != null) {
+                    for (int i = 0; i < SIZE; i++) chunk.biomes[i] = biome;
+                }
+            } else if (tag.contains("biomes", NbtType.LIST)) {
+                ListTag biomesList = tag.getList("biomes", NbtType.COMPOUND);
+                biomesList.stream().map(biomeTag -> (CompoundTag) biomeTag)
+                        .forEach(biomeTag -> {
+                            Identifier id = new Identifier(biomeTag.getString("biome"));
+                            Biome biome = registry.get(id);
+                            if (biome == null) return;
+
+                            BitSet bitSet = BitSet.valueOf(biomeTag.getByteArray("mask"));
+                            for (int i = 0; i < SIZE; i++) {
+                                if (bitSet.get(i))
+                                    chunk.biomes[i] = biome;
+                            }
+                        });
+            }
+        }
+        return chunk;
+    }
+
+    private static MapChunk readBlockPaletteNbt(MapChunk chunk, CompoundTag tag) {
+        if (tag.contains("palette", NbtType.LIST) && tag.contains("block_states", NbtType.LONG_ARRAY)) {
+            ListTag paletteTag = tag.getList("palette", NbtType.COMPOUND);
+            Int2ObjectMap<BlockState> palette = new Int2ObjectOpenHashMap<>();
+            for (int i = 0; i < paletteTag.size(); i++) {
+                palette.put(i + 1, NbtHelper.toBlockState(paletteTag.getCompound(i)));
+            }
+
+            int bits = Math.max(4, MathHelper.log2DeBruijn(paletteTag.size() + 1));
+            PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE, tag.getLongArray("block_states"));
+
+            for (int i = 0; i < SIZE; i++) {
+                int id = blockStates.get(i);
+                if (id != 0) {
+                    chunk.blockStates[i] = palette.get(id);
+                }
+            }
+        }
         return chunk;
     }
 
@@ -263,5 +467,25 @@ public class MapChunk implements AutoCloseable {
             return new MapChunk(null, x, z);
 
         return regionFile.loadChunkOrCreate(x, z);
+    }
+
+    private static @Nullable Registry<Biome> getBiomesRegistry() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() != null) {
+            return client.getNetworkHandler().getRegistryManager().get(Registry.BIOME_KEY);
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the block state can be saved in a map chunk.
+     *
+     * @param state the block state
+     * @return {@code true} if the block state can be saved, else {@code false}
+     */
+    private static boolean filterBlockState(BlockState state) {
+        if (state.getBlock() == Blocks.GRASS_BLOCK)
+            return true;
+        return state.isIn(BlockTags.LEAVES);
     }
 }
