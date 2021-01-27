@@ -18,13 +18,17 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.util.ScissorManager;
 import me.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -113,8 +117,24 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             scaleCompensation = this.renderer.scale();
         }
         if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
-            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", this.renderer.cornerX() + mouseXOffset * scaleCompensation, this.renderer.cornerZ() + mouseYOffset * scaleCompensation),
+            float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
+            float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
+            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
                     this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
+
+            MapChunk chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
+            if (chunk != null) {
+                Biome biome = chunk.getBiome((int) x, (int) z);
+                Registry<Biome> registry = MapChunk.getBiomesRegistry();
+                if (biome != null && registry != null) {
+                    Identifier id = registry.getId(biome);
+                    if (id != null) {
+                        int width = this.client.textRenderer.getWidth(id.toString());
+                        this.client.textRenderer.drawWithShadow(matrices, id.toString(),
+                                this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+                    }
+                }
+            }
         }
 
         String scale = "1:" + this.renderer.scale();

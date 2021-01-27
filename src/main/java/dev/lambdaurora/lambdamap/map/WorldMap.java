@@ -134,9 +134,6 @@ public class WorldMap {
                 }
             } else {
                 BlockState state = chunk.getBlockState(index);
-                if (x >= 248 && x < 270 && z == 343) {
-                    System.out.printf("(%d, %d) %s %s %n", x, z, state, chunk);
-                }
                 if (state != null) {
                     int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
                     int[] blockColor = ColorUtil.unpackARGBColor(argb);
@@ -195,10 +192,6 @@ public class WorldMap {
             modifier = 255;
         }
 
-        if (shade == 1) {
-            modifier = 220;
-        }
-
         if (shade == 0) {
             modifier = 180;
         }
@@ -209,11 +202,11 @@ public class WorldMap {
         return -16777216 | l << 16 | k << 8 | j;
     }
 
-    public MapChunk getChunk(int x, int z) {
+    public @Nullable MapChunk getChunk(int x, int z) {
         return this.getChunk(ChunkPos.toLong(x, z));
     }
 
-    public MapChunk getChunk(long pos) {
+    public @Nullable MapChunk getChunk(long pos) {
         return this.chunks.get(pos);
     }
 

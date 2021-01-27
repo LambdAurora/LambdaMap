@@ -33,6 +33,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,6 +69,10 @@ public class WorldMapRenderer {
 
     public WorldMapRenderer(LambdaMap mod) {
 
+    }
+
+    public WorldMap worldMap() {
+        return this.worldMap;
     }
 
     public void setWorldMap(WorldMap worldMap) {

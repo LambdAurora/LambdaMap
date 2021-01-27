@@ -469,7 +469,7 @@ public class MapChunk implements AutoCloseable {
         return regionFile.loadChunkOrCreate(x, z);
     }
 
-    private static @Nullable Registry<Biome> getBiomesRegistry() {
+    public static @Nullable Registry<Biome> getBiomesRegistry() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getNetworkHandler() != null) {
             return client.getNetworkHandler().getRegistryManager().get(Registry.BIOME_KEY);
