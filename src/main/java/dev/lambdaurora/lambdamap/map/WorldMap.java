@@ -34,6 +34,9 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +56,6 @@ import java.util.List;
 public class WorldMap {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final int PLAYER_RANGE = 128 + 32;
     private static final int VIEW_RANGE = 12800;
 
     private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
@@ -62,17 +64,21 @@ public class WorldMap {
     private final File directory;
     private final MarkerManager markerManager;
 
+    private final ClientWorld world;
+
     private int viewX = 0;
     private int viewZ = 0;
     private int playerViewX = 0;
     private int playerViewZ = 0;
 
-    public WorldMap(File directory) {
+    public WorldMap(ClientWorld world, File directory) {
         this.directory = directory;
         if (!this.directory.exists())
             this.directory.mkdirs();
         this.markerManager = new MarkerManager(this);
         this.markerManager.load();
+
+        this.world = world;
     }
 
     public File getDirectory() {
@@ -81,6 +87,18 @@ public class WorldMap {
 
     public MarkerManager getMarkerManager() {
         return this.markerManager;
+    }
+
+    public ClientWorld getWorld() {
+        return this.world;
+    }
+
+    public DynamicRegistryManager getRegistryManager() {
+        return this.world.getRegistryManager();
+    }
+
+    public Registry<Biome> getBiomeRegistry() {
+        return this.getRegistryManager().get(Registry.BIOME_KEY);
     }
 
     public int getViewX() {
@@ -219,7 +237,7 @@ public class WorldMap {
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.load(this.getOrLoadRegion(x, z), x, z);
+            chunk = MapChunk.load(this, x, z);
             if (chunk != null)
                 this.chunks.put(pos, chunk);
         }
@@ -230,7 +248,7 @@ public class WorldMap {
         long pos = ChunkPos.toLong(x, z);
         MapChunk chunk = this.getChunk(pos);
         if (chunk == null) {
-            chunk = MapChunk.loadOrCreate(this.getOrCreateRegion(x, z), x, z);
+            chunk = MapChunk.loadOrCreate(this, x, z);
             this.chunks.put(pos, chunk);
         }
         return chunk;
@@ -241,7 +259,7 @@ public class WorldMap {
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.loadOrCreate(this.getOrCreateRegion(x, z), x, z);
+            chunk = MapChunk.loadOrCreate(this, x, z);
             this.chunks.put(pos, chunk);
         }
         return chunk;
@@ -326,11 +344,17 @@ public class WorldMap {
         }
     }
 
-    public void tick(@Nullable ClientWorld world) {
-        int playerViewStartX = this.playerViewX - PLAYER_RANGE;
-        int playerViewStartZ = this.playerViewZ - PLAYER_RANGE;
-        int playerViewEndX = this.playerViewX + PLAYER_RANGE;
-        int playerViewEndZ = this.playerViewZ + PLAYER_RANGE;
+    public void tick() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        int viewDistance = Math.max(2, client.options.viewDistance - 2);
+
+        int chunkX = ChunkSectionPos.getSectionCoord(this.playerViewX);
+        int chunkZ = ChunkSectionPos.getSectionCoord(this.playerViewZ);
+
+        int playerViewStartX = (chunkX - viewDistance) >> 3;
+        int playerViewStartZ = (chunkZ - viewDistance) >> 3;
+        int playerViewEndX = (chunkX + viewDistance) >> 3;
+        int playerViewEndZ = (chunkZ + viewDistance) >> 3;
 
         int viewStartX = this.viewX - VIEW_RANGE;
         int viewStartZ = this.viewZ - VIEW_RANGE;
@@ -339,7 +363,7 @@ public class WorldMap {
 
         boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
         this.chunks.values().removeIf(chunk -> {
-            if (!(chunk.isCenterInBox(playerViewStartX, playerViewStartZ, playerViewEndX, playerViewEndZ)
+            if (!((chunk.getX() >= playerViewStartX && chunk.getX() <= playerViewEndX && chunk.getZ() >= playerViewStartZ && chunk.getZ() <= playerViewEndZ)
                     || (hasViewer && chunk.isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
                 chunk.unload();
                 return true;
@@ -347,9 +371,7 @@ public class WorldMap {
             return false;
         });
 
-        if (world != null) {
-            this.getMarkerManager().tick(world);
-        }
+        this.getMarkerManager().tick(this.world);
     }
 
     public void unload() {

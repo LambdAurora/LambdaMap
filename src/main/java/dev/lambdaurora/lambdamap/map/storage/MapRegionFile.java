@@ -47,12 +47,14 @@ public class MapRegionFile implements Closeable {
     private static final long INVALID_CHUNK = 0xffffffff;
 
     private final WorldMap worldMap;
+    private final File file;
     private final RandomAccessFile raf;
     private final Header header;
     private int loadedChunks = 0;
 
-    public MapRegionFile(WorldMap worldMap, RandomAccessFile raf, Header header) {
+    public MapRegionFile(WorldMap worldMap, File file, RandomAccessFile raf, Header header) {
         this.worldMap = worldMap;
+        this.file = file;
         this.raf = raf;
         this.header = header;
     }
@@ -65,11 +67,20 @@ public class MapRegionFile implements Closeable {
         return this.header.getZ();
     }
 
+    /**
+     * Returns the world map of this region file.
+     *
+     * @return the world map
+     */
+    public WorldMap worldMap() {
+        return this.worldMap;
+    }
+
     public void incrementLoadedChunk() {
         this.loadedChunks++;
     }
 
-    private static MapRegionFile open(WorldMap worldMap, int x, int z, File file) throws IOException {
+    private static MapRegionFile open(WorldMap map, int x, int z, File file) throws IOException {
         boolean exists = file.exists();
 
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -82,7 +93,7 @@ public class MapRegionFile implements Closeable {
             header.read();
         }
 
-        return new MapRegionFile(worldMap, raf, header);
+        return new MapRegionFile(map, file, raf, header);
     }
 
     /**
@@ -146,7 +157,7 @@ public class MapRegionFile implements Closeable {
     public @NotNull MapChunk loadChunkOrCreate(int x, int z) {
         MapChunk chunk = this.loadChunk(x, z);
         if (chunk == null) {
-            chunk = new MapChunk(this, x, z);
+            chunk = new MapChunk(this.worldMap(), this, x, z);
         }
         return chunk;
     }
@@ -169,6 +180,9 @@ public class MapRegionFile implements Closeable {
     }
 
     public synchronized void saveChunk(MapChunk chunk) throws IOException {
+        if (chunk.isEmpty())
+            return;
+
         ByteArrayOutputStream stream = new ByteArrayOutputStream(8096);
         chunk.lock();
         NbtIo.writeCompressed(chunk.toNbt(), stream);
@@ -223,8 +237,19 @@ public class MapRegionFile implements Closeable {
     @Override
     public void close() throws IOException {
         this.header.write();
+
+        boolean empty = this.header.isEmpty();
+
         this.raf.close();
         this.worldMap.unloadRegion(this);
+
+        if (empty) {
+            if (!this.file.delete()) {
+                LOGGER.warn("Failed to delete empty region file {}.", this.file);
+            } else {
+                LOGGER.debug("Deleted empty region file {}.", this.file);
+            }
+        }
     }
 
     /**
@@ -327,6 +352,14 @@ public class MapRegionFile implements Closeable {
 
         public boolean hasChunk(int x, int z) {
             return this.getChunkEntry(x, z) != INVALID_CHUNK;
+        }
+
+        public boolean isEmpty() {
+            for (int i = 0; i < CHUNKS; i++) {
+                if (this.getChunkEntry(i) != INVALID_CHUNK)
+                    return false;
+            }
+            return true;
         }
     }
 }

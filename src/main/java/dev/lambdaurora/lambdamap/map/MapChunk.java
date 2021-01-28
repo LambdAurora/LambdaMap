@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
@@ -52,6 +51,7 @@ import java.util.*;
 public class MapChunk implements AutoCloseable {
     private static final int SIZE = 16384;
 
+    private final WorldMap worldMap;
     private final int x;
     private final int z;
     private byte[] colors = new byte[SIZE];
@@ -63,7 +63,8 @@ public class MapChunk implements AutoCloseable {
     private boolean empty = true;
     private boolean dirty = false;
 
-    public MapChunk(MapRegionFile regionFile, int x, int z) {
+    public MapChunk(WorldMap worldMap, MapRegionFile regionFile, int x, int z) {
+        this.worldMap = worldMap;
         this.x = x;
         this.z = z;
         this.regionFile = regionFile;
@@ -265,6 +266,13 @@ public class MapChunk implements AutoCloseable {
         return false;
     }
 
+    public boolean putPixel(int x, int z, byte color, @Nullable Biome biome, @Nullable BlockState state) {
+        this.putColor(x, z, color);
+        this.putBiome(x, z, biome);
+        this.putBlockState(x, z, state);
+        return this.dirty;
+    }
+
     /**
      * Returns the map chunk as NBT.
      *
@@ -288,7 +296,7 @@ public class MapChunk implements AutoCloseable {
      * @param tag the parent compound tag
      */
     private void writeBiomesNbt(CompoundTag tag) {
-        Registry<Biome> registry = getBiomesRegistry();
+        Registry<Biome> registry = this.worldMap.getBiomeRegistry();
         if (registry != null) {
             Map<Biome, IntList> biomes = new Object2ObjectOpenHashMap<>();
             for (int i = 0; i < this.biomes.length; i++) {
@@ -397,7 +405,7 @@ public class MapChunk implements AutoCloseable {
     }
 
     public static MapChunk fromNbt(MapRegionFile regionFile, CompoundTag tag) {
-        MapChunk chunk = new MapChunk(regionFile, tag.getInt("x"), tag.getInt("z"));
+        MapChunk chunk = new MapChunk(regionFile.worldMap(), regionFile, tag.getInt("x"), tag.getInt("z"));
         byte[] colors = tag.getByteArray("colors");
         if (colors.length == SIZE) {
             chunk.colors = colors;
@@ -408,7 +416,7 @@ public class MapChunk implements AutoCloseable {
     }
 
     private static MapChunk readBiomesNbt(MapChunk chunk, CompoundTag tag) {
-        Registry<Biome> registry = getBiomesRegistry();
+        Registry<Biome> registry = chunk.worldMap.getBiomeRegistry();
         if (registry != null) {
             if (tag.contains("biome", NbtType.STRING)) {
                 Identifier id = new Identifier(tag.getString("biome"));
@@ -456,25 +464,19 @@ public class MapChunk implements AutoCloseable {
         return chunk;
     }
 
-    public static @Nullable MapChunk load(MapRegionFile regionFile, int x, int z) {
+    public static @Nullable MapChunk load(WorldMap map, int x, int z) {
+        MapRegionFile regionFile = map.getOrLoadRegion(x, z);
         if (regionFile != null)
             return regionFile.loadChunk(x, z);
         return null;
     }
 
-    public static @NotNull MapChunk loadOrCreate(MapRegionFile regionFile, int x, int z) {
+    public static @NotNull MapChunk loadOrCreate(WorldMap map, int x, int z) {
+        MapRegionFile regionFile = map.getOrCreateRegion(x, z);
         if (regionFile == null)
-            return new MapChunk(null, x, z);
+            return new MapChunk(map, null, x, z);
 
         return regionFile.loadChunkOrCreate(x, z);
-    }
-
-    public static @Nullable Registry<Biome> getBiomesRegistry() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.getNetworkHandler() != null) {
-            return client.getNetworkHandler().getRegistryManager().get(Registry.BIOME_KEY);
-        }
-        return null;
     }
 
     /**

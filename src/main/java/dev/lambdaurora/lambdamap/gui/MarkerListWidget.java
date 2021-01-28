@@ -17,8 +17,8 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
-import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.lambdamap.map.marker.Marker;
+import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
 import me.lambdaurora.spruceui.widget.SpruceButtonWidget;

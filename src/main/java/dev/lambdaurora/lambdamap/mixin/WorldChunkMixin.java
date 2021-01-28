@@ -17,24 +17,28 @@
 
 package dev.lambdaurora.lambdamap.mixin;
 
-import dev.lambdaurora.lambdamap.LambdaMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
+import dev.lambdaurora.lambdamap.extension.WorldChunkExtension;
+import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin {
-    @Inject(method = "setWorld", at = @At("HEAD"))
-    private void onSetWorld(ClientWorld world, CallbackInfo ci) {
-        MinecraftClient client = (MinecraftClient) (Object) this;
+@Mixin(WorldChunk.class)
+public class WorldChunkMixin implements WorldChunkExtension {
+    @Unique
+    private boolean lambdamap$dirty;
 
-        LambdaMap.get().unloadMap();
+    @Override
+    public boolean lambdamap$isDirty() {
+        return this.lambdamap$dirty;
+    }
 
-        if (world != null) {
-            LambdaMap.get().loadMap(client, world);
-        }
+    @Override
+    public void lambdamap$markDirty() {
+        this.lambdamap$dirty = true;
+    }
+
+    @Override
+    public void lambdamap$markClean() {
+        this.lambdamap$dirty = false;
     }
 }

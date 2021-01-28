@@ -33,7 +33,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,7 +77,7 @@ public class WorldMapRenderer {
     public void setWorldMap(WorldMap worldMap) {
         this.worldMap = worldMap;
 
-        this.updateView(worldMap.getViewX(), worldMap.getViewZ());
+        this.updateView(worldMap.getViewX(), worldMap.getViewZ(), true);
     }
 
     public void allocate(int width, int height) {
@@ -167,6 +166,10 @@ public class WorldMapRenderer {
     }
 
     public void updateView(int x, int z) {
+        this.updateView(x, z, false);
+    }
+
+    public void updateView(int x, int z, boolean forceUpdate) {
         this.worldMap.updateViewPos(x, z);
 
         x -= (this.scaledWidth() / 2);
@@ -200,8 +203,14 @@ public class WorldMapRenderer {
         this.cornerViewX = x;
         this.cornerViewZ = z;
 
-        if (this.textureManager != null && shouldUpdate)
+        if (shouldUpdate || forceUpdate)
+            this.update();
+    }
+
+    public void update() {
+        if (this.textureManager != null) {
             this.textureManager.updateTextures();
+        }
     }
 
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers) {

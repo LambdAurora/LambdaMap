@@ -17,24 +17,13 @@
 
 package dev.lambdaurora.lambdamap.mixin;
 
-import dev.lambdaurora.lambdamap.LambdaMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
+import net.minecraft.util.math.ChunkSectionPos;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin {
-    @Inject(method = "setWorld", at = @At("HEAD"))
-    private void onSetWorld(ClientWorld world, CallbackInfo ci) {
-        MinecraftClient client = (MinecraftClient) (Object) this;
-
-        LambdaMap.get().unloadMap();
-
-        if (world != null) {
-            LambdaMap.get().loadMap(client, world);
-        }
-    }
+@Mixin(ChunkDeltaUpdateS2CPacket.class)
+public interface ChunkDeltaUpdateS2CPacketAccessor {
+    @Accessor
+    ChunkSectionPos getSectionPos();
 }

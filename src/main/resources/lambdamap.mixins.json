@@ -3,9 +3,12 @@
   "package": "dev.lambdaurora.lambdamap.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "ChunkDeltaUpdateS2CPacketAccessor",
     "ClientPlayerInteractionManagerMixin",
+    "ClientPlayNetworkHandlerMixin",
     "MinecraftClientMixin",
-    "PersistentStateManagerAccessor"
+    "PersistentStateManagerAccessor",
+    "WorldChunkMixin"
   ],
   "injectors": {
     "defaultRequire": 1

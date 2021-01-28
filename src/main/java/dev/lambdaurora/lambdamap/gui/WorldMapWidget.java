@@ -125,7 +125,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             MapChunk chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
             if (chunk != null) {
                 Biome biome = chunk.getBiome((int) x, (int) z);
-                Registry<Biome> registry = MapChunk.getBiomesRegistry();
+                Registry<Biome> registry = this.renderer.worldMap().getBiomeRegistry();
                 if (biome != null && registry != null) {
                     Identifier id = registry.getId(biome);
                     if (id != null) {

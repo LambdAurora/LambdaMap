@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap;
 
+import dev.lambdaurora.lambdamap.extension.WorldChunkExtension;
 import dev.lambdaurora.lambdamap.gui.MapHud;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
@@ -35,6 +36,7 @@ import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -69,6 +71,8 @@ public class LambdaMap implements ClientModInitializer {
     private WorldMap map = null;
     public MapHud hud = null;
 
+    private int updatedChunks = 0;
+
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
@@ -86,7 +90,7 @@ public class LambdaMap implements ClientModInitializer {
             if (this.map.updatePlayerViewPos(client.player.getBlockX(), client.player.getBlockZ())) {
                 this.hud.markDirty();
             }
-            this.map.tick(world);
+            this.map.tick();
             this.updateChunks(world, client.player);
 
             if (this.hudKeybind.wasPressed()) {
@@ -109,33 +113,62 @@ public class LambdaMap implements ClientModInitializer {
         return this.renderer;
     }
 
-    public void loadMap(MinecraftClient client, RegistryKey<World> worldKey) {
+    public void loadMap(MinecraftClient client, ClientWorld world) {
         File directory;
         if (client.getServer() != null) {
-            directory = getWorldMapDirectorySP(client, worldKey);
+            directory = getWorldMapDirectorySP(client, world.getRegistryKey());
         } else {
-            directory = getWorldMapDirectoryMP(client, worldKey);
+            directory = getWorldMapDirectoryMP(client, world.getRegistryKey());
         }
-        this.map = new WorldMap(directory);
+        this.map = new WorldMap(world, directory);
         this.renderer.setWorldMap(this.map);
     }
 
     public void unloadMap() {
-        this.map.unload();
-        this.map = null;
+        if (this.map != null) {
+            this.map.unload();
+            this.map = null;
+        }
+    }
+
+    public void onBlockUpdate(int x, int z) {
+        int chunkX = ChunkSectionPos.getSectionCoord(x);
+        int chunkZ = ChunkSectionPos.getSectionCoord(z);
+        int localX = ChunkSectionPos.getLocalCoord(x);
+        int localZ = ChunkSectionPos.getLocalCoord(z);
+
+        if (localX >= 2 && localX < 14 && localZ >= 2 && localZ < 14) {
+            WorldChunk chunk = this.map.getWorld().getChunk(chunkX, chunkZ);
+            if (chunk != null) {
+                ((WorldChunkExtension) chunk).lambdamap$markDirty();
+            }
+        } else this.onChunkUpdate(chunkX, chunkZ);
+    }
+
+    public void onChunkUpdate(int chunkX, int chunkZ) {
+        for (int x = chunkX - 1; x < chunkX + 2; ++x) {
+            for (int z = chunkZ - 1; z < chunkZ + 2; ++z) {
+                WorldChunk chunk = this.map.getWorld().getChunk(x, z);
+                if (chunk != null) {
+                    ((WorldChunkExtension) chunk).lambdamap$markDirty();
+                }
+            }
+        }
     }
 
     public void updateChunks(World world, PlayerEntity entity) {
         ChunkPos pos = entity.getChunkPos();
-        for (int x = pos.x - 4; x < pos.x + 5; x++) {
-            for (int z = pos.z - 4; z < pos.z + 5; z++) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        int viewDistance = Math.max(2, client.options.viewDistance - 2);
+        this.updatedChunks = 0;
+        for (int x = pos.x - viewDistance; x <= pos.x + viewDistance; x++) {
+            for (int z = pos.z - viewDistance; z <= pos.z + viewDistance; z++) {
                 this.updateChunk(world, x, z);
             }
         }
     }
 
     public void updateChunk(World world, int chunkX, int chunkZ) {
-        MapChunk mapChunk = this.map.getChunkOrCreate(chunkX >> 3, chunkZ >> 3);
         int chunkStartX = ChunkSectionPos.getBlockCoord(chunkX);
         int chunkStartZ = ChunkSectionPos.getBlockCoord(chunkZ);
         int mapChunkStartX = chunkStartX & 127;
@@ -157,7 +190,17 @@ public class LambdaMap implements ClientModInitializer {
         Chunk chunk = world.getChunk(chunkX, chunkZ, ChunkStatus.SURFACE, false);
         if (chunk == null)
             return;
+
+        if (chunk instanceof WorldChunkExtension) {
+            if (!((WorldChunkExtension) chunk).lambdamap$isDirty())
+                return;
+        }
+
+        this.updatedChunks++;
+
         Heightmap chunkHeightmap = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE);
+
+        MapChunk mapChunk = this.map.getChunkOrCreate(chunkX >> 3, chunkZ >> 3);
 
         for (int xOffset = 0; xOffset < 16; xOffset++) {
             if (!chunkBefore.isEmpty()) {
@@ -209,12 +252,14 @@ public class LambdaMap implements ClientModInitializer {
                 lastHeights[xOffset] = searcher.getHeight();
                 int x = mapChunkStartX + xOffset;
                 int z = mapChunkStartZ + zOffset;
-                if (mapChunk.putColor(x, z, (byte) (mapColor.id * 4 + shade))
-                        || mapChunk.putBiome(x, z, biome)
-                        || mapChunk.putBlockState(x, z, searcher.getState())) {
+                if (mapChunk.putPixel(x, z, (byte) (mapColor.id * 4 + shade), biome, searcher.getState())) {
                     this.hud.markDirty();
                 }
             }
+        }
+
+        if (chunk instanceof WorldChunkExtension) {
+            ((WorldChunkExtension) chunk).lambdamap$markClean();
         }
     }
 
