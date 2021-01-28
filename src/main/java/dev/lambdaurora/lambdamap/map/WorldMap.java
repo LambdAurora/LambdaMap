@@ -154,11 +154,7 @@ public class WorldMap {
                 BlockState state = chunk.getBlockState(index);
                 if (state != null) {
                     int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
-                    int[] blockColor = ColorUtil.unpackARGBColor(argb);
-                    blockColor[0] *= .7f;
-                    blockColor[1] *= .7f;
-                    blockColor[2] *= .7f;
-                    return applyShade(ColorUtil.packARGBColor(blockColor[0], blockColor[1], blockColor[2], blockColor[3]), color & 3);
+                    return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
                 }
             }
             return applyShade(mapColor.color, color & 3);
@@ -168,11 +164,7 @@ public class WorldMap {
     private int calculateWaterColor(int x, int z, Biome sourceBiome, int shade, ChunkGetterMode mode) {
         int biomeBlendRadius = this.client.options.biomeBlendRadius;
         if (biomeBlendRadius == 0) {
-            int[] waterColor = ColorUtil.unpackARGBColor(sourceBiome.getWaterColor());
-            waterColor[0] *= .7f;
-            waterColor[1] *= .7f;
-            waterColor[2] *= .7f;
-            return applyShade(ColorUtil.packARGBColor(waterColor[0], waterColor[1], waterColor[2], waterColor[3]), shade);
+            return applyShade(ColorUtil.argbDarken(sourceBiome.getWaterColor()), shade);
         } else {
             biomeBlendRadius = 2;
             int multiplier = (biomeBlendRadius * 2 + 1) * (biomeBlendRadius * 2 + 1);

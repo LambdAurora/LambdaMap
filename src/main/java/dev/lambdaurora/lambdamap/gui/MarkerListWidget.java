@@ -19,17 +19,21 @@ package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.map.marker.Marker;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
+import dev.lambdaurora.lambdamap.map.marker.MarkerSource;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
 import me.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import me.lambdaurora.spruceui.widget.SpruceWidget;
 import me.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
 import me.lambdaurora.spruceui.widget.container.SpruceParentWidget;
+import me.lambdaurora.spruceui.widget.text.SpruceTextFieldWidget;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +75,21 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             this.parent = parent;
             this.marker = marker;
 
+            SpruceTextFieldWidget fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), 150, 20, new LiteralText("Marker Name Field"));
+            if (marker.getName() != null)
+                fieldWidget.setText(marker.getName().getString());
+            if (marker.getSource() != MarkerSource.BANNER)
+                fieldWidget.setChangedListener(newName -> marker.setName(new LiteralText(newName)));
+            else {
+                fieldWidget.setActive(false);
+                fieldWidget.setRenderTextProvider((displayedText, offset) -> {
+                    Style style = Style.EMPTY;
+                    if (marker.getName() != null)
+                        style = marker.getName().getStyle();
+                    return OrderedText.styledString(displayedText, style);
+                });
+            }
+            this.children.add(fieldWidget);
             this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
                     btn -> {
                         this.parent.markerManager.removeMarker(this.marker);
@@ -107,6 +126,14 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             this.focused = focused;
             if (this.focused != null)
                 this.focused.setFocused(true);
+        }
+
+        @Override
+        public void setFocused(boolean focused) {
+            super.setFocused(focused);
+            if (!focused) {
+                this.setFocused(null);
+            }
         }
 
         /* Input */
@@ -148,6 +175,16 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             return this.focused != null && this.focused.keyPressed(keyCode, scanCode, modifiers);
         }
 
+        @Override
+        protected boolean onKeyRelease(int keyCode, int scanCode, int modifiers) {
+            return this.focused != null && this.focused.keyReleased(keyCode, scanCode, modifiers);
+        }
+
+        @Override
+        protected boolean onCharTyped(char chr, int keyCode) {
+            return this.focused != null && this.focused.charTyped(chr, keyCode);
+        }
+
         /* Rendering */
 
         @Override
@@ -166,10 +203,6 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             float textY = this.getY() + this.getHeight() / 2.f - 5;
 
             Matrix4f model = matrices.peek().getModel();
-
-            if (this.marker.getName() != null)
-                this.client.textRenderer.draw(this.marker.getName(), this.getX() + 32, textY, 0xffffffff, true,
-                        model, immediate, false, 0, light);
 
             this.client.textRenderer.draw(String.format("X: %d Z: %d", this.marker.getX(), this.marker.getZ()),
                     this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);

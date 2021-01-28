@@ -71,12 +71,9 @@ public class ClientWorldWrapper implements BlockRenderView {
         int color = colorResolver.getColor(biome, pos.getX(), pos.getZ());
 
         BlockState state = chunk.getBlockState(pos.getX(), pos.getZ());
-        if (state != null && (state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.TALL_GRASS || state.getBlock() == Blocks.VINE)) {
-            int[] rgba = ColorUtil.unpackARGBColor(color);
-            rgba[0] *= 0.8;
-            rgba[1] *= 0.8;
-            rgba[2] *= 0.8;
-            return ColorUtil.packARGBColor(rgba[0], rgba[1], rgba[2], 0xff);
+        if (state != null && (state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.TALL_GRASS
+                || state.getBlock() == Blocks.VINE)) {
+            return ColorUtil.argbMultiply(color, .8f, 0xff);
         }
 
         return color;
