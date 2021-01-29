@@ -137,6 +137,25 @@ public class Marker {
         return this.getX() >= minX && this.getZ() >= minZ && this.getX() < maxX && this.getZ() < maxZ;
     }
 
+    public boolean isAt(int x, int y, int z) {
+        return this.getX() == x && this.getY() == y && this.getZ() == z;
+    }
+
+    public boolean isAt(Marker marker) {
+        return this.isAt(marker.getX(), marker.getY(), marker.getZ());
+    }
+
+    public void merge(Marker marker) {
+        this.setType(marker.getType());
+        this.setSource(marker.getSource());
+        this.setX(marker.getX());
+        this.setY(marker.getY());
+        this.setZ(marker.getZ());
+        this.setRotation(marker.getRotation());
+        if (marker.getName() != null)
+            this.setName(marker.getName());
+    }
+
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
         matrices.push();
         int x = this.getX() - startX;

@@ -74,7 +74,13 @@ public class MarkerManager implements Iterable<Marker> {
     }
 
     public void addMarker(Marker marker) {
-        this.markers.removeIf(other -> marker.getX() == other.getX() && marker.getY() == other.getY() && marker.getZ() == other.getZ());
+        for (Marker o : this) {
+            if (o.isAt(marker)) {
+                o.merge(marker);
+                return;
+            }
+        }
+
         this.markers.add(marker);
     }
 

@@ -18,6 +18,7 @@
 package dev.lambdaurora.lambdamap.map;
 
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import dev.lambdaurora.lambdamap.mixin.BlockColorsAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -25,11 +26,10 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.MathHelper;
@@ -486,11 +486,8 @@ public class MapChunk implements AutoCloseable {
      * @return {@code true} if the block state can be saved, else {@code false}
      */
     private static boolean filterBlockState(BlockState state) {
-        if (state.getBlock() == Blocks.GRASS_BLOCK
-                || state.getBlock() == Blocks.GRASS
-                || state.getBlock() == Blocks.TALL_GRASS
-                || state.getBlock() == Blocks.VINE)
-            return true;
-        return state.isIn(BlockTags.LEAVES);
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        return ((BlockColorsAccessor) client.getBlockColors()).getProviders().get(Registry.BLOCK.getRawId(state.getBlock())) != null;
     }
 }

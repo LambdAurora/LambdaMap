@@ -35,6 +35,8 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -45,7 +47,8 @@ import java.util.Locale;
  * @since 1.0.0
  */
 public class MarkerType {
-    private static final Object2ObjectMap<String, MarkerType> TYPES = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectMap<String, MarkerType> TYPES_MAP = new Object2ObjectOpenHashMap<>();
+    private static final List<MarkerType> TYPES = new ArrayList<>();
 
     public static final MarkerType PLAYER = registerVanilla(MapIcon.Type.PLAYER);
     public static final MarkerType TARGET_POINT = registerVanilla(MapIcon.Type.TARGET_POINT);
@@ -56,17 +59,21 @@ public class MarkerType {
     private final float vMin;
     private final float uMax;
     private final float vMax;
+    private final boolean player;
 
-    MarkerType(String id, RenderLayer renderLayer, float uMin, float vMin, float uMax, float vMax) {
+    MarkerType(String id, RenderLayer renderLayer, float uMin, float vMin, float uMax, float vMax, boolean player) {
         this.id = id;
         this.renderLayer = renderLayer;
         this.uMin = uMin;
         this.vMin = vMin;
         this.uMax = uMax;
         this.vMax = vMax;
+        this.player = player;
 
-        if (!TYPES.containsKey(this.id))
-            TYPES.put(this.id, this);
+        if (!TYPES_MAP.containsKey(this.id)) {
+            TYPES.add(this);
+            TYPES_MAP.put(this.id, this);
+        }
     }
 
     public String getId() {
@@ -114,11 +121,11 @@ public class MarkerType {
     }
 
     public static @Nullable MarkerType getMarkerType(String key) {
-        return TYPES.getOrDefault(key, TARGET_POINT);
+        return TYPES_MAP.getOrDefault(key, TARGET_POINT);
     }
 
     public static MarkerType getVanillaMarkerType(MapIcon.Type type) {
-        return TYPES.getOrDefault(type.name().toLowerCase(Locale.ROOT), TARGET_POINT);
+        return TYPES_MAP.getOrDefault(type.name().toLowerCase(Locale.ROOT), TARGET_POINT);
     }
 
     public static MarkerType register(String key, Identifier texture, float u, float v) {
@@ -126,14 +133,37 @@ public class MarkerType {
     }
 
     public static MarkerType register(String key, Identifier texture, float uMin, float vMin, float uMax, float vMax) {
-        return new MarkerType(key, RenderLayer.getText(texture), uMin, vMin, uMax, vMax);
+        return new MarkerType(key, RenderLayer.getText(texture), uMin, vMin, uMax, vMax, false);
+    }
+
+    public static MarkerType next(MarkerType current) {
+        MarkerType next;
+
+        int nextIndex = nextIndex(TYPES.indexOf(current));
+
+        next = TYPES.get(nextIndex);
+        while (next.player) {
+            nextIndex = nextIndex(nextIndex);
+            next = TYPES.get(nextIndex);
+        }
+
+        return next;
+    }
+
+    private static int nextIndex(int i) {
+        if (i + 1 >= TYPES.size())
+            return 0;
+        else
+            return i + 1;
     }
 
     private static MarkerType registerVanilla(MapIcon.Type type) {
         byte id = type.getId();
         float uMin = (id % 16) / 16.f;
         float vMin = (id / 16) / 16.f;
-        return new MarkerType(type.name().toLowerCase(Locale.ROOT), LambdaMap.MAP_ICONS, uMin, vMin, uMin + 0.0625f, vMin + 0.0625f);
+        return new MarkerType(type.name().toLowerCase(Locale.ROOT), LambdaMap.MAP_ICONS,
+                uMin, vMin, uMin + 0.0625f, vMin + 0.0625f,
+                !type.isAlwaysRendered() || type == MapIcon.Type.FRAME);
     }
 
     static {

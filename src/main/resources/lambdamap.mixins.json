@@ -3,6 +3,7 @@
   "package": "dev.lambdaurora.lambdamap.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
+    "BlockColorsAccessor",
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",

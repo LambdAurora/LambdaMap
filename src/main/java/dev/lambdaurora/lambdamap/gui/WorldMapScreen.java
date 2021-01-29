@@ -18,9 +18,11 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
 import me.lambdaurora.spruceui.screen.SpruceScreen;
+import me.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
 import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
 import net.minecraft.client.gui.screen.Screen;
@@ -50,7 +52,14 @@ public class WorldMapScreen extends SpruceScreen {
         tabs.addTabEntry(new LiteralText("World Map"), new LiteralText("explore the world!").formatted(Formatting.GRAY),
                 (width, height) -> new WorldMapWidget(Position.origin(), width, height));
         tabs.addTabEntry(new LiteralText("Markers"), new LiteralText("mark places in your world!").formatted(Formatting.GRAY),
-                (width, height) -> new MarkerListWidget(Position.origin(), width, height, this.mod.getMap().getMarkerManager()));
+                (width, height) -> {
+                    SpruceContainerWidget containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
+                    MarkerManager markers = this.mod.getMap().getMarkerManager();
+                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - 30, markers);
+                    containerWidget.addChild(list);
+                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, height - 30), width, 30, markers, list));
+                    return containerWidget;
+                });
         tabs.addTabEntry(new LiteralText("Config"), new LiteralText("mod configuration").formatted(Formatting.GRAY), this::buildConfigTab);
     }
 
