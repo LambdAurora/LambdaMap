@@ -31,6 +31,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.MapColor;
+import net.minecraft.class_5742;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
@@ -225,7 +226,11 @@ public class LambdaMap implements ClientModInitializer {
                 }
 
                 MapColor mapColor = searcher.getState().getMapColor(world, searcher.pos);
-                Biome biome = world.getBiome(searcher.pos);
+                Biome biome = world.getBiomeForNoiseGen(
+                        class_5742.method_33100(searcher.pos.getX()),
+                        class_5742.method_33100(searcher.pos.getY()),
+                        class_5742.method_33100(searcher.pos.getZ())
+                );
                 int shade;
 
                 if (mapColor == MapColor.WATER_BLUE) {
@@ -252,7 +257,7 @@ public class LambdaMap implements ClientModInitializer {
                 lastHeights[xOffset] = searcher.getHeight();
                 int x = mapChunkStartX + xOffset;
                 int z = mapChunkStartZ + zOffset;
-                if (mapChunk.putPixel(x, z, (byte) (mapColor.id * 4 + shade), biome, searcher.getState())) {
+                if (mapChunk.putPixelAndPreserve(x, z, (byte) (mapColor.id * 4 + shade), biome, searcher.getState())) {
                     this.hud.markDirty();
                 }
             }

@@ -266,10 +266,12 @@ public class MapChunk implements AutoCloseable {
         return false;
     }
 
-    public boolean putPixel(int x, int z, byte color, @Nullable Biome biome, @Nullable BlockState state) {
+    public boolean putPixelAndPreserve(int x, int z, byte color, @Nullable Biome biome, @Nullable BlockState state) {
         this.putColor(x, z, color);
-        this.putBiome(x, z, biome);
-        this.putBlockState(x, z, state);
+        if (biome != null)
+            this.putBiome(x, z, biome);
+        if (state != null)
+            this.putBlockState(x, z, state);
         return this.dirty;
     }
 
