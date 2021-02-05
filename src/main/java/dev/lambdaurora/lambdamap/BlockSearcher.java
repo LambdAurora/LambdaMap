@@ -94,7 +94,8 @@ public class BlockSearcher {
         if (this.state.isAir()) {
             brokeThroughCeil = true;
         }
-        while ((!brokeThroughCeil || this.state.getMapColor(this.world, this.pos) == MapColor.CLEAR) && this.height > this.world.getSectionCount()) {
+        while ((!brokeThroughCeil || this.state.getMapColor(this.world, this.pos) == MapColor.CLEAR)
+                && this.height > this.world.getBottomSectionLimit()) {
             this.pos.setY(--this.height);
             this.state = chunk.getBlockState(this.pos);
             if (this.state.isAir()) {
