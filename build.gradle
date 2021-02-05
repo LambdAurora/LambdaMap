@@ -6,7 +6,7 @@ plugins {
 }
 
 group = project.maven_group
-version = "${project.mod_version}+${project.minecraft_version}"
+version = "${project.mod_version}+${getMCVersionString()}"
 archivesBaseName = project.archives_base_name
 Set<String> modules = [
         'fabric-api-base',
@@ -15,6 +15,14 @@ Set<String> modules = [
         'fabric-rendering-v1',
         'fabric-resource-loader-v0'
 ]
+
+def getMCVersionString() {
+    if (project.minecraft_version.matches("\\d\\dw\\d\\d[a-z]")) {
+        return project.minecraft_version
+    }
+    int lastDot = project.minecraft_version.lastIndexOf('.')
+    return project.minecraft_version.substring(0, lastDot)
+}
 
 repositories {
     maven {
@@ -43,6 +51,8 @@ dependencies {
 
     modImplementation "com.github.lambdaurora:spruceui:${project.spruceui_version}"
     include "com.github.lambdaurora:spruceui:${project.spruceui_version}"
+    modImplementation "com.github.queerbric:pridelib:${project.pridelib_version}"
+    include "com.github.queerbric:pridelib:${project.pridelib_version}"
 }
 
 tasks.withType(JavaCompile) {
