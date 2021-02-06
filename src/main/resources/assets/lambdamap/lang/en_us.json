@@ -1,4 +1,13 @@
 {
+  "lambdamap.marker.new.name": "Marker Name:",
+  "lambdamap.marker.new.player_pos": "Player Pos",
   "lambdamap.marker.new.x": "X:",
-  "lambdamap.marker.new.z": "Z:"
+  "lambdamap.marker.new.z": "Z:",
+
+  "lambdamap.tabs.config": "Config",
+  "lambdamap.tabs.config.description": "Mod configuration",
+  "lambdamap.tabs.markers": "Markers",
+  "lambdamap.tabs.markers.description": "Mark places in your world!",
+  "lambdamap.tabs.world_map": "World Map",
+  "lambdamap.tabs.world_map.description": "Explore the world!"
 }

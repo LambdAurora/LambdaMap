@@ -27,6 +27,7 @@ import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
 import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,18 +50,19 @@ public class WorldMapScreen extends SpruceScreen {
 
         SpruceTabbedWidget tabs = this.addChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
         tabs.getList().setBackground(RandomPrideFlagBackground.random());
-        tabs.addTabEntry(new LiteralText("World Map"), new LiteralText("explore the world!").formatted(Formatting.GRAY),
+        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
                 (width, height) -> new WorldMapWidget(Position.origin(), width, height));
-        tabs.addTabEntry(new LiteralText("Markers"), new LiteralText("mark places in your world!").formatted(Formatting.GRAY),
+        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.markers"), new TranslatableText("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
                 (width, height) -> {
                     SpruceContainerWidget containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
                     MarkerManager markers = this.mod.getMap().getMarkerManager();
-                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - 30, markers);
+                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - 40, markers);
                     containerWidget.addChild(list);
-                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, height - 30), width, 30, markers, list));
+                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, height - 40), width, 40, markers, list));
                     return containerWidget;
                 });
-        tabs.addTabEntry(new LiteralText("Config"), new LiteralText("mod configuration").formatted(Formatting.GRAY), this::buildConfigTab);
+        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
+                this::buildConfigTab);
     }
 
     private SpruceOptionListWidget buildConfigTab(int width, int height) {

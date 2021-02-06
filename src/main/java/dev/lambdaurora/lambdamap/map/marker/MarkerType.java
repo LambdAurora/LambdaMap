@@ -21,6 +21,8 @@ import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.RenderLayer;
@@ -80,6 +82,7 @@ public class MarkerType {
         return this.id;
     }
 
+    @Environment(EnvType.CLIENT)
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float rotation, @Nullable Text text, int light) {
         matrices.push();
         matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(rotation));
@@ -96,7 +99,7 @@ public class MarkerType {
         if (text != null) {
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             float textWidth = textRenderer.getWidth(text);
-            float scale = MathHelper.clamp(32.f / textWidth, 0.f, 6.f / 9.f);
+            float scale = MathHelper.clamp(48.f / textWidth, 0.f, 6.f / 9.f);
             matrices.push();
             matrices.translate(-textWidth * scale / 2.0f, 4.f, 0.02500000037252903D);
             matrices.scale(scale, scale, -1.f);

@@ -17,6 +17,8 @@
 
 package dev.lambdaurora.lambdamap.map.marker;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -156,6 +158,7 @@ public class Marker {
             this.setName(marker.getName());
     }
 
+    @Environment(EnvType.CLIENT)
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
         matrices.push();
         int x = this.getX() - startX;

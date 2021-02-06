@@ -20,7 +20,6 @@ package dev.lambdaurora.lambdamap.map.marker;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -31,6 +30,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.apache.logging.log4j.LogManager;
@@ -107,7 +107,7 @@ public class MarkerManager implements Iterable<Marker> {
         }
     }
 
-    public void tick(ClientWorld world) {
+    public void tick(World world) {
         // Check for existence of the banner markers in the world if possible.
         Iterator<Marker> it = this.markers.iterator();
         while (it.hasNext()) {

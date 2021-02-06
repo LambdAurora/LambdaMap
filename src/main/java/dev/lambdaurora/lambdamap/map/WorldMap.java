@@ -29,7 +29,6 @@ import me.lambdaurora.spruceui.util.ColorUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.util.math.BlockPos;
@@ -37,6 +36,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,14 +64,14 @@ public class WorldMap {
     private final File directory;
     private final MarkerManager markerManager;
 
-    private final ClientWorld world;
+    private final World world;
 
     private int viewX = 0;
     private int viewZ = 0;
     private int playerViewX = 0;
     private int playerViewZ = 0;
 
-    public WorldMap(ClientWorld world, File directory) {
+    public WorldMap(World world, File directory) {
         this.directory = directory;
         if (!this.directory.exists())
             this.directory.mkdirs();
@@ -89,7 +89,7 @@ public class WorldMap {
         return this.markerManager;
     }
 
-    public ClientWorld getWorld() {
+    public World getWorld() {
         return this.world;
     }
 
