@@ -283,7 +283,7 @@ public class LambdaMap implements ClientModInitializer {
         ServerInfo serverInfo = client.getCurrentServerEntry();
         File gameDir = FabricLoader.getInstance().getGameDir().toFile();
         File lambdaMapDir = new File(gameDir, "lambdamap");
-        File serverDir = new File(lambdaMapDir, (serverInfo.name + "_" + serverInfo.address).replaceAll("[!:|<>\\[\\]()]", "_"));
+        File serverDir = new File(lambdaMapDir, (serverInfo.name + "_" + serverInfo.address).replaceAll("[^A-Za-z0-9_.]", "_"));
         File worldDir = new File(serverDir, worldKey.getValue().getNamespace() + "/" + worldKey.getValue().getPath());
         if (!worldDir.exists())
             worldDir.mkdirs();
