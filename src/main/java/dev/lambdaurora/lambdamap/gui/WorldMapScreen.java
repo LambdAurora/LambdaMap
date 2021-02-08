@@ -56,9 +56,12 @@ public class WorldMapScreen extends SpruceScreen {
                 (width, height) -> {
                     SpruceContainerWidget containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
                     MarkerManager markers = this.mod.getMap().getMarkerManager();
-                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - 40, markers);
+
+                    int newMarkerFormHeight = width < 480 ? 80 : 40;
+
+                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - newMarkerFormHeight, markers);
                     containerWidget.addChild(list);
-                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, height - 40), width, 40, markers, list));
+                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, list.getHeight()), width, newMarkerFormHeight, markers, list));
                     return containerWidget;
                 });
         tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
@@ -68,29 +71,9 @@ public class WorldMapScreen extends SpruceScreen {
     private SpruceOptionListWidget buildConfigTab(int width, int height) {
         SpruceOptionListWidget list = new SpruceOptionListWidget(Position.origin(), width, height);
         list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
-        return list;
-    }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        int viewX = this.mod.getMap().getViewX();
-        int viewZ = this.mod.getMap().getViewZ();
-        int multiplier = Screen.hasShiftDown() ? 10 : 1;
-        switch (keyCode) {
-            case GLFW.GLFW_KEY_LEFT:
-                this.renderer.updateView(viewX - multiplier, viewZ);
-                return true;
-            case GLFW.GLFW_KEY_RIGHT:
-                this.renderer.updateView(viewX + multiplier, viewZ);
-                return true;
-            case GLFW.GLFW_KEY_UP:
-                this.renderer.updateView(viewX, viewZ - multiplier);
-                return true;
-            case GLFW.GLFW_KEY_DOWN:
-                this.renderer.updateView(viewX, viewZ + multiplier);
-                return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
+        return list;
     }
 
     @Override

@@ -68,6 +68,7 @@ public class LambdaMap implements ClientModInitializer {
     private static LambdaMap INSTANCE;
     private final KeyBinding hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.misc"));
     private final KeyBinding mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
+    private final LambdaMapConfig config = new LambdaMapConfig(this);
     private final WorldMapRenderer renderer = new WorldMapRenderer(this);
     private WorldMap map = null;
     public MapHud hud = null;
@@ -77,6 +78,8 @@ public class LambdaMap implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
+
+        this.config.load();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             this.hud = new MapHud(client);
@@ -104,6 +107,14 @@ public class LambdaMap implements ClientModInitializer {
 
             this.hud.updateTexture(this.getMap());
         });
+    }
+
+    /**
+     * Returns the configuration of the mod.
+     * @return the configuration
+     */
+    public LambdaMapConfig getConfig() {
+        return this.config;
     }
 
     public WorldMap getMap() {
@@ -274,7 +285,7 @@ public class LambdaMap implements ClientModInitializer {
             world = client.getServer().getOverworld();
         }
         File worldDirectory = ((PersistentStateManagerAccessor) world.getPersistentStateManager()).getDirectory().getParentFile();
-        File mapDirectory = new File(worldDirectory, "lambdamap");
+        File mapDirectory = new File(worldDirectory, NAMESPACE);
         mapDirectory.mkdirs();
         return mapDirectory;
     }
@@ -282,7 +293,7 @@ public class LambdaMap implements ClientModInitializer {
     public static File getWorldMapDirectoryMP(MinecraftClient client, RegistryKey<World> worldKey) {
         ServerInfo serverInfo = client.getCurrentServerEntry();
         File gameDir = FabricLoader.getInstance().getGameDir().toFile();
-        File lambdaMapDir = new File(gameDir, "lambdamap");
+        File lambdaMapDir = new File(gameDir, NAMESPACE);
         File serverDir = new File(lambdaMapDir, (serverInfo.name + "_" + serverInfo.address).replaceAll("[^A-Za-z0-9_.]", "_"));
         File worldDir = new File(serverDir, worldKey.getValue().getNamespace() + "/" + worldKey.getValue().getPath());
         if (!worldDir.exists())

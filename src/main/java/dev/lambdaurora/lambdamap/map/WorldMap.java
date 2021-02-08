@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.map;
 
+import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
 import dev.lambdaurora.lambdamap.map.marker.Marker;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
@@ -145,16 +146,18 @@ public class WorldMap {
             return 0;
         else {
             MapColor mapColor = MapColor.COLORS[color / 4];
-            if (mapColor == MapColor.WATER_BLUE) {
-                Biome biome = chunk.getBiome(index);
-                if (biome != null) {
-                    return this.calculateWaterColor(x, z, biome, color & 3, mode);
-                }
-            } else {
-                BlockState state = chunk.getBlockState(index);
-                if (state != null) {
-                    int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
-                    return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
+            if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
+                if (mapColor == MapColor.WATER_BLUE) {
+                    Biome biome = chunk.getBiome(index);
+                    if (biome != null) {
+                        return this.calculateWaterColor(x, z, biome, color & 3, mode);
+                    }
+                } else {
+                    BlockState state = chunk.getBlockState(index);
+                    if (state != null) {
+                        int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
+                        return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
+                    }
                 }
             }
             return applyShade(mapColor.color, color & 3);

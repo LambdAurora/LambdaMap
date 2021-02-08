@@ -1,4 +1,6 @@
 {
+  "lambdamap.config.render_biome_colors":  "Render Biome Colors",
+
   "lambdamap.marker.new.name": "Marker Name:",
   "lambdamap.marker.new.player_pos": "Player Pos",
   "lambdamap.marker.new.x": "X:",

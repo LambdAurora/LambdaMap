@@ -17,18 +17,22 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.widget.SpruceButtonWidget;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Consumer;
 
 public class MarkerTypeButton extends SpruceButtonWidget {
+    private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("gui/icon_selection.png");
     private MarkerType type;
 
     public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
@@ -51,7 +55,7 @@ public class MarkerTypeButton extends SpruceButtonWidget {
     @Override
     protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         matrices.push();
-        matrices.translate(this.getX() + 10, this.getY() + 11, 5);
+        matrices.translate(this.getX() + 9, this.getY() + 11, 5);
         matrices.scale(2, 2, 1);
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         this.type.render(matrices, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
@@ -61,6 +65,11 @@ public class MarkerTypeButton extends SpruceButtonWidget {
 
     @Override
     protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        // No background
+        if (this.isFocused()) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            MinecraftClient.getInstance().getTextureManager().bindTexture(FOCUSED_TEXTURE);
+            drawTexture(matrices, this.getX(), this.getY(), 0, 0, width, height, width, height);
+        }
     }
 }

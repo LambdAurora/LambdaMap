@@ -1,0 +1,4 @@
+# LambdaMap Configuration
+
+[map]
+	render_biome_colors = true

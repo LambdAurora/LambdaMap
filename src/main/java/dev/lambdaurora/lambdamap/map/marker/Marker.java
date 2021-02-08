@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.map.marker;
 
+import com.electronwill.nightconfig.core.Config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.util.NbtType;
@@ -183,6 +184,19 @@ public class Marker {
         return tag;
     }
 
+    public Config writeTo(Config config) {
+        config.set("type", this.type.getId());
+        config.set("source", this.source.getId());
+        config.set("x", this.x);
+        config.set("y", this.y);
+        config.set("z", this.z);
+        config.set("rotation", this.rotation);
+        if (this.name != null) {
+            config.set("name", Text.Serializer.toJson(this.name));
+        }
+        return config;
+    }
+
     @Override
     public String toString() {
         return "Marker{" +
@@ -226,5 +240,19 @@ public class Marker {
             name = Text.Serializer.fromJson(tag.getString("name"));
         return new Marker(type, MarkerSource.fromId(tag.getString("source")),
                 tag.getInt("x"), tag.getInt("y"), tag.getInt("z"), tag.getFloat("rotation"), name);
+    }
+
+    public static Marker fromConfig(Config config) {
+        MarkerType type = MarkerType.getMarkerType(config.getOrElse("type", MarkerType.TARGET_POINT.getId()));
+        MarkerSource source = MarkerSource.fromId(config.getOrElse("source", MarkerSource.USER.getId()));
+        Text name = null;
+        if (config.contains("name"))
+            name = Text.Serializer.fromJson(config.getOrElse("name", "{}"));
+        return new Marker(type, source,
+                config.getIntOrElse("x", 0),
+                config.getIntOrElse("y", 0),
+                config.getIntOrElse("z", 0),
+                config.getOrElse("rotation", 0.0).floatValue(),
+                name);
     }
 }

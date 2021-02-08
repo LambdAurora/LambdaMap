@@ -2,8 +2,11 @@ plugins {
     id 'fabric-loom' version '0.5-SNAPSHOT'
     id 'java-library'
     id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
     id 'net.minecrell.licenser' version '0.4.1'
 }
+
+import net.fabricmc.loom.task.RemapJarTask
 
 group = project.maven_group
 version = "${project.mod_version}+${getMCVersionString()}"
@@ -38,6 +41,11 @@ repositories {
 minecraft {
 }
 
+configurations {
+    shadow
+    api.extendsFrom shadow
+}
+
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -53,6 +61,9 @@ dependencies {
     include "com.github.lambdaurora:spruceui:${project.spruceui_version}"
     modImplementation "com.github.queerbric:pridelib:${project.pridelib_version}"
     include "com.github.queerbric:pridelib:${project.pridelib_version}"
+
+    shadow "com.electronwill.night-config:core:3.6.3"
+    shadow "com.electronwill.night-config:toml:3.6.3"
 }
 
 tasks.withType(JavaCompile) {
@@ -87,6 +98,23 @@ license {
     header file('HEADER')
     include '**/*.java'
 }
+
+shadowJar {
+    dependsOn(project(":").jar)
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set('dev')
+
+    relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
+}
+
+task shadowRemapJar(type: RemapJarTask) {
+    dependsOn shadowJar
+
+    input = file("${project.buildDir}/libs/$archivesBaseName-$version-dev.jar")
+    archiveName = "${archivesBaseName}-${version}.jar"
+    addNestedDependencies = true
+}
+build.dependsOn(shadowRemapJar)
 
 // configure the maven publication
 publishing {

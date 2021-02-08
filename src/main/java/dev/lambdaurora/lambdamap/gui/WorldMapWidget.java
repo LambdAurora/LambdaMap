@@ -20,8 +20,10 @@ package dev.lambdaurora.lambdamap.gui;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.MapChunk;
 import me.lambdaurora.spruceui.Position;
+import me.lambdaurora.spruceui.navigation.NavigationDirection;
 import me.lambdaurora.spruceui.util.ScissorManager;
 import me.lambdaurora.spruceui.widget.AbstractSpruceWidget;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -66,6 +68,32 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         }
 
         this.renderer.scale(Math.max(0, this.intScale));
+    }
+
+    /* Navigation */
+
+    @Override
+    public boolean onNavigation(@NotNull NavigationDirection direction, boolean tab) {
+        if (!tab) {
+            int viewX = this.mod.getMap().getViewX();
+            int viewZ = this.mod.getMap().getViewZ();
+            int multiplier = Screen.hasShiftDown() ? 10 : 1;
+            switch (direction) {
+                case LEFT:
+                    this.renderer.updateView(viewX - multiplier, viewZ);
+                    return true;
+                case RIGHT:
+                    this.renderer.updateView(viewX + multiplier, viewZ);
+                    return true;
+                case UP:
+                    this.renderer.updateView(viewX, viewZ - multiplier);
+                    return true;
+                case DOWN:
+                    this.renderer.updateView(viewX, viewZ + multiplier);
+                    return true;
+            }
+        }
+        return super.onNavigation(direction, tab);
     }
 
     /* Input */

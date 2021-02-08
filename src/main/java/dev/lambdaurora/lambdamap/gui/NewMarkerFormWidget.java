@@ -48,39 +48,52 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 
         this.setBackground(new SimpleColorBackground(0xe00a0a0a));
 
-        this.typeButton = new MarkerTypeButton(Position.of(this, 6, height - 24), MarkerType.getVanillaMarkerType(MapIcon.Type.TARGET_POINT), type -> {
+        int x = 7;
+        int y = 3;
+        this.typeButton = new MarkerTypeButton(Position.of(this, x, y + 13), MarkerType.getVanillaMarkerType(MapIcon.Type.TARGET_POINT), type -> {
             this.doneButton.setActive(true);
         });
         this.addChild(typeButton);
 
-        this.nameField = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(Position.of(this, 32, 0),
-                width / 2 - 48, 20, new TranslatableText("lambdamap.marker.new.name")));
+        x += this.typeButton.getWidth() + 6;
+
+        this.nameField = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(Position.of(this, x, y),
+                width < 480 ? width - 48 : width / 2 - 48,
+                20, new TranslatableText("lambdamap.marker.new.name")));
         this.nameField.getTextFieldWidget().setChangedListener(input -> this.doneButton.setActive(true));
-        this.nameField.getPosition().setRelativeY(height - this.nameField.getHeight() - 4);
         this.addChild(nameField);
 
+        if (width < 480) {
+            x = 6;
+            y += this.nameField.getHeight() + 4;
+        } else {
+            x = width / 2;
+        }
+
         this.xFieldWidget = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(
-                Position.of(this, width / 2, 3), 48, 20,
+                Position.of(this, x, y),
+                width < 480 ? 64 : 48, 20,
                 new TranslatableText("lambdamap.marker.new.x")));
         this.xFieldWidget.getTextFieldWidget().setChangedListener(input -> this.doneButton.setActive(true));
         this.setupCoordinatesField(this.xFieldWidget);
         this.addChild(xFieldWidget);
 
         this.zFieldWidget = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(
-                Position.of(this, width / 2 + 52, 3), 48, 20,
+                Position.of(this, x += this.xFieldWidget.getWidth() + 4, y),
+                width < 480 ? 64 : 48, 20,
                 new TranslatableText("lambdamap.marker.new.z")));
         this.zFieldWidget.getTextFieldWidget().setChangedListener(input -> this.doneButton.setActive(true));
         this.setupCoordinatesField(this.zFieldWidget);
         this.addChild(this.zFieldWidget);
 
-        this.addChild(new SpruceButtonWidget(Position.of(this, width / 2 + 104, height - 24),
+        this.addChild(new SpruceButtonWidget(Position.of(this, x + this.zFieldWidget.getWidth() + 4, y + 13),
                 80, 20, new TranslatableText("lambdamap.marker.new.player_pos"), btn -> {
             BlockPos pos = this.client.player.getBlockPos();
             this.xFieldWidget.setText(String.valueOf(pos.getX()));
             this.zFieldWidget.setText(String.valueOf(pos.getZ()));
         }));
 
-        this.doneButton = new SpruceButtonWidget(Position.of(this, width - 52, height - 24),
+        this.doneButton = new SpruceButtonWidget(Position.of(this, width - 52, y + 13),
                 50, 20, SpruceTexts.GUI_DONE, btn -> {
             String text = this.nameField.getText();
             markers.addMarker(this.typeButton.getType(), MarkerSource.USER,

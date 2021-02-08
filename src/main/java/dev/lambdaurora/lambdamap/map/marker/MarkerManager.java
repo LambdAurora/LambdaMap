@@ -17,7 +17,11 @@
 
 package dev.lambdaurora.lambdamap.map.marker;
 
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.InMemoryCommentedFormat;
+import com.electronwill.nightconfig.core.file.FileConfig;
 import dev.lambdaurora.lambdamap.map.WorldMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.FilledMapItem;
@@ -59,17 +63,21 @@ public class MarkerManager implements Iterable<Marker> {
     private final List<Marker> markers = new ArrayList<>();
     private final WorldMap map;
     private final File file;
+    private final FileConfig config;
 
     private ItemStack lastFilledMapStack;
 
     public MarkerManager(WorldMap map) {
         this.map = map;
-        this.file = new File(this.map.getDirectory(), "markers.nbt");
+        this.file = new File(this.map.getDirectory(), "markers.toml");
+        this.config = FileConfig.builder(this.file).autosave().build();
     }
 
     public Marker addMarker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text text) {
         Marker marker = new Marker(type, source, x, y, z, rotation, text);
         this.addMarker(marker);
+
+        this.save();
         return marker;
     }
 
@@ -154,21 +162,38 @@ public class MarkerManager implements Iterable<Marker> {
     }
 
     public void load() {
-        if (this.file.exists()) {
-            try {
-                this.fromNbt(NbtIo.readCompressed(this.file));
-            } catch (IOException e) {
-                LOGGER.error("Failed to read markers from " + this.file + ".", e);
+        if (!this.file.exists()) {
+            File nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
+            if (nbtFile.exists()) {
+                try {
+                    this.fromNbt(NbtIo.readCompressed(nbtFile));
+                    return;
+                } catch (IOException e) {
+                    LOGGER.error("Failed to read markers from " + nbtFile + ".", e);
+                }
             }
         }
+
+        this.config.load();
+
+        this.markers.clear();
+        List<Config> markers = this.config.getOrElse("markers", ArrayList::new);
+        markers.forEach(config -> this.markers.add(Marker.fromConfig(config)));
     }
 
     public void save() {
-        try {
+        /*try {
             NbtIo.writeCompressed(this.toNbt(), this.file);
         } catch (IOException e) {
             LOGGER.error("Failed to save markers to " + this.file + ".", e);
-        }
+        }*/
+
+        List<Config> markers = new ArrayList<>();
+        this.markers.forEach(marker -> markers.add(
+                marker.writeTo(InMemoryCommentedFormat.defaultInstance().createConfig(Object2ObjectOpenHashMap::new))
+        ));
+
+        this.config.set("markers", markers);
     }
 
     public void fromNbt(CompoundTag tag) {

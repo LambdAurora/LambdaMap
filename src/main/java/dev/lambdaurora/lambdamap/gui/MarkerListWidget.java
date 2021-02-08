@@ -22,6 +22,8 @@ import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.lambdamap.map.marker.MarkerSource;
 import me.lambdaurora.spruceui.Position;
 import me.lambdaurora.spruceui.background.EmptyBackground;
+import me.lambdaurora.spruceui.navigation.NavigationDirection;
+import me.lambdaurora.spruceui.navigation.NavigationUtils;
 import me.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import me.lambdaurora.spruceui.widget.SpruceWidget;
 import me.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
@@ -47,6 +49,7 @@ import java.util.List;
 
 public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.MarkerEntry> {
     private final MarkerManager markerManager;
+    private int lastIndex = 0;
 
     public MarkerListWidget(@NotNull Position position, int width, int height, MarkerManager markerManager) {
         super(position, width, height, 0, MarkerEntry.class);
@@ -76,7 +79,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             this.parent = parent;
             this.marker = marker;
 
-            MarkerTypeButton typeBtn = new MarkerTypeButton(Position.of(this, 2, 2), this.marker.getType(), this.marker::setType);
+            MarkerTypeButton typeBtn = new MarkerTypeButton(Position.of(this, 3, 2), this.marker.getType(), this.marker::setType);
             typeBtn.setActive(this.marker.getSource() == MarkerSource.USER);
             this.children.add(typeBtn);
             this.addNameFieldWidget();
@@ -168,6 +171,35 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             if (!focused) {
                 this.setFocused(null);
             }
+        }
+
+        /* Navigation */
+
+        @Override
+        public boolean onNavigation(@NotNull NavigationDirection direction, boolean tab) {
+            if (this.requiresCursor()) return false;
+            if (!tab && direction.isVertical()) {
+                if (this.isFocused()) {
+                    this.setFocused(null);
+                    return false;
+                }
+                int lastIndex = this.parent.lastIndex;
+                if (lastIndex >= this.children.size())
+                    lastIndex = this.children.size() - 1;
+                if (!this.children.get(lastIndex).onNavigation(direction, tab))
+                    return false;
+                this.setFocused(this.children.get(lastIndex));
+                return true;
+            }
+
+            boolean result = NavigationUtils.tryNavigate(direction, tab, this.children, this.focused, this::setFocused, true);
+            if (result) {
+                this.setFocused(true);
+                if (direction.isHorizontal() && this.getFocused() != null) {
+                    this.parent.lastIndex = this.children.indexOf(this.getFocused());
+                }
+            }
+            return result;
         }
 
         /* Input */
