@@ -19,10 +19,10 @@ package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.MapChunk;
-import me.lambdaurora.spruceui.Position;
-import me.lambdaurora.spruceui.navigation.NavigationDirection;
-import me.lambdaurora.spruceui.util.ScissorManager;
-import me.lambdaurora.spruceui.widget.AbstractSpruceWidget;
+import dev.lambdaurora.spruceui.Position;
+import dev.lambdaurora.spruceui.navigation.NavigationDirection;
+import dev.lambdaurora.spruceui.util.ScissorManager;
+import dev.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;

@@ -19,21 +19,18 @@ package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
-import me.lambdaurora.spruceui.Position;
-import me.lambdaurora.spruceui.background.EmptyBackground;
-import me.lambdaurora.spruceui.screen.SpruceScreen;
-import me.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
-import me.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
-import me.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
-import net.minecraft.client.gui.screen.Screen;
+import dev.lambdaurora.spruceui.Position;
+import dev.lambdaurora.spruceui.background.EmptyBackground;
+import dev.lambdaurora.spruceui.screen.SpruceScreen;
+import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
+import dev.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
+import dev.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import org.lwjgl.glfw.GLFW;
 
 public class WorldMapScreen extends SpruceScreen {
     private final LambdaMap mod = LambdaMap.get();
-    private final WorldMapRenderer renderer = this.mod.getRenderer();
 
     public WorldMapScreen() {
         super(new LiteralText("World Map"));

@@ -17,13 +17,13 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import dev.lambdaurora.spruceui.background.Background;
+import dev.lambdaurora.spruceui.background.SimpleColorBackground;
+import dev.lambdaurora.spruceui.util.ColorUtil;
+import dev.lambdaurora.spruceui.widget.SpruceWidget;
 import io.github.queerbric.pride.PrideFlag;
 import io.github.queerbric.pride.PrideFlagShapes;
 import io.github.queerbric.pride.PrideFlags;
-import me.lambdaurora.spruceui.background.Background;
-import me.lambdaurora.spruceui.background.SimpleColorBackground;
-import me.lambdaurora.spruceui.util.ColorUtil;
-import me.lambdaurora.spruceui.widget.SpruceWidget;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;

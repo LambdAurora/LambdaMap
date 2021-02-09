@@ -18,7 +18,7 @@
 package dev.lambdaurora.lambdamap.util;
 
 import dev.lambdaurora.lambdamap.map.MapChunk;
-import me.lambdaurora.spruceui.util.ColorUtil;
+import dev.lambdaurora.spruceui.util.ColorUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;

@@ -18,8 +18,8 @@
 package dev.lambdaurora.lambdamap;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import me.lambdaurora.spruceui.option.SpruceCheckboxBooleanOption;
-import me.lambdaurora.spruceui.option.SpruceOption;
+import dev.lambdaurora.spruceui.option.SpruceCheckboxBooleanOption;
+import dev.lambdaurora.spruceui.option.SpruceOption;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;

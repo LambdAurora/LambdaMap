@@ -19,8 +19,8 @@ package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
-import me.lambdaurora.spruceui.Position;
-import me.lambdaurora.spruceui.widget.SpruceButtonWidget;
+import dev.lambdaurora.spruceui.Position;
+import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
@@ -32,7 +32,7 @@ import net.minecraft.util.Identifier;
 import java.util.function.Consumer;
 
 public class MarkerTypeButton extends SpruceButtonWidget {
-    private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("gui/icon_selection.png");
+    private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("textures/gui/icon_selection.png");
     private MarkerType type;
 
     public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
