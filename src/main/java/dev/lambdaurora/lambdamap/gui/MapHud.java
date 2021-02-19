@@ -18,6 +18,7 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import dev.lambdaurora.lambdamap.LambdaMapConfig;
 import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
@@ -35,13 +36,15 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
+    private final LambdaMapConfig config;
     private final MinecraftClient client;
     private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
     private final RenderLayer mapRenderLayer;
     private boolean visible = true;
     private boolean dirty = true;
 
-    public MapHud(MinecraftClient client) {
+    public MapHud(LambdaMapConfig config, MinecraftClient client) {
+        this.config = config;
         this.client = client;
         Identifier id = LambdaMap.id("hud");
         client.getTextureManager().registerTexture(id, this.texture);
@@ -107,15 +110,25 @@ public class MapHud implements AutoCloseable {
         int textureHeight = this.texture.getImage().getHeight();
 
         matrices.push();
-        matrices.translate(64, 64, 0);
-        matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
-        matrices.translate(-64 - 32, -64 - 32, 0);
+
+        float uStart = 0.f;
+        float uEnd = 1.f;
+        float vStart = 0.f;
+        float vEnd = 1.f;
+        if (!this.config.isNorthLocked()) {
+            matrices.translate(64, 64, 0);
+            matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
+            matrices.translate(-64 - 32, -64 - 32, 0);
+        } else {
+            textureWidth = 128;
+            textureHeight = 128;
+        }
         Matrix4f model = matrices.peek().getModel();
         VertexConsumer vertices = immediate.getBuffer(this.mapRenderLayer);
-        WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, 0.f, 1.f, light);
-        WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, 1.f, 1.f, light);
-        WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, 1.f, 0.f, light);
-        WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, 0.f, 0.f, light);
+        WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
+        WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
+        WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, uEnd, vStart, light);
+        WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, uStart, vStart, light);
 
         {
             double cornerX = this.client.player.getX() - (textureWidth / 2.f);
@@ -127,7 +140,8 @@ public class MapHud implements AutoCloseable {
                 float z = (float) (marker.getZ() - cornerZ);
 
                 matrices.translate(x, z, 1.f);
-                matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
+                if (!this.config.isNorthLocked())
+                    matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
                 marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
                 matrices.pop();
             });
@@ -150,7 +164,7 @@ public class MapHud implements AutoCloseable {
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
         matrices.translate(64.f, 64.f, 1.1f);
-        MarkerType.PLAYER.render(matrices, vertexConsumers, 180, null, light);
+        MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.yaw : 180, null, light);
         matrices.pop();
     }
 

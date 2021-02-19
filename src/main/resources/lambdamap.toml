@@ -1,4 +1,6 @@
 # LambdaMap Configuration
 
 [map]
-	render_biome_colors = true
+render_biome_colors = true
+[map.hud]
+north_lock = false

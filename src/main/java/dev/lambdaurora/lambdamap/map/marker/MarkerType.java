@@ -160,6 +160,27 @@ public class MarkerType {
             return i + 1;
     }
 
+    public static MarkerType previous(MarkerType current) {
+        MarkerType next;
+
+        int nextIndex = previousIndex(TYPES.indexOf(current));
+
+        next = TYPES.get(nextIndex);
+        while (next.player) {
+            nextIndex = previousIndex(nextIndex);
+            next = TYPES.get(nextIndex);
+        }
+
+        return next;
+    }
+
+    private static int previousIndex(int i) {
+        if (i - 1 < 0)
+            return TYPES.size() - 1;
+        else
+            return i - 1;
+    }
+
     private static MarkerType registerVanilla(MapIcon.Type type) {
         byte id = type.getId();
         float uMin = (id % 16) / 16.f;
@@ -174,5 +195,12 @@ public class MarkerType {
             if (type != MapIcon.Type.TARGET_POINT)
                 registerVanilla(type);
         }
+
+        Identifier texture = LambdaMap.id("textures/markers/doctor4t.png");
+        register("creeper", texture, 0.f, 0.f, 1.f / 5.f, 1.f);
+        register("blaze", texture, 1.f / 5.f, 0.f, 2.f / 5.f, 1.f);
+        register("witch", texture, 2.f / 5.f, 0.f, 3.f / 5.f, 1.f);
+        register("village", texture, 3.f / 5.f, 0.f, 4.f / 5.f, 1.f);
+        register("endcity", texture, 4.f / 5.f, 0.f, 1.f, 1.f);
     }
 }

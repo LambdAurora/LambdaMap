@@ -82,7 +82,7 @@ public class LambdaMap implements ClientModInitializer {
         this.config.load();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            this.hud = new MapHud(client);
+            this.hud = new MapHud(this.config, client);
         });
 
         HudRenderCallback.EVENT.register((matrices, delta) -> {

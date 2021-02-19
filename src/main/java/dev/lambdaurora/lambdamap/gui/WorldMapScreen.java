@@ -70,6 +70,7 @@ public class WorldMapScreen extends SpruceScreen {
         list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
 
         list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
+        list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
         return list;
     }
 

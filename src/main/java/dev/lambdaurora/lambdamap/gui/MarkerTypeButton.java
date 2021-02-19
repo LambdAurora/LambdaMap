@@ -28,11 +28,13 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
 
 public class MarkerTypeButton extends SpruceButtonWidget {
     private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("textures/gui/icon_selection.png");
+    private final Consumer<MarkerType> changeListener;
     private MarkerType type;
 
     public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
@@ -41,7 +43,22 @@ public class MarkerTypeButton extends SpruceButtonWidget {
             ((MarkerTypeButton) btn).type = next;
             changeListener.accept(next);
         });
+        this.changeListener = changeListener;
         this.type = type;
+    }
+
+    @Override
+    protected boolean onMouseClick(double mouseX, double mouseY, int button) {
+        if (super.onMouseClick(mouseX, mouseY, button)) {
+            return true;
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_2) {
+            this.playDownSound();
+            MarkerType next = MarkerType.previous(this.type);
+            this.type = next;
+            this.changeListener.accept(next);
+            return true;
+        }
+        return false;
     }
 
     public MarkerType getType() {

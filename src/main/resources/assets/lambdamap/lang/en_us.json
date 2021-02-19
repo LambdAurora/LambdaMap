@@ -1,5 +1,7 @@
 {
   "lambdamap.config.render_biome_colors":  "Render Biome Colors",
+  "lambdamap.config.north_lock": "North Lock",
+  "lambdamap.config.north_lock.tooltip": "Locks the HUD map to always have north on top.",
 
   "lambdamap.marker.new.name": "Marker Name:",
   "lambdamap.marker.new.player_pos": "Player Pos",
