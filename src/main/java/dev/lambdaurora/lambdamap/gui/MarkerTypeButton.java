@@ -17,11 +17,11 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -85,7 +85,7 @@ public class MarkerTypeButton extends SpruceButtonWidget {
         if (this.isFocused()) {
             int width = this.getWidth();
             int height = this.getHeight();
-            MinecraftClient.getInstance().getTextureManager().bindTexture(FOCUSED_TEXTURE);
+            RenderSystem.setShaderTexture(0, FOCUSED_TEXTURE);
             drawTexture(matrices, this.getX(), this.getY(), 0, 0, width, height, width, height);
         }
     }

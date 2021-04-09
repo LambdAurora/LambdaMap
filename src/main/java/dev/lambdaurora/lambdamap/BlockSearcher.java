@@ -59,7 +59,7 @@ public class BlockSearcher {
     public void searchForBlock(Chunk chunk, Heightmap surfaceHeightmap, int x, int z, int chunkStartX, int chunkStartZ) {
         this.height = surfaceHeightmap.get(x & 15, z & 15);
         this.pos.set(chunkStartX + x, this.height, chunkStartZ + z);
-        int minimumY = this.world.getBottomSectionLimit();
+        int minimumY = this.world.getBottomSectionCoord();
         if (this.height <= minimumY + 1) {
             this.state = Blocks.AIR.getDefaultState();
         } else {
@@ -95,7 +95,7 @@ public class BlockSearcher {
             brokeThroughCeil = true;
         }
         while ((!brokeThroughCeil || this.state.getMapColor(this.world, this.pos) == MapColor.CLEAR)
-                && this.height > this.world.getBottomSectionLimit()) {
+                && this.height > this.world.getBottomSectionCoord()) {
             this.pos.setY(--this.height);
             this.state = chunk.getBlockState(this.pos);
             if (this.state.isAir()) {

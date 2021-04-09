@@ -96,12 +96,22 @@ public class ClientWorldWrapper implements BlockRenderView {
     }
 
     @Override
-    public int getBottomSectionLimit() {
-        return this.world.getBottomSectionLimit();
+    public int getBottomSectionCoord() {
+        return this.world.getBottomSectionCoord();
     }
 
     @Override
-    public int getSectionCount() {
-        return this.world.getSectionCount();
+    public int getHeight() {
+        return this.world.getHeight();
+    }
+
+    @Override
+    public int getBottomY() {
+        return this.world.getBottomY();
+    }
+
+    @Override
+    public int countVerticalSections() {
+        return this.world.countVerticalSections();
     }
 }

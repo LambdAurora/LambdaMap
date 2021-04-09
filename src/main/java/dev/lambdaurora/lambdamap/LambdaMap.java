@@ -31,7 +31,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.MapColor;
-import net.minecraft.class_5742;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
@@ -47,6 +46,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -111,6 +111,7 @@ public class LambdaMap implements ClientModInitializer {
 
     /**
      * Returns the configuration of the mod.
+     *
      * @return the configuration
      */
     public LambdaMapConfig getConfig() {
@@ -238,9 +239,9 @@ public class LambdaMap implements ClientModInitializer {
 
                 MapColor mapColor = searcher.getState().getMapColor(world, searcher.pos);
                 Biome biome = world.getBiomeForNoiseGen(
-                        class_5742.method_33100(searcher.pos.getX()),
-                        class_5742.method_33100(searcher.pos.getY()),
-                        class_5742.method_33100(searcher.pos.getZ())
+                        BiomeCoords.fromBlock(searcher.pos.getX()),
+                        BiomeCoords.fromBlock(searcher.pos.getY()),
+                        BiomeCoords.fromBlock(searcher.pos.getZ())
                 );
                 int shade;
 

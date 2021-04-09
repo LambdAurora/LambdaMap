@@ -29,9 +29,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -137,9 +137,9 @@ public class MarkerManager implements Iterable<Marker> {
         // 2. Try to import the colors of the filled map if it has absolute coordinates markers.
         ItemStack stack = client.player.getMainHandStack();
         if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasTag() && stack != this.lastFilledMapStack) {
-            CompoundTag tag = stack.getTag();
+            NbtCompound nbt = stack.getTag();
             List<Marker> mapMarkers = new ArrayList<>();
-            tag.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((CompoundTag) decoration)).forEach(decoration -> {
+            nbt.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((NbtCompound) decoration)).forEach(decoration -> {
                 MapIcon.Type type = MapIcon.Type.byId(decoration.getByte("type"));
                 if (type.isAlwaysRendered()) {
                     mapMarkers.add(this.addMarker(MarkerType.getVanillaMarkerType(type), MarkerSource.FILLED_MAP,
@@ -166,7 +166,7 @@ public class MarkerManager implements Iterable<Marker> {
             File nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
             if (nbtFile.exists()) {
                 try {
-                    this.fromNbt(NbtIo.readCompressed(nbtFile));
+                    this.readNbt(NbtIo.readCompressed(nbtFile));
                     return;
                 } catch (IOException e) {
                     LOGGER.error("Failed to read markers from " + nbtFile + ".", e);
@@ -196,16 +196,16 @@ public class MarkerManager implements Iterable<Marker> {
         this.config.set("markers", markers);
     }
 
-    public void fromNbt(CompoundTag tag) {
+    public void readNbt(NbtCompound nbt) {
         this.markers.clear();
 
-        ListTag list = tag.getList("markers", NbtType.COMPOUND);
-        list.forEach(child -> this.markers.add(Marker.fromNbt((CompoundTag) child)));
+        NbtList list = nbt.getList("markers", NbtType.COMPOUND);
+        list.forEach(child -> this.markers.add(Marker.fromNbt((NbtCompound) child)));
     }
 
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
-        tag.put("markers", this.markers.stream().map(Marker::toNbt).collect(Collectors.toCollection(ListTag::new)));
-        return tag;
+    public NbtCompound toNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.put("markers", this.markers.stream().map(Marker::toNbt).collect(Collectors.toCollection(NbtList::new)));
+        return nbt;
     }
 }

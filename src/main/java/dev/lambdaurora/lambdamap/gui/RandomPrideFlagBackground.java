@@ -17,6 +17,8 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import dev.lambdaurora.lambdamap.util.RenderLayerUtil;
 import dev.lambdaurora.spruceui.background.Background;
 import dev.lambdaurora.spruceui.background.SimpleColorBackground;
 import dev.lambdaurora.spruceui.util.ColorUtil;
@@ -56,9 +58,10 @@ public class RandomPrideFlagBackground implements Background {
 
         if (this.flag.getShape() == PrideFlagShapes.get(new Identifier("pride", "horizontal_stripes"))) {
             VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-            VertexConsumer vertices = immediate.getBuffer(RenderLayer.of("lambdamap:random_pride_flag_background",
+            VertexConsumer vertices = immediate.getBuffer(RenderLayerUtil.newRenderLayer("lambdamap:random_pride_flag_background",
                     VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES, 256,
-                    RenderLayer.MultiPhaseParameters.builder().build(false)));
+                    RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(GameRenderer::getPositionColorShader))
+                            .build(false)));
 
             int width = widget.getWidth();
             int height = widget.getHeight();
@@ -98,7 +101,10 @@ public class RandomPrideFlagBackground implements Background {
             vertices.vertex(x, y + height, 0).color(color[0], color[1], color[2], color[3]).next();
 
             immediate.draw();
-        } else this.flag.render(matrices, x, y, widget.getWidth(), widget.getHeight());
+        } else {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader); // @TODO update pridelib
+            this.flag.render(matrices, x, y, widget.getWidth(), widget.getHeight());
+        }
 
         SECOND_LAYER.render(matrices, widget, vOffset, mouseX, mouseY, delta);
     }

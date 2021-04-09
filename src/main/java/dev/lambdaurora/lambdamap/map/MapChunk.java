@@ -27,9 +27,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.math.MathHelper;
@@ -280,24 +280,24 @@ public class MapChunk implements AutoCloseable {
      *
      * @return the map chunk as NBT
      */
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("x", this.x);
-        tag.putInt("z", this.z);
-        tag.putByteArray("colors", this.colors);
+    public NbtCompound toNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putInt("x", this.x);
+        nbt.putInt("z", this.z);
+        nbt.putByteArray("colors", this.colors);
 
-        this.writeBiomesNbt(tag);
-        this.writeBlockPaletteNbt(tag);
+        this.writeBiomesNbt(nbt);
+        this.writeBlockPaletteNbt(nbt);
 
-        return tag;
+        return nbt;
     }
 
     /**
      * Writes the biomes to the NBT.
      *
-     * @param tag the parent compound tag
+     * @param nbt the parent compound NBT
      */
-    private void writeBiomesNbt(CompoundTag tag) {
+    private void writeBiomesNbt(NbtCompound nbt) {
         Registry<Biome> registry = this.worldMap.getBiomeRegistry();
         if (registry != null) {
             Map<Biome, IntList> biomes = new Object2ObjectOpenHashMap<>();
@@ -306,14 +306,14 @@ public class MapChunk implements AutoCloseable {
                 biomes.computeIfAbsent(biome, o -> new IntArrayList()).add(i);
             }
 
-            ListTag biomeList = new ListTag();
+            NbtList biomeList = new NbtList();
             biomes.forEach((biome, indices) -> {
                 if (biome == null)
                     return;
                 Identifier id = registry.getId(biome);
                 if (indices.size() == SIZE) {
                     if (id != null)
-                        tag.putString("biome", id.toString());
+                        nbt.putString("biome", id.toString());
                 } else if (id != null) {
                     BitSet bitSet = new BitSet(SIZE);
 
@@ -321,23 +321,23 @@ public class MapChunk implements AutoCloseable {
                         bitSet.set(i);
                     }
 
-                    CompoundTag biomeTag = new CompoundTag();
-                    biomeTag.putString("biome", id.toString());
-                    biomeTag.putByteArray("mask", bitSet.toByteArray());
-                    biomeList.add(biomeTag);
+                    NbtCompound biomeNbt = new NbtCompound();
+                    biomeNbt.putString("biome", id.toString());
+                    biomeNbt.putByteArray("mask", bitSet.toByteArray());
+                    biomeList.add(biomeNbt);
                 }
             });
             if (!biomeList.isEmpty())
-                tag.put("biomes", biomeList);
+                nbt.put("biomes", biomeList);
         }
     }
 
     /**
      * Writes the block palette as NBT.
      *
-     * @param tag the parent compound tag
+     * @param nbt the parent compound NBT
      */
-    private void writeBlockPaletteNbt(CompoundTag tag) {
+    private void writeBlockPaletteNbt(NbtCompound nbt) {
         List<BlockState> palette = new ArrayList<>();
         for (BlockState state : this.blockStates) {
             if (state != null) {
@@ -346,11 +346,11 @@ public class MapChunk implements AutoCloseable {
             }
         }
 
-        ListTag paletteTag = new ListTag();
-        palette.forEach(state -> paletteTag.add(NbtHelper.fromBlockState(state)));
-        tag.put("palette", paletteTag);
+        NbtList paletteNbt = new NbtList();
+        palette.forEach(state -> paletteNbt.add(NbtHelper.fromBlockState(state)));
+        nbt.put("palette", paletteNbt);
 
-        int bits = Math.max(4, MathHelper.log2DeBruijn(paletteTag.size() + 1));
+        int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
         PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE);
 
         for (int i = 0; i < SIZE; i++) {
@@ -359,7 +359,7 @@ public class MapChunk implements AutoCloseable {
             else blockStates.set(i, palette.indexOf(state) + 1);
         }
 
-        tag.putLongArray("block_states", blockStates.getStorage());
+        nbt.putLongArray("block_states", blockStates.getStorage());
     }
 
     /**
@@ -406,35 +406,35 @@ public class MapChunk implements AutoCloseable {
         return coordinate >> 7;
     }
 
-    public static MapChunk fromNbt(MapRegionFile regionFile, CompoundTag tag) {
-        MapChunk chunk = new MapChunk(regionFile.worldMap(), regionFile, tag.getInt("x"), tag.getInt("z"));
-        byte[] colors = tag.getByteArray("colors");
+    public static MapChunk fromNbt(MapRegionFile regionFile, NbtCompound nbt) {
+        MapChunk chunk = new MapChunk(regionFile.worldMap(), regionFile, nbt.getInt("x"), nbt.getInt("z"));
+        byte[] colors = nbt.getByteArray("colors");
         if (colors.length == SIZE) {
             chunk.colors = colors;
         }
         chunk.empty = false;
 
-        return readBlockPaletteNbt(readBiomesNbt(chunk, tag), tag);
+        return readBlockPaletteNbt(readBiomesNbt(chunk, nbt), nbt);
     }
 
-    private static MapChunk readBiomesNbt(MapChunk chunk, CompoundTag tag) {
+    private static MapChunk readBiomesNbt(MapChunk chunk, NbtCompound nbt) {
         Registry<Biome> registry = chunk.worldMap.getBiomeRegistry();
         if (registry != null) {
-            if (tag.contains("biome", NbtType.STRING)) {
-                Identifier id = new Identifier(tag.getString("biome"));
+            if (nbt.contains("biome", NbtType.STRING)) {
+                Identifier id = new Identifier(nbt.getString("biome"));
                 Biome biome = registry.get(id);
                 if (biome != null) {
                     for (int i = 0; i < SIZE; i++) chunk.biomes[i] = biome;
                 }
-            } else if (tag.contains("biomes", NbtType.LIST)) {
-                ListTag biomesList = tag.getList("biomes", NbtType.COMPOUND);
-                biomesList.stream().map(biomeTag -> (CompoundTag) biomeTag)
-                        .forEach(biomeTag -> {
-                            Identifier id = new Identifier(biomeTag.getString("biome"));
+            } else if (nbt.contains("biomes", NbtType.LIST)) {
+                NbtList biomesList = nbt.getList("biomes", NbtType.COMPOUND);
+                biomesList.stream().map(biomeNbt -> (NbtCompound) biomeNbt)
+                        .forEach(biomeNbt -> {
+                            Identifier id = new Identifier(biomeNbt.getString("biome"));
                             Biome biome = registry.get(id);
                             if (biome == null) return;
 
-                            BitSet bitSet = BitSet.valueOf(biomeTag.getByteArray("mask"));
+                            BitSet bitSet = BitSet.valueOf(biomeNbt.getByteArray("mask"));
                             for (int i = 0; i < SIZE; i++) {
                                 if (bitSet.get(i))
                                     chunk.biomes[i] = biome;
@@ -445,16 +445,16 @@ public class MapChunk implements AutoCloseable {
         return chunk;
     }
 
-    private static MapChunk readBlockPaletteNbt(MapChunk chunk, CompoundTag tag) {
-        if (tag.contains("palette", NbtType.LIST) && tag.contains("block_states", NbtType.LONG_ARRAY)) {
-            ListTag paletteTag = tag.getList("palette", NbtType.COMPOUND);
+    private static MapChunk readBlockPaletteNbt(MapChunk chunk, NbtCompound nbt) {
+        if (nbt.contains("palette", NbtType.LIST) && nbt.contains("block_states", NbtType.LONG_ARRAY)) {
+            NbtList paletteNbt = nbt.getList("palette", NbtType.COMPOUND);
             Int2ObjectMap<BlockState> palette = new Int2ObjectOpenHashMap<>();
-            for (int i = 0; i < paletteTag.size(); i++) {
-                palette.put(i + 1, NbtHelper.toBlockState(paletteTag.getCompound(i)));
+            for (int i = 0; i < paletteNbt.size(); i++) {
+                palette.put(i + 1, NbtHelper.toBlockState(paletteNbt.getCompound(i)));
             }
 
-            int bits = Math.max(4, MathHelper.log2DeBruijn(paletteTag.size() + 1));
-            PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE, tag.getLongArray("block_states"));
+            int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
+            PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE, nbt.getLongArray("block_states"));
 
             for (int i = 0; i < SIZE; i++) {
                 int id = blockStates.get(i);

@@ -19,7 +19,7 @@ package dev.lambdaurora.lambdamap.map.storage;
 
 import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.lambdamap.map.WorldMap;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,8 +146,8 @@ public class MapRegionFile implements Closeable {
                 return null;
             }
 
-            CompoundTag tag = NbtIo.readCompressed(new ByteArrayInputStream(chunkBytes));
-            return MapChunk.fromNbt(this, tag);
+            NbtCompound nbt = NbtIo.readCompressed(new ByteArrayInputStream(chunkBytes));
+            return MapChunk.fromNbt(this, nbt);
         } catch (IOException e) {
             LOGGER.error("Failed to load chunk (" + x + ", " + z + ")", e);
         }

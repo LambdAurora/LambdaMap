@@ -24,7 +24,7 @@ import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapBannerMarker;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -170,18 +170,18 @@ public class Marker {
         matrices.pop();
     }
 
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("type", this.type.getId());
-        tag.putString("source", this.source.getId());
-        tag.putInt("x", this.x);
-        tag.putInt("y", this.y);
-        tag.putInt("z", this.z);
-        tag.putFloat("rotation", this.rotation);
+    public NbtCompound toNbt() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString("type", this.type.getId());
+        nbt.putString("source", this.source.getId());
+        nbt.putInt("x", this.x);
+        nbt.putInt("y", this.y);
+        nbt.putInt("z", this.z);
+        nbt.putFloat("rotation", this.rotation);
         if (this.name != null) {
-            tag.putString("name", Text.Serializer.toJson(this.name));
+            nbt.putString("name", Text.Serializer.toJson(this.name));
         }
-        return tag;
+        return nbt;
     }
 
     public Config writeTo(Config config) {
@@ -233,13 +233,13 @@ public class Marker {
                 pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
     }
 
-    public static Marker fromNbt(CompoundTag tag) {
-        MarkerType type = MarkerType.getMarkerType(tag.getString("type"));
+    public static Marker fromNbt(NbtCompound nbt) {
+        MarkerType type = MarkerType.getMarkerType(nbt.getString("type"));
         Text name = null;
-        if (tag.contains("name", NbtType.STRING))
-            name = Text.Serializer.fromJson(tag.getString("name"));
-        return new Marker(type, MarkerSource.fromId(tag.getString("source")),
-                tag.getInt("x"), tag.getInt("y"), tag.getInt("z"), tag.getFloat("rotation"), name);
+        if (nbt.contains("name", NbtType.STRING))
+            name = Text.Serializer.fromJson(nbt.getString("name"));
+        return new Marker(type, MarkerSource.fromId(nbt.getString("source")),
+                nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"), nbt.getFloat("rotation"), name);
     }
 
     public static Marker fromConfig(Config config) {
