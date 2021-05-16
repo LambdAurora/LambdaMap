@@ -26,13 +26,9 @@ import dev.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
@@ -46,7 +42,7 @@ public class MapHud implements AutoCloseable {
     public MapHud(LambdaMapConfig config, MinecraftClient client) {
         this.config = config;
         this.client = client;
-        Identifier id = LambdaMap.id("hud");
+        var id = LambdaMap.id("hud");
         client.getTextureManager().registerTexture(id, this.texture);
         this.mapRenderLayer = RenderLayer.getText(id);
     }
@@ -71,7 +67,7 @@ public class MapHud implements AutoCloseable {
 
         int width = this.texture.getImage().getWidth();
         int height = this.texture.getImage().getHeight();
-        BlockPos corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
+        var corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
         for (int z = 0; z < width; ++z) {
             int absoluteZ = corner.getZ() + z;
             for (int x = 0; x < height; ++x) {
@@ -83,7 +79,7 @@ public class MapHud implements AutoCloseable {
         this.texture.upload();
     }
 
-    public void render(MatrixStack matrices, int light) {
+    public void render(MatrixStack matrices, int light, float delta) {
         if (!this.visible || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
 
@@ -117,14 +113,14 @@ public class MapHud implements AutoCloseable {
         float vEnd = 1.f;
         if (!this.config.isNorthLocked()) {
             matrices.translate(64, 64, 0);
-            matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.yaw + 180));
+            matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.getYaw(delta) + 180));
             matrices.translate(-64 - 32, -64 - 32, 0);
         } else {
             textureWidth = 128;
             textureHeight = 128;
         }
-        Matrix4f model = matrices.peek().getModel();
-        VertexConsumer vertices = immediate.getBuffer(this.mapRenderLayer);
+        var model = matrices.peek().getModel();
+        var vertices = immediate.getBuffer(this.mapRenderLayer);
         WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
         WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
         WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, uEnd, vStart, light);
@@ -141,19 +137,19 @@ public class MapHud implements AutoCloseable {
 
                 matrices.translate(x, z, 1.f);
                 if (!this.config.isNorthLocked())
-                    matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.yaw - 180));
+                    matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.getYaw(delta) - 180));
                 marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
                 matrices.pop();
             });
         }
         matrices.pop();
 
-        this.renderPlayerIcon(matrices, immediate, light);
+        this.renderPlayerIcon(matrices, immediate, light, delta);
         immediate.draw();
         ScissorManager.pop();
 
-        BlockPos pos = this.client.player.getBlockPos();
-        String str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
+        var pos = this.client.player.getBlockPos();
+        var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
         int strWidth = this.client.textRenderer.getWidth(str);
         this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate, false, 0, light);
         matrices.pop();
@@ -161,10 +157,10 @@ public class MapHud implements AutoCloseable {
         ScissorManager.popScaleFactor();
     }
 
-    private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
         matrices.push();
         matrices.translate(64.f, 64.f, 1.1f);
-        MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.yaw : 180, null, light);
+        MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
         matrices.pop();
     }
 

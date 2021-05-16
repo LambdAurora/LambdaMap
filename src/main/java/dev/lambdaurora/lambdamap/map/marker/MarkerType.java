@@ -191,12 +191,12 @@ public class MarkerType {
     }
 
     static {
-        for (MapIcon.Type type : MapIcon.Type.values()) {
+        for (var type : MapIcon.Type.values()) {
             if (type != MapIcon.Type.TARGET_POINT)
                 registerVanilla(type);
         }
 
-        Identifier texture = LambdaMap.id("textures/markers/doctor4t.png");
+        var texture = LambdaMap.id("textures/markers/doctor4t.png");
         register("creeper", texture, 0.f, 0.f, 1.f / 5.f, 1.f);
         register("blaze", texture, 1.f / 5.f, 0.f, 2.f / 5.f, 1.f);
         register("witch", texture, 2.f / 5.f, 0.f, 3.f / 5.f, 1.f);

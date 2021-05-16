@@ -107,7 +107,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
                     Style style = Style.EMPTY;
                     if (this.marker.getName() != null)
                         style = this.marker.getName().getStyle();
-                    return OrderedText.styledString(displayedText, style);
+                    return OrderedText.styledForwardsVisitedString(displayedText, style);
                 });
             }
             this.children.add(fieldWidget);

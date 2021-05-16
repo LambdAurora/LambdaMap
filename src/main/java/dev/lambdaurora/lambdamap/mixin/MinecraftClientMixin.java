@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MinecraftClientMixin {
     @Inject(method = "setWorld", at = @At("HEAD"))
     private void onSetWorld(ClientWorld world, CallbackInfo ci) {
-        MinecraftClient client = (MinecraftClient) (Object) this;
+        var client = (MinecraftClient) (Object) this;
 
         LambdaMap.get().unloadMap();
 

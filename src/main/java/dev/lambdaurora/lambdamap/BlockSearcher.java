@@ -89,7 +89,7 @@ public class BlockSearcher {
         this.height = 85;
         boolean brokeThroughCeil = false;
         this.pos.set(chunkStartX + x, this.height, chunkStartZ + z);
-        BlockState firstBlockState = chunk.getBlockState(this.pos);
+        var firstBlockState = chunk.getBlockState(this.pos);
         this.state = firstBlockState;
         if (this.state.isAir()) {
             brokeThroughCeil = true;
@@ -110,7 +110,7 @@ public class BlockSearcher {
     }
 
     private BlockState getFluidStateIfVisible(World world, BlockState state, BlockPos pos) {
-        FluidState fluidState = state.getFluidState();
+        var fluidState = state.getFluidState();
         return !fluidState.isEmpty() && !state.isSideSolidFullSquare(world, pos, Direction.UP) ? fluidState.getBlockState() : state;
     }
 }

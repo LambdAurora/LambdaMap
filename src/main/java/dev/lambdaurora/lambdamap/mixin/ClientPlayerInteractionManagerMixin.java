@@ -37,7 +37,7 @@ public class ClientPlayerInteractionManagerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;", ordinal = 0)
     )
     private void onInteractBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        Marker marker = Marker.fromBanner(world, hitResult.getBlockPos());
+        var marker = Marker.fromBanner(world, hitResult.getBlockPos());
         if (marker != null) {
             LambdaMap.get().getMap().getMarkerManager().addMarker(marker);
         }

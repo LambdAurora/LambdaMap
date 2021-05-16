@@ -28,7 +28,6 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.level.ColorResolver;
 import org.jetbrains.annotations.Nullable;
@@ -63,14 +62,14 @@ public class ClientWorldWrapper implements BlockRenderView {
     public int getColor(BlockPos pos, ColorResolver colorResolver) {
         if (this.chunk == null || this.chunk.isEmpty())
             return 0;
-        Biome biome = this.chunk.getBiome(pos.getX(), pos.getZ());
+        var biome = this.chunk.getBiome(pos.getX(), pos.getZ());
         if (biome == null) {
             int color = this.chunk.getColor(pos.getX(), pos.getZ()) & 255;
             return MapColor.COLORS[color / 4].color; // Give up
         }
         int color = colorResolver.getColor(biome, pos.getX(), pos.getZ());
 
-        BlockState state = chunk.getBlockState(pos.getX(), pos.getZ());
+        var state = chunk.getBlockState(pos.getX(), pos.getZ());
         if (state != null && (state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.TALL_GRASS
                 || state.getBlock() == Blocks.VINE)) {
             return ColorUtil.argbMultiply(color, .8f, 0xff);

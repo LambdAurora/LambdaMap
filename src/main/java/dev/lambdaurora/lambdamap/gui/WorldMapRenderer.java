@@ -213,7 +213,7 @@ public class WorldMapRenderer {
         }
     }
 
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
+    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float delta) {
         DrawableHelper.fill(matrices, 0, 0, this.width, this.height, 0xff000000);
 
         int light = LightmapTextureManager.pack(15, 15);
@@ -223,10 +223,10 @@ public class WorldMapRenderer {
                 this.scaledWidth() + 10, this.scaledHeight() + 10,
                 marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, this.scale, light));
 
-        this.renderPlayerIcon(matrices, vertexConsumers, light);
+        this.renderPlayerIcon(matrices, vertexConsumers, light, delta);
     }
 
-    private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
         MinecraftClient client = MinecraftClient.getInstance();
 
         BlockPos pos = client.player.getBlockPos();
@@ -237,7 +237,7 @@ public class WorldMapRenderer {
 
         matrices.push();
         matrices.translate((pos.getX() - this.cornerViewX) / (float) this.scale, (pos.getZ() - this.cornerViewZ) / (float) this.scale, 1.1f);
-        MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.yaw, null, light);
+        MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.getYaw(delta), null, light);
         matrices.pop();
     }
 

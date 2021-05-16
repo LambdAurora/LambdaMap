@@ -83,10 +83,10 @@ public class MapRegionFile implements Closeable {
     private static MapRegionFile open(WorldMap map, int x, int z, File file) throws IOException {
         boolean exists = file.exists();
 
-        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        var raf = new RandomAccessFile(file, "rw");
 
         raf.seek(0);
-        Header header = new Header(raf.getChannel(), x, z);
+        var header = new Header(raf.getChannel(), x, z);
         if (!exists) {
             header.writeDefault();
         } else {
@@ -106,7 +106,7 @@ public class MapRegionFile implements Closeable {
      * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
      */
     public static @Nullable MapRegionFile load(WorldMap worldMap, int x, int z) throws IOException {
-        File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
+        var file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
         if (file.exists())
             return open(worldMap, x, z, file);
         return null;
@@ -122,7 +122,7 @@ public class MapRegionFile implements Closeable {
      * @throws IOException if the file cannot be created or opened or if the header fails to be written/read
      */
     public static MapRegionFile loadOrCreate(WorldMap worldMap, int x, int z) throws IOException {
-        File file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
+        var file = new File(worldMap.getDirectory(), "region_" + x + "_" + z + ".lmr");
         return open(worldMap, x, z, file);
     }
 
@@ -146,7 +146,7 @@ public class MapRegionFile implements Closeable {
                 return null;
             }
 
-            NbtCompound nbt = NbtIo.readCompressed(new ByteArrayInputStream(chunkBytes));
+            var nbt = NbtIo.readCompressed(new ByteArrayInputStream(chunkBytes));
             return MapChunk.fromNbt(this, nbt);
         } catch (IOException e) {
             LOGGER.error("Failed to load chunk (" + x + ", " + z + ")", e);
@@ -155,7 +155,7 @@ public class MapRegionFile implements Closeable {
     }
 
     public @NotNull MapChunk loadChunkOrCreate(int x, int z) {
-        MapChunk chunk = this.loadChunk(x, z);
+        var chunk = this.loadChunk(x, z);
         if (chunk == null) {
             chunk = new MapChunk(this.worldMap(), this, x, z);
         }
@@ -183,7 +183,7 @@ public class MapRegionFile implements Closeable {
         if (chunk.isEmpty())
             return;
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream(8096);
+        var stream = new ByteArrayOutputStream(8096);
         chunk.lock();
         NbtIo.writeCompressed(chunk.toNbt(), stream);
         chunk.unlock();

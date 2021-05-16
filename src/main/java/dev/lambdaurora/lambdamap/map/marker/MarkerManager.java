@@ -138,7 +138,7 @@ public class MarkerManager implements Iterable<Marker> {
         ItemStack stack = client.player.getMainHandStack();
         if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasTag() && stack != this.lastFilledMapStack) {
             NbtCompound nbt = stack.getTag();
-            List<Marker> mapMarkers = new ArrayList<>();
+            var mapMarkers = new ArrayList<Marker>();
             nbt.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((NbtCompound) decoration)).forEach(decoration -> {
                 MapIcon.Type type = MapIcon.Type.byId(decoration.getByte("type"));
                 if (type.isAlwaysRendered()) {
@@ -163,7 +163,7 @@ public class MarkerManager implements Iterable<Marker> {
 
     public void load() {
         if (!this.file.exists()) {
-            File nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
+            var nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
             if (nbtFile.exists()) {
                 try {
                     this.readNbt(NbtIo.readCompressed(nbtFile));

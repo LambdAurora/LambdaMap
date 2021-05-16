@@ -137,7 +137,7 @@ public class WorldMap {
      * @return the ARGB color
      */
     public int getRenderColor(int x, int z, ChunkGetterMode mode) {
-        MapChunk chunk = mode.getChunk(this, MapChunk.blockToChunk(x), MapChunk.blockToChunk(z));
+        var chunk = mode.getChunk(this, MapChunk.blockToChunk(x), MapChunk.blockToChunk(z));
         if (chunk == null || chunk.isEmpty())
             return 0;
         int index = chunk.getIndex(x, z);
@@ -145,15 +145,15 @@ public class WorldMap {
         if (color / 4 == 0)
             return 0;
         else {
-            MapColor mapColor = MapColor.COLORS[color / 4];
+            var mapColor = MapColor.COLORS[color / 4];
             if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
                 if (mapColor == MapColor.WATER_BLUE) {
-                    Biome biome = chunk.getBiome(index);
+                    var biome = chunk.getBiome(index);
                     if (biome != null) {
                         return this.calculateWaterColor(x, z, biome, color & 3, mode);
                     }
                 } else {
-                    BlockState state = chunk.getBlockState(index);
+                    var state = chunk.getBlockState(index);
                     if (state != null) {
                         int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
                         return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
@@ -179,9 +179,9 @@ public class WorldMap {
                 int resolveZ = z + offsetZ;
                 for (int offsetX = -biomeBlendRadius; offsetX < biomeBlendRadius; offsetX++) {
                     int resolveX = x + offsetX;
-                    MapChunk chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
+                    var chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
                     if (chunk != null) {
-                        Biome biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
+                        var biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
                         int waterColor = MapColor.WATER_BLUE.color;
                         if (biome != null) waterColor = biome.getWaterColor();
                         r += (waterColor & 0x00ff0000) >> 16;
@@ -228,7 +228,7 @@ public class WorldMap {
     }
 
     public @Nullable MapChunk getChunkOrLoad(long pos) {
-        MapChunk chunk = this.getChunk(pos);
+        var chunk = this.getChunk(pos);
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
@@ -241,7 +241,7 @@ public class WorldMap {
 
     public MapChunk getChunkOrCreate(int x, int z) {
         long pos = ChunkPos.toLong(x, z);
-        MapChunk chunk = this.getChunk(pos);
+        var chunk = this.getChunk(pos);
         if (chunk == null) {
             chunk = MapChunk.loadOrCreate(this, x, z);
             this.chunks.put(pos, chunk);
@@ -250,7 +250,7 @@ public class WorldMap {
     }
 
     public MapChunk getChunkOrCreate(long pos) {
-        MapChunk chunk = this.getChunk(pos);
+        var chunk = this.getChunk(pos);
         if (chunk == null) {
             int x = ChunkPos.getPackedX(pos);
             int z = ChunkPos.getPackedZ(pos);
@@ -264,7 +264,7 @@ public class WorldMap {
         x >>= 3;
         z >>= 3;
         long pos = ChunkPos.toLong(x, z);
-        MapRegionFile regionFile = this.regionFiles.get(pos);
+        var regionFile = this.regionFiles.get(pos);
 
         if (regionFile == null) {
             try {
@@ -284,7 +284,7 @@ public class WorldMap {
         x >>= 3;
         z >>= 3;
         long pos = ChunkPos.toLong(x, z);
-        MapRegionFile regionFile = this.regionFiles.get(pos);
+        var regionFile = this.regionFiles.get(pos);
 
         if (regionFile == null) {
             try {
@@ -306,11 +306,11 @@ public class WorldMap {
     public void importMapState(MapState mapState, List<Marker> markers) {
         int scale = 1 << mapState.scale;
 
-        int cornerX = mapState.xCenter - 64 * scale;
-        int cornerZ = mapState.zCenter - 64 * scale;
+        int cornerX = mapState.centerX - 64 * scale;
+        int cornerZ = mapState.centerZ - 64 * scale;
 
-        Marker marker = markers.get(0);
-        for (MapIcon icon : mapState.getIcons()) {
+        var marker = markers.get(0);
+        for (var icon : mapState.getIcons()) {
             if (marker.getType() == MarkerType.getVanillaMarkerType(icon.getType())) {
                 int iconX = (int) (icon.getX() / 2.f + 64) * scale;
                 int iconZ = (int) (icon.getZ() / 2.f + 64) * scale;
@@ -330,7 +330,7 @@ public class WorldMap {
                     continue;
 
                 int chunkX = MapChunk.blockToChunk(cornerX + x);
-                MapChunk chunk = this.getChunkOrCreate(chunkX, chunkZ);
+                var chunk = this.getChunkOrCreate(chunkX, chunkZ);
 
                 if (chunk.getColor(cornerX + x, cornerZ + z) / 4 == 0) {
                     chunk.putColor(cornerX + x, cornerZ + z, color);
@@ -340,7 +340,7 @@ public class WorldMap {
     }
 
     public void tick() {
-        MinecraftClient client = MinecraftClient.getInstance();
+        var client = MinecraftClient.getInstance();
         int viewDistance = Math.max(2, client.options.viewDistance - 2);
 
         int chunkX = ChunkSectionPos.getSectionCoord(this.playerViewX);

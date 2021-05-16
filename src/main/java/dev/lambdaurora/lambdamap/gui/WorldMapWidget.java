@@ -133,7 +133,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         matrices.translate(this.getX(), this.getY(), 0);
         matrices.scale(this.scale, this.scale, 1.f);
         VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-        this.renderer.render(matrices, immediate);
+        this.renderer.render(matrices, immediate, delta);
         immediate.draw();
         matrices.pop();
         ScissorManager.pop();
@@ -147,7 +147,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
             float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
             float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
-            drawCenteredString(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
+            drawCenteredText(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
                     this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 
             MapChunk chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));

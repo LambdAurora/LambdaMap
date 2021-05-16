@@ -60,7 +60,7 @@ public class RandomPrideFlagBackground implements Background {
             VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
             VertexConsumer vertices = immediate.getBuffer(RenderLayerUtil.newRenderLayer("lambdamap:random_pride_flag_background",
                     VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES, 256,
-                    RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(GameRenderer::getPositionColorShader))
+                    RenderLayerUtil.newMultiPhaseParametersBuilder().shader(RenderLayerUtil.getColorShader())
                             .build(false)));
 
             int width = widget.getWidth();

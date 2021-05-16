@@ -19,7 +19,6 @@ package dev.lambdaurora.lambdamap.map;
 
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
 import dev.lambdaurora.lambdamap.mixin.BlockColorsAccessor;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -39,7 +38,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Represents a map chunk. A map chunk is 128x128 blocks represented by color IDs and shade value for height differences.
@@ -281,7 +283,7 @@ public class MapChunk implements AutoCloseable {
      * @return the map chunk as NBT
      */
     public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+        var nbt = new NbtCompound();
         nbt.putInt("x", this.x);
         nbt.putInt("z", this.z);
         nbt.putByteArray("colors", this.colors);
@@ -298,30 +300,30 @@ public class MapChunk implements AutoCloseable {
      * @param nbt the parent compound NBT
      */
     private void writeBiomesNbt(NbtCompound nbt) {
-        Registry<Biome> registry = this.worldMap.getBiomeRegistry();
+        var registry = this.worldMap.getBiomeRegistry();
         if (registry != null) {
-            Map<Biome, IntList> biomes = new Object2ObjectOpenHashMap<>();
+            var biomes = new Object2ObjectOpenHashMap<Biome, IntList>();
             for (int i = 0; i < this.biomes.length; i++) {
-                Biome biome = this.biomes[i];
+                var biome = this.biomes[i];
                 biomes.computeIfAbsent(biome, o -> new IntArrayList()).add(i);
             }
 
-            NbtList biomeList = new NbtList();
+            var biomeList = new NbtList();
             biomes.forEach((biome, indices) -> {
                 if (biome == null)
                     return;
-                Identifier id = registry.getId(biome);
+                var id = registry.getId(biome);
                 if (indices.size() == SIZE) {
                     if (id != null)
                         nbt.putString("biome", id.toString());
                 } else if (id != null) {
-                    BitSet bitSet = new BitSet(SIZE);
+                    var bitSet = new BitSet(SIZE);
 
                     for (int i : indices) {
                         bitSet.set(i);
                     }
 
-                    NbtCompound biomeNbt = new NbtCompound();
+                    var biomeNbt = new NbtCompound();
                     biomeNbt.putString("biome", id.toString());
                     biomeNbt.putByteArray("mask", bitSet.toByteArray());
                     biomeList.add(biomeNbt);
@@ -338,23 +340,23 @@ public class MapChunk implements AutoCloseable {
      * @param nbt the parent compound NBT
      */
     private void writeBlockPaletteNbt(NbtCompound nbt) {
-        List<BlockState> palette = new ArrayList<>();
-        for (BlockState state : this.blockStates) {
+        var palette = new ArrayList<BlockState>();
+        for (var state : this.blockStates) {
             if (state != null) {
                 if (!palette.contains(state))
                     palette.add(state);
             }
         }
 
-        NbtList paletteNbt = new NbtList();
+        var paletteNbt = new NbtList();
         palette.forEach(state -> paletteNbt.add(NbtHelper.fromBlockState(state)));
         nbt.put("palette", paletteNbt);
 
         int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
-        PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE);
+        var blockStates = new PackedIntegerArray(bits, SIZE);
 
         for (int i = 0; i < SIZE; i++) {
-            BlockState state = this.blockStates[i];
+            var state = this.blockStates[i];
             if (state == null) blockStates.set(i, 0);
             else blockStates.set(i, palette.indexOf(state) + 1);
         }
@@ -407,7 +409,7 @@ public class MapChunk implements AutoCloseable {
     }
 
     public static MapChunk fromNbt(MapRegionFile regionFile, NbtCompound nbt) {
-        MapChunk chunk = new MapChunk(regionFile.worldMap(), regionFile, nbt.getInt("x"), nbt.getInt("z"));
+        var chunk = new MapChunk(regionFile.worldMap(), regionFile, nbt.getInt("x"), nbt.getInt("z"));
         byte[] colors = nbt.getByteArray("colors");
         if (colors.length == SIZE) {
             chunk.colors = colors;
@@ -418,23 +420,23 @@ public class MapChunk implements AutoCloseable {
     }
 
     private static MapChunk readBiomesNbt(MapChunk chunk, NbtCompound nbt) {
-        Registry<Biome> registry = chunk.worldMap.getBiomeRegistry();
+        var registry = chunk.worldMap.getBiomeRegistry();
         if (registry != null) {
             if (nbt.contains("biome", NbtType.STRING)) {
-                Identifier id = new Identifier(nbt.getString("biome"));
-                Biome biome = registry.get(id);
+                var id = new Identifier(nbt.getString("biome"));
+                var biome = registry.get(id);
                 if (biome != null) {
                     for (int i = 0; i < SIZE; i++) chunk.biomes[i] = biome;
                 }
             } else if (nbt.contains("biomes", NbtType.LIST)) {
-                NbtList biomesList = nbt.getList("biomes", NbtType.COMPOUND);
+                var biomesList = nbt.getList("biomes", NbtType.COMPOUND);
                 biomesList.stream().map(biomeNbt -> (NbtCompound) biomeNbt)
                         .forEach(biomeNbt -> {
-                            Identifier id = new Identifier(biomeNbt.getString("biome"));
-                            Biome biome = registry.get(id);
+                            var id = new Identifier(biomeNbt.getString("biome"));
+                            var biome = registry.get(id);
                             if (biome == null) return;
 
-                            BitSet bitSet = BitSet.valueOf(biomeNbt.getByteArray("mask"));
+                            var bitSet = BitSet.valueOf(biomeNbt.getByteArray("mask"));
                             for (int i = 0; i < SIZE; i++) {
                                 if (bitSet.get(i))
                                     chunk.biomes[i] = biome;
@@ -447,14 +449,14 @@ public class MapChunk implements AutoCloseable {
 
     private static MapChunk readBlockPaletteNbt(MapChunk chunk, NbtCompound nbt) {
         if (nbt.contains("palette", NbtType.LIST) && nbt.contains("block_states", NbtType.LONG_ARRAY)) {
-            NbtList paletteNbt = nbt.getList("palette", NbtType.COMPOUND);
-            Int2ObjectMap<BlockState> palette = new Int2ObjectOpenHashMap<>();
+            var paletteNbt = nbt.getList("palette", NbtType.COMPOUND);
+            var palette = new Int2ObjectOpenHashMap<BlockState>();
             for (int i = 0; i < paletteNbt.size(); i++) {
                 palette.put(i + 1, NbtHelper.toBlockState(paletteNbt.getCompound(i)));
             }
 
             int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
-            PackedIntegerArray blockStates = new PackedIntegerArray(bits, SIZE, nbt.getLongArray("block_states"));
+            var blockStates = new PackedIntegerArray(bits, SIZE, nbt.getLongArray("block_states"));
 
             for (int i = 0; i < SIZE; i++) {
                 int id = blockStates.get(i);
@@ -467,14 +469,14 @@ public class MapChunk implements AutoCloseable {
     }
 
     public static @Nullable MapChunk load(WorldMap map, int x, int z) {
-        MapRegionFile regionFile = map.getOrLoadRegion(x, z);
+        var regionFile = map.getOrLoadRegion(x, z);
         if (regionFile != null)
             return regionFile.loadChunk(x, z);
         return null;
     }
 
     public static @NotNull MapChunk loadOrCreate(WorldMap map, int x, int z) {
-        MapRegionFile regionFile = map.getOrCreateRegion(x, z);
+        var regionFile = map.getOrCreateRegion(x, z);
         if (regionFile == null)
             return new MapChunk(map, null, x, z);
 
@@ -488,7 +490,7 @@ public class MapChunk implements AutoCloseable {
      * @return {@code true} if the block state can be saved, else {@code false}
      */
     private static boolean filterBlockState(BlockState state) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        var client = MinecraftClient.getInstance();
 
         return ((BlockColorsAccessor) client.getBlockColors()).getProviders().get(Registry.BLOCK.getRawId(state.getBlock())) != null;
     }

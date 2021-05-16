@@ -36,7 +36,7 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onChunkDeltaUpdate", at = @At("RETURN"))
     private void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet, CallbackInfo ci) {
-        ChunkDeltaUpdateS2CPacketAccessor accessor = (ChunkDeltaUpdateS2CPacketAccessor) packet;
+        var accessor = (ChunkDeltaUpdateS2CPacketAccessor) packet;
         LambdaMap.get().onChunkUpdate(accessor.getSectionPos().getX(), accessor.getSectionPos().getZ());
     }
 
