@@ -96,7 +96,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
         this.doneButton = new SpruceButtonWidget(Position.of(this, width - 52, y + 13),
                 50, 20, SpruceTexts.GUI_DONE, btn -> {
             String text = this.nameField.getText();
-            markers.addMarker(this.typeButton.getType(), MarkerSource.USER,
+            markers.addMarker(this.typeButton.getMarkerType(), MarkerSource.USER,
                     parseInt(this.xFieldWidget), 0, parseInt(this.zFieldWidget),
                     180.f, text.isEmpty() ? null : new LiteralText(text));
             list.rebuildList();
@@ -108,7 +108,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
     }
 
     private void init() {
-        this.typeButton.setType(MarkerType.getVanillaMarkerType(MapIcon.Type.TARGET_POINT));
+        this.typeButton.setMarkerType(MarkerType.getVanillaMarkerType(MapIcon.Type.TARGET_POINT));
         this.nameField.setText("");
         this.xFieldWidget.setText("0");
         this.zFieldWidget.setText("0");

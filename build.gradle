@@ -1,9 +1,9 @@
 plugins {
-    id 'fabric-loom' version '0.8-SNAPSHOT'
+    id 'fabric-loom' version '0.8.+'
     id 'java-library'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'org.cadixdev.licenser' version '0.5.0'
+    id 'org.cadixdev.licenser' version '0.6.0'
 }
 
 import net.fabricmc.loom.task.RemapJarTask
@@ -22,26 +22,39 @@ Set<String> modules = [
 // This field defines the Java version your mod target.
 def targetJavaVersion = 16
 
-def getMCVersionString() {
-    if (project.minecraft_version.matches("\\d\\dw\\d\\d[a-z]")) {
+boolean isMCVersionNonRelease() {
+    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
+            || project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
+}
+
+String getMCVersionString() {
+    if (isMCVersionNonRelease()) {
         return project.minecraft_version
     }
-    int lastDot = project.minecraft_version.lastIndexOf('.')
-    return project.minecraft_version.substring(0, lastDot)
+    def version = project.minecraft_version.split('\\.')
+    return version[0] + '.' + version[1]
+}
+
+minecraft {
 }
 
 repositories {
+    maven {
+        name 'Quilt'
+        url 'https://maven.quiltmc.org/repository/release'
+    }
     maven {
         name 'AperLambda'
         url 'https://aperlambda.github.io/maven'
     }
     maven {
+        name 'Gegy'
+        url 'https://maven.gegy.dev'
+    }
+    maven {
         name 'Jitpack'
         url 'https://jitpack.io'
     }
-}
-
-minecraft {
 }
 
 configurations {
@@ -52,7 +65,7 @@ configurations {
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings "org.quiltmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modules.stream().map { fabricApi.module(it, project.fabric_api_version) }.forEach {
@@ -60,8 +73,8 @@ dependencies {
         include it
     }
 
-    modImplementation "com.github.lambdaurora:spruceui:${project.spruceui_version}"
-    include "com.github.lambdaurora:spruceui:${project.spruceui_version}"
+    modImplementation "dev.lambdaurora:spruceui:${project.spruceui_version}"
+    include "dev.lambdaurora:spruceui:${project.spruceui_version}"
     modImplementation "com.github.queerbric:pridelib:${project.pridelib_version}"
     include "com.github.queerbric:pridelib:${project.pridelib_version}"
 
@@ -77,21 +90,21 @@ java {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
+    it.options.encoding = 'UTF-8'
 
     it.options.release.set(targetJavaVersion)
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property 'version', project.version
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
     }
 }
 
 jar {
-    from("LICENSE") {
+    from('LICENSE') {
         rename { "${it}_${project.archivesBaseName}" }
     }
 }
@@ -102,12 +115,13 @@ license {
 }
 
 shadowJar {
-    dependsOn(project(":").jar)
+    dependsOn(project(':').jar)
     configurations = [project.configurations.shadow]
     archiveClassifier.set('dev')
 
     relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
 }
+remapJar.dependsOn(shadowJar)
 
 task shadowRemapJar(type: RemapJarTask) {
     dependsOn shadowJar

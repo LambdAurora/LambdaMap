@@ -39,6 +39,7 @@ import java.nio.file.Paths;
  */
 public final class LambdaMapConfig {
     private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
+    private static final boolean DEFAULT_SHOW_HUD = true;
     private static final boolean DEFAULT_NORTH_LOCK = false;
 
     public static final Path CONFIG_FILE_PATH = Paths.get(LambdaMap.NAMESPACE, "config.toml");
@@ -49,9 +50,11 @@ public final class LambdaMapConfig {
     private final FileConfig config;
 
     private final SpruceOption renderBiomeColorsOption;
+    private final SpruceOption showHudOption;
     private final SpruceOption northLockOption;
 
     private boolean renderBiomeColors;
+    private boolean showHud;
     private boolean northLock;
 
     public LambdaMapConfig(@NotNull LambdaMap mod) {
@@ -64,9 +67,11 @@ public final class LambdaMapConfig {
             this.mod.getRenderer().update();
             this.mod.hud.markDirty();
         }, null, true);
-        this.northLockOption = new SpruceCheckboxBooleanOption("lambdamap.config.north_lock",
+        this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
+                this::isHudVisible, this::setHudVisible, null, true);
+        this.northLockOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.north_lock",
                 this::isNorthLocked, this::setNorthLock,
-                new TranslatableText("lambdamap.config.north_lock.tooltip"), true);
+                new TranslatableText("lambdamap.config.hud.north_lock.tooltip"), true);
     }
 
     /**
@@ -84,6 +89,7 @@ public final class LambdaMapConfig {
         this.config.load();
 
         this.renderBiomeColors = this.config.getOrElse("map.render_biome_colors", DEFAULT_RENDER_BIOME_COLORS);
+        this.showHud = this.config.getOrElse("map.hud.visible", DEFAULT_SHOW_HUD);
         this.northLock = this.config.getOrElse("map.hud.north_lock", DEFAULT_NORTH_LOCK);
 
         LOGGER.info("Configuration loaded.");
@@ -114,6 +120,19 @@ public final class LambdaMapConfig {
 
     public SpruceOption getRenderBiomeColorsOption() {
         return this.renderBiomeColorsOption;
+    }
+
+    public boolean isHudVisible() {
+        return this.showHud;
+    }
+
+    public void setHudVisible(boolean visible) {
+        this.showHud = visible;
+        this.config.set("map.hud.visible", visible);
+    }
+
+    public SpruceOption getShowHudOption() {
+        return this.showHudOption;
     }
 
     public boolean isNorthLocked() {

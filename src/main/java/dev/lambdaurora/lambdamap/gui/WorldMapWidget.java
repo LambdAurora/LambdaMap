@@ -79,19 +79,12 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             int viewZ = this.mod.getMap().getViewZ();
             int multiplier = Screen.hasShiftDown() ? 10 : 1;
             switch (direction) {
-                case LEFT:
-                    this.renderer.updateView(viewX - multiplier, viewZ);
-                    return true;
-                case RIGHT:
-                    this.renderer.updateView(viewX + multiplier, viewZ);
-                    return true;
-                case UP:
-                    this.renderer.updateView(viewX, viewZ - multiplier);
-                    return true;
-                case DOWN:
-                    this.renderer.updateView(viewX, viewZ + multiplier);
-                    return true;
+                case LEFT -> this.renderer.updateView(viewX - multiplier, viewZ);
+                case RIGHT -> this.renderer.updateView(viewX + multiplier, viewZ);
+                case UP -> this.renderer.updateView(viewX, viewZ - multiplier);
+                case DOWN -> this.renderer.updateView(viewX, viewZ + multiplier);
             }
+            return true;
         }
         return super.onNavigation(direction, tab);
     }
@@ -132,7 +125,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
         matrices.push();
         matrices.translate(this.getX(), this.getY(), 0);
         matrices.scale(this.scale, this.scale, 1.f);
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+        var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         this.renderer.render(matrices, immediate, delta);
         immediate.draw();
         matrices.pop();
@@ -150,12 +143,12 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             drawCenteredText(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
                     this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 
-            MapChunk chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
+            var chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
             if (chunk != null) {
-                Biome biome = chunk.getBiome((int) x, (int) z);
-                Registry<Biome> registry = this.renderer.worldMap().getBiomeRegistry();
+                var biome = chunk.getBiome((int) x, (int) z);
+                var registry = this.renderer.worldMap().getBiomeRegistry();
                 if (biome != null && registry != null) {
-                    Identifier id = registry.getId(biome);
+                    var id = registry.getId(biome);
                     if (id != null) {
                         int width = this.client.textRenderer.getWidth(id.toString());
                         this.client.textRenderer.drawWithShadow(matrices, id.toString(),
@@ -165,7 +158,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
             }
         }
 
-        String scale = "1:" + this.renderer.scale();
+        var scale = "1:" + this.renderer.scale();
         if (this.intScale < 0) {
             scale = -this.intScale + ":1";
         }

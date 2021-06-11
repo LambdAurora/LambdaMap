@@ -61,11 +61,11 @@ public class MarkerTypeButton extends SpruceButtonWidget {
         return false;
     }
 
-    public MarkerType getType() {
+    public MarkerType getMarkerType() {
         return this.type;
     }
 
-    public void setType(MarkerType type) {
+    public void setMarkerType(MarkerType type) {
         this.type = type;
     }
 

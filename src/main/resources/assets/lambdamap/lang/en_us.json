@@ -1,7 +1,13 @@
 {
+  "lambdamap.config.category.general": "General",
   "lambdamap.config.render_biome_colors":  "Render Biome Colors",
-  "lambdamap.config.north_lock": "North Lock",
-  "lambdamap.config.north_lock.tooltip": "Locks the HUD map to always have north on top.",
+  "lambdamap.config.category.hud": "HUD",
+  "lambdamap.config.hud.visible": "Show HUD",
+  "lambdamap.config.hud.north_lock": "North Lock",
+  "lambdamap.config.hud.north_lock.tooltip": "Locks the HUD map to always have north on top.",
+
+  "lambdamap.keybind.map": "Open World Map",
+  "lambdamap.keybind.hud": "Toggle Map HUD",
 
   "lambdamap.marker.new.name": "Marker Name:",
   "lambdamap.marker.new.player_pos": "Player Pos",

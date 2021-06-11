@@ -30,8 +30,6 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -227,9 +225,9 @@ public class WorldMapRenderer {
     }
 
     private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        var client = MinecraftClient.getInstance();
 
-        BlockPos pos = client.player.getBlockPos();
+        var pos = client.player.getBlockPos();
 
         if (this.cornerViewX > pos.getX() || this.cornerViewZ > pos.getZ()
                 || this.cornerViewX + this.scaledWidth() < pos.getX() || this.cornerViewZ + this.scaledHeight() < pos.getZ())
@@ -291,7 +289,7 @@ public class WorldMapRenderer {
         }
 
         public void shiftLeft() {
-            for (ChunkTexture[] line : this.textures) {
+            for (var line : this.textures) {
                 ChunkTexture first = line[0];
                 System.arraycopy(line, 1, line, 0, line.length - 1);
                 line[line.length - 1] = first;
@@ -299,7 +297,7 @@ public class WorldMapRenderer {
         }
 
         public void shiftRight() {
-            for (ChunkTexture[] line : this.textures) {
+            for (var line : this.textures) {
                 ChunkTexture last = line[line.length - 1];
                 System.arraycopy(line, 0, line, 1, line.length - 1);
                 line[0] = last;
@@ -370,12 +368,12 @@ public class WorldMapRenderer {
      * @version 1.0.0
      * @since 1.0.0
      */
-    class ChunkTexture {
+    static class ChunkTexture {
         private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128, 128, true);
         private final RenderLayer mapRenderLayer;
 
         ChunkTexture() {
-            Identifier id = MinecraftClient.getInstance().getTextureManager().registerDynamicTexture("world_map", this.texture);
+            var id = MinecraftClient.getInstance().getTextureManager().registerDynamicTexture("world_map", this.texture);
             this.mapRenderLayer = RenderLayer.getText(id);
 
             TEXTURES.add(this);
@@ -400,8 +398,8 @@ public class WorldMapRenderer {
         public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
                            int offsetX, int offsetY,
                            float width, float height, int light) {
-            Matrix4f model = matrices.peek().getModel();
-            VertexConsumer vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
+            var model = matrices.peek().getModel();
+            var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
             float uOffset = offsetX / 128.f;
             float vOffset = offsetY / 128.f;

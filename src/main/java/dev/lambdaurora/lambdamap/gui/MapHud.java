@@ -36,7 +36,6 @@ public class MapHud implements AutoCloseable {
     private final MinecraftClient client;
     private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
     private final RenderLayer mapRenderLayer;
-    private boolean visible = true;
     private boolean dirty = true;
 
     public MapHud(LambdaMapConfig config, MinecraftClient client) {
@@ -52,15 +51,15 @@ public class MapHud implements AutoCloseable {
     }
 
     public boolean isVisible() {
-        return this.visible;
+        return this.config.isHudVisible();
     }
 
     public void setVisible(boolean visible) {
-        this.visible = visible;
+        this.config.setHudVisible(visible);
     }
 
     public void updateTexture(WorldMap map) {
-        if (!this.visible || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+        if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
         if (!this.dirty) return;
         else this.dirty = false;
@@ -80,7 +79,7 @@ public class MapHud implements AutoCloseable {
     }
 
     public void render(MatrixStack matrices, int light, float delta) {
-        if (!this.visible || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+        if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
 
         float scaleFactor = (float) this.client.getWindow().getScaleFactor();
@@ -100,7 +99,7 @@ public class MapHud implements AutoCloseable {
         matrices.translate(width - 128 * scaleCompensation, 0, 1);
         matrices.scale(scaleCompensation, scaleCompensation, 1);
 
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+        var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
 
         int textureWidth = this.texture.getImage().getWidth();
         int textureHeight = this.texture.getImage().getHeight();

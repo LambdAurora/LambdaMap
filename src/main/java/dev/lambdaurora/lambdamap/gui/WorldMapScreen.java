@@ -21,6 +21,7 @@ import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.background.EmptyBackground;
+import dev.lambdaurora.spruceui.option.SpruceSeparatorOption;
 import dev.lambdaurora.spruceui.screen.SpruceScreen;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
@@ -45,7 +46,7 @@ public class WorldMapScreen extends SpruceScreen {
     protected void init() {
         super.init();
 
-        SpruceTabbedWidget tabs = this.addChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
+        SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
         tabs.getList().setBackground(RandomPrideFlagBackground.random());
         tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
                 (width, height) -> new WorldMapWidget(Position.origin(), width, height));
@@ -69,7 +70,10 @@ public class WorldMapScreen extends SpruceScreen {
         SpruceOptionListWidget list = new SpruceOptionListWidget(Position.origin(), width, height);
         list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
 
+        list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.general", true, null));
         list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
+        list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.hud", true, null));
+        list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
         list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
         return list;
     }
