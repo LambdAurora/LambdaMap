@@ -18,7 +18,6 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.lambdaurora.lambdamap.util.RenderLayerUtil;
 import dev.lambdaurora.spruceui.background.Background;
 import dev.lambdaurora.spruceui.background.SimpleColorBackground;
 import dev.lambdaurora.spruceui.util.ColorUtil;
@@ -26,7 +25,10 @@ import dev.lambdaurora.spruceui.widget.SpruceWidget;
 import io.github.queerbric.pride.PrideFlag;
 import io.github.queerbric.pride.PrideFlagShapes;
 import io.github.queerbric.pride.PrideFlags;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -56,12 +58,13 @@ public class RandomPrideFlagBackground implements Background {
         int x = widget.getX();
         int y = widget.getY();
 
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         if (this.flag.getShape() == PrideFlagShapes.get(new Identifier("pride", "horizontal_stripes"))) {
-            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-            VertexConsumer vertices = immediate.getBuffer(RenderLayerUtil.newRenderLayer("lambdamap:random_pride_flag_background",
-                    VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES, 256,
-                    RenderLayerUtil.newMultiPhaseParametersBuilder().shader(RenderLayerUtil.getColorShader())
-                            .build(false)));
+            RenderSystem.disableTexture();
+            var model = matrices.peek().getModel();
+            var tessellator = Tessellator.getInstance();
+            var vertices = tessellator.getBuffer();
+            vertices.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
 
             int width = widget.getWidth();
             int height = widget.getHeight();
@@ -73,22 +76,22 @@ public class RandomPrideFlagBackground implements Background {
             float leftY = y;
 
             int[] color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(0));
-            vertices.vertex(x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
 
             rightY += partHeight;
 
             for (int i = 1; i < this.flag.getColors().size() - 1; i++) {
                 color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(i));
 
-                vertices.vertex(x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
 
-                vertices.vertex(x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(x, leftY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+                vertices.vertex(model, x, leftY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
 
                 rightY += partHeight;
                 leftY += partHeight;
@@ -96,13 +99,13 @@ public class RandomPrideFlagBackground implements Background {
 
             // Last one
             color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(this.flag.getColors().size() - 1));
-            vertices.vertex(x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(x, y + height, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+            vertices.vertex(model, x, y + height, 0).color(color[0], color[1], color[2], color[3]).next();
 
-            immediate.draw();
+            tessellator.draw();
+            RenderSystem.enableTexture();
         } else {
-            RenderSystem.setShader(GameRenderer::getPositionColorShader); // @TODO update pridelib
             this.flag.render(matrices, x, y, widget.getWidth(), widget.getHeight());
         }
 
