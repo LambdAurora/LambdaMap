@@ -1,0 +1,15 @@
+{
+  "lambdamap.config.render_biome_colors": "渲染生物群系颜色",
+
+  "lambdamap.marker.new.name": "标记点名称：",
+  "lambdamap.marker.new.player_pos": "玩家当前坐标",
+  "lambdamap.marker.new.x": "X轴坐标：",
+  "lambdamap.marker.new.z": "Z轴坐标：",
+  
+  "lambdamap.tabs.config": "配置",
+  "lambdamap.tabs.config.description": "模组的配置",
+  "lambdamap.tabs.markers": "标记点",
+  "lambdamap.tabs.markers.description": "标记地点！",
+  "lambdamap.tabs.world_map": "世界地图",
+  "lambdamap.tabs.world_map.description": "探索世界！"
+}
