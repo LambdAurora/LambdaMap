@@ -55,7 +55,7 @@ import java.util.List;
 public class WorldMap {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final int VIEW_RANGE = 12800;
+    private static final int VIEW_RANGE = 10000;
 
     private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
     private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
@@ -180,11 +180,12 @@ public class WorldMap {
                     var chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
                     if (chunk != null) {
                         var biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
-                        int waterColor = MapColor.WATER_BLUE.color;
-                        if (biome != null) waterColor = biome.getWaterColor();
-                        r += (waterColor & 0x00ff0000) >> 16;
-                        g += (waterColor & 0x0000ff00) >> 8;
-                        b += waterColor & 0xff;
+                        if (biome != null) {
+                            int waterColor = biome.getWaterColor();
+                            r += (waterColor & 0x00ff0000) >> 16;
+                            g += (waterColor & 0x0000ff00) >> 8;
+                            b += waterColor & 0xff;
+                        }
                     } else multiplier--;
                 }
             }
@@ -259,8 +260,8 @@ public class WorldMap {
     }
 
     public @Nullable MapRegionFile getOrLoadRegion(int x, int z) {
-        x >>= 3;
-        z >>= 3;
+        x = MapChunk.chunkToRegion(x);
+        z = MapChunk.chunkToRegion(z);
         long pos = ChunkPos.toLong(x, z);
         var regionFile = this.regionFiles.get(pos);
 
@@ -279,8 +280,8 @@ public class WorldMap {
     }
 
     public MapRegionFile getOrCreateRegion(int x, int z) {
-        x >>= 3;
-        z >>= 3;
+        x = MapChunk.chunkToRegion(x);
+        z = MapChunk.chunkToRegion(z);
         long pos = ChunkPos.toLong(x, z);
         var regionFile = this.regionFiles.get(pos);
 

@@ -24,6 +24,7 @@ import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -96,7 +97,7 @@ public class MapHud implements AutoCloseable {
         }
         int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
         matrices.push();
-        matrices.translate(width - 128 * scaleCompensation, 0, 1);
+        matrices.translate(width - 128 * scaleCompensation, 0, -20);
         matrices.scale(scaleCompensation, scaleCompensation, 1);
 
         var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
@@ -147,12 +148,18 @@ public class MapHud implements AutoCloseable {
         immediate.draw();
         ScissorManager.pop();
 
-        var pos = this.client.player.getBlockPos();
-        var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
-        int strWidth = this.client.textRenderer.getWidth(str);
-        this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate, false, 0, light);
+        if (!this.client.options.debugEnabled) {
+            var pos = this.client.player.getBlockPos();
+            var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
+            int strWidth = this.client.textRenderer.getWidth(str);
+            this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate,
+                    false, 0, light);
+            immediate.draw();
+        } else {
+            matrices.translate(0.f, 0.f, 1.2f);
+            DrawableHelper.fill(matrices, 0, 0, 128, 128, 0x88000000);
+        }
         matrices.pop();
-        immediate.draw();
         ScissorManager.popScaleFactor();
     }
 

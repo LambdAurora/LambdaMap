@@ -354,7 +354,7 @@ public class MapRegionFile implements Closeable {
         }
 
         public boolean isEmpty() {
-            for (int i = 0; i < CHUNKS; i++) {
+            for (int i = 0; i < CHUNKS * CHUNKS; i++) {
                 if (this.getChunkEntry(i) != INVALID_CHUNK)
                     return false;
             }

@@ -387,8 +387,21 @@ public class WorldMapRenderer {
                     int x = textureX * scale;
                     int chunkX = chunkStartX + x / 128;
 
-                    this.texture.getImage().setPixelColor(textureX, textureZ, map.getRenderColor((chunkX << 7) + (x & 127), (chunkZ << 7) + (z & 127),
-                            ChunkGetterMode.CREATE));
+                    var opacity = 0xff000000;
+
+                    // Checkerboard rendering if needed.
+                    /* var regionX = MapChunk.chunkToRegion(chunkX);
+                    var regionZ = MapChunk.chunkToRegion(chunkZ);
+                    if ((chunkX & 2) != (chunkZ & 2)) {
+                        opacity = 0xdd000000;
+                    }*/
+
+                    int renderColor = map.getRenderColor((chunkX << 7) + (x & 127), (chunkZ << 7) + (z & 127),
+                            ChunkGetterMode.CREATE);
+
+                    renderColor = opacity | (renderColor & 0x00ffffff);
+
+                    this.texture.getImage().setPixelColor(textureX, textureZ, renderColor);
                 }
             }
 

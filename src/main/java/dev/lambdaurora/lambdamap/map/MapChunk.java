@@ -408,6 +408,10 @@ public class MapChunk implements AutoCloseable {
         return coordinate >> 7;
     }
 
+    public static int chunkToRegion(int coordinate) {
+        return coordinate >> 3;
+    }
+
     public static MapChunk fromNbt(MapRegionFile regionFile, NbtCompound nbt) {
         var chunk = new MapChunk(regionFile.worldMap(), regionFile, nbt.getInt("x"), nbt.getInt("z"));
         byte[] colors = nbt.getByteArray("colors");
