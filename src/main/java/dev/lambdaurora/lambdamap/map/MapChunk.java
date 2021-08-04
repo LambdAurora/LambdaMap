@@ -40,8 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a map chunk. A map chunk is 128x128 blocks represented by color IDs and shade value for height differences.
@@ -60,7 +60,7 @@ public class MapChunk implements AutoCloseable {
     private final Biome[] biomes = new Biome[SIZE];
     private final BlockState[] blockStates = new BlockState[SIZE];
     private final MapRegionFile regionFile;
-    private final Timer saveTimer;
+    private final ScheduledFuture<?> saveTask;
     private boolean locked = false;
     private boolean empty = true;
     private boolean dirty = false;
@@ -70,17 +70,13 @@ public class MapChunk implements AutoCloseable {
         this.x = x;
         this.z = z;
         this.regionFile = regionFile;
-        this.saveTimer = new Timer();
 
         if (this.regionFile != null) {
             this.regionFile.incrementLoadedChunk();
             // Auto-save every 6 minutes
-            this.saveTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    MapChunk.this.save();
-                }
-            }, 360000, 360000);
+            this.saveTask = this.worldMap.service.scheduleAtFixedRate(this::save, 6, 6, TimeUnit.MINUTES);
+        } else {
+            this.saveTask = null;
         }
     }
 
@@ -382,14 +378,15 @@ public class MapChunk implements AutoCloseable {
 
     public void unload() {
         this.lock();
-        if (this.regionFile != null)
+        if (this.regionFile != null) {
+            this.saveTask.cancel(false);
             this.regionFile.unloadChunk(this);
+        }
         this.dirty = false;
     }
 
     @Override
     public void close() {
-        this.saveTimer.cancel();
         this.unload();
     }
 

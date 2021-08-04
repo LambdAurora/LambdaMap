@@ -44,6 +44,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Represents the world map.
@@ -62,6 +64,8 @@ public class WorldMap {
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final File directory;
     private final MarkerManager markerManager;
+
+    final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     private final World world;
 
@@ -369,6 +373,7 @@ public class WorldMap {
     }
 
     public void unload() {
+        this.service.shutdown();
         this.markerManager.save();
         this.chunks.forEach((pos, chunk) -> chunk.unload());
         this.chunks.clear();
