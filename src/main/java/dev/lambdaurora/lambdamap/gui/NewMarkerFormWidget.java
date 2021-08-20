@@ -23,6 +23,7 @@ import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.SpruceTexts;
 import dev.lambdaurora.spruceui.background.SimpleColorBackground;
+import dev.lambdaurora.spruceui.util.SpruceUtil;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceNamedTextFieldWidget;
@@ -34,7 +35,6 @@ import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import org.aperlambda.lambdacommon.utils.LambdaUtils;
 
 public class NewMarkerFormWidget extends SpruceContainerWidget {
     private final MarkerTypeButton typeButton;
@@ -117,7 +117,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
     }
 
     private int parseInt(SpruceNamedTextFieldWidget textFieldWidget) {
-        return LambdaUtils.parseIntFromString(textFieldWidget.getText());
+        return SpruceUtil.parseIntFromString(textFieldWidget.getText());
     }
 
     private void setupCoordinatesField(SpruceNamedTextFieldWidget textField) {

@@ -96,7 +96,7 @@ public class LambdaMap implements ClientModInitializer {
             }
 
             if (this.mapKeybind.wasPressed()) {
-                client.openScreen(new WorldMapScreen());
+                client.setScreen(new WorldMapScreen());
             }
 
             this.hud.updateTexture(this.getMap());

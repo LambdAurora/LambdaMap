@@ -136,11 +136,11 @@ public class MarkerManager implements Iterable<Marker> {
         // 1. Try to import the markers of the filled map.
         // 2. Try to import the colors of the filled map if it has absolute coordinates markers.
         ItemStack stack = client.player.getMainHandStack();
-        if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasTag() && stack != this.lastFilledMapStack) {
-            NbtCompound nbt = stack.getTag();
+        if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasNbt() && stack != this.lastFilledMapStack) {
+            NbtCompound nbt = stack.getNbt();
             var mapMarkers = new ArrayList<Marker>();
             nbt.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((NbtCompound) decoration)).forEach(decoration -> {
-                MapIcon.Type type = MapIcon.Type.byId(decoration.getByte("type"));
+                var type = MapIcon.Type.byId(decoration.getByte("type"));
                 if (type.isAlwaysRendered()) {
                     mapMarkers.add(this.addMarker(MarkerType.getVanillaMarkerType(type), MarkerSource.FILLED_MAP,
                             (int) decoration.getDouble("x"), 64, (int) decoration.getDouble("z"),

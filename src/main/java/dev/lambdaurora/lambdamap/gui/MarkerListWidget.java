@@ -24,6 +24,7 @@ import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.background.EmptyBackground;
 import dev.lambdaurora.spruceui.navigation.NavigationDirection;
 import dev.lambdaurora.spruceui.navigation.NavigationUtils;
+import dev.lambdaurora.spruceui.util.SpruceUtil;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import dev.lambdaurora.spruceui.widget.SpruceWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
@@ -38,7 +39,6 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Matrix4f;
-import org.aperlambda.lambdacommon.utils.LambdaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -119,13 +119,13 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             SpruceTextFieldWidget xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
             xField.setText(String.valueOf(this.marker.getX()));
             xField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
-            xField.setChangedListener(input -> this.marker.setX(LambdaUtils.parseIntFromString(input)));
+            xField.setChangedListener(input -> this.marker.setX(SpruceUtil.parseIntFromString(input)));
             this.children.add(xField);
 
             SpruceTextFieldWidget zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
             zField.setText(String.valueOf(this.marker.getZ()));
             zField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
-            zField.setChangedListener(input -> this.marker.setZ(LambdaUtils.parseIntFromString(input)));
+            zField.setChangedListener(input -> this.marker.setZ(SpruceUtil.parseIntFromString(input)));
             this.children.add(zField);
 
             if (this.marker.getSource() != MarkerSource.USER) {
