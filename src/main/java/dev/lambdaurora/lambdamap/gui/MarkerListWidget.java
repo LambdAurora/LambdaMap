@@ -79,7 +79,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             this.parent = parent;
             this.marker = marker;
 
-            MarkerTypeButton typeBtn = new MarkerTypeButton(Position.of(this, 3, 2), this.marker.getType(), this.marker::setType);
+            var typeBtn = new MarkerTypeButton(Position.of(this, 3, 2), this.marker.getType(), this.marker::setType);
             typeBtn.setActive(this.marker.getSource() == MarkerSource.USER);
             this.children.add(typeBtn);
             this.addNameFieldWidget();
@@ -88,12 +88,12 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
             this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
                     btn -> {
                         this.parent.markerManager.removeMarker(this.marker);
-                        this.parent.rebuildList();
+                        this.parent.removeEntry(this);
                     }));
         }
 
         private void addNameFieldWidget() {
-            SpruceTextFieldWidget fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, new LiteralText("Marker Name Field"));
+            var fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, new LiteralText("Marker Name Field"));
             if (this.marker.getName() != null)
                 fieldWidget.setText(this.marker.getName().getString());
             if (this.marker.getSource() != MarkerSource.BANNER)
@@ -116,13 +116,13 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
         private void addPositionFieldWidgets() {
             int x = this.getWidth() / 2;
 
-            SpruceTextFieldWidget xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
+            var xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
             xField.setText(String.valueOf(this.marker.getX()));
             xField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
             xField.setChangedListener(input -> this.marker.setX(SpruceUtil.parseIntFromString(input)));
             this.children.add(xField);
 
-            SpruceTextFieldWidget zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
+            var zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
             zField.setText(String.valueOf(this.marker.getZ()));
             zField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
             zField.setChangedListener(input -> this.marker.setZ(SpruceUtil.parseIntFromString(input)));
@@ -176,7 +176,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
         /* Navigation */
 
         @Override
-        public boolean onNavigation(@NotNull NavigationDirection direction, boolean tab) {
+        public boolean onNavigation(NavigationDirection direction, boolean tab) {
             if (this.requiresCursor()) return false;
             if (!tab && direction.isVertical()) {
                 if (this.isFocused()) {
@@ -206,7 +206,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
         @Override
         protected boolean onMouseClick(double mouseX, double mouseY, int button) {
-            Iterator<SpruceWidget> it = this.children().iterator();
+            Iterator<SpruceWidget> it = this.iterator();
 
             SpruceWidget element;
             do {
@@ -255,7 +255,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
         @Override
         protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-            this.children.forEach(widget -> widget.render(matrices, mouseX, mouseY, delta));
+            this.forEach(widget -> widget.render(matrices, mouseX, mouseY, delta));
 
             int light = LightmapTextureManager.pack(15, 15);
 
