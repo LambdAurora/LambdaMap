@@ -25,8 +25,8 @@
     "lambdamap.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=1.17",
-    "fabricloader": ">=0.11.3",
+    "minecraft": ">=1.18",
+    "fabricloader": ">=0.12.9",
     "fabric-resource-loader-v0": ">=0.4.1",
     "spruceui": ">=3.1.0"
   }

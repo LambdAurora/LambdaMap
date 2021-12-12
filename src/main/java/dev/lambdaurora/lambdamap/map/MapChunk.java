@@ -348,7 +348,7 @@ public class MapChunk implements AutoCloseable {
         palette.forEach(state -> paletteNbt.add(NbtHelper.fromBlockState(state)));
         nbt.put("palette", paletteNbt);
 
-        int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
+        int bits = Math.max(4, MathHelper.ceilLog2(paletteNbt.size() + 1));
         var blockStates = new PackedIntegerArray(bits, SIZE);
 
         for (int i = 0; i < SIZE; i++) {
@@ -357,7 +357,7 @@ public class MapChunk implements AutoCloseable {
             else blockStates.set(i, palette.indexOf(state) + 1);
         }
 
-        nbt.putLongArray("block_states", blockStates.getStorage());
+        nbt.putLongArray("block_states", blockStates.getData());
     }
 
     /**
@@ -456,7 +456,7 @@ public class MapChunk implements AutoCloseable {
                 palette.put(i + 1, NbtHelper.toBlockState(paletteNbt.getCompound(i)));
             }
 
-            int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
+            int bits = Math.max(4, MathHelper.ceilLog2(paletteNbt.size() + 1));
             var blockStates = new PackedIntegerArray(bits, SIZE, nbt.getLongArray("block_states"));
 
             for (int i = 0; i < SIZE; i++) {

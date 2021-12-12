@@ -1,9 +1,9 @@
 plugins {
-    id 'fabric-loom' version '0.9.45'
-    id 'io.github.juuxel.loom-quiltflower' version '1.1.3'
+    id 'fabric-loom' version '0.10.+'
+    id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
     id 'java-library'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
     id 'org.cadixdev.licenser' version '0.6.1'
 }
 
@@ -21,7 +21,7 @@ Set<String> modules = [
 ]
 
 // This field defines the Java version your mod target.
-def targetJavaVersion = 16
+def targetJavaVersion = 17
 
 boolean isMCVersionNonRelease() {
     return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
@@ -48,6 +48,7 @@ repositories {
         name 'Jitpack'
         url 'https://jitpack.io'
     }
+    mavenCentral()
 }
 
 configurations {
@@ -68,11 +69,11 @@ dependencies {
 
     modImplementation "dev.lambdaurora:spruceui:${project.spruceui_version}"
     include "dev.lambdaurora:spruceui:${project.spruceui_version}"
-    modImplementation "com.github.queerbric:pridelib:${project.pridelib_version}"
-    include "com.github.queerbric:pridelib:${project.pridelib_version}"
+    modImplementation "io.github.queerbric:pridelib:${project.pridelib_version}"
+    include "io.github.queerbric:pridelib:${project.pridelib_version}"
 
-    shadow "com.electronwill.night-config:core:3.6.3"
-    shadow "com.electronwill.night-config:toml:3.6.3"
+    shadow 'com.electronwill.night-config:core:3.6.4'
+    shadow "com.electronwill.night-config:toml:3.6.4"
 }
 
 java {

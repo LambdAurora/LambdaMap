@@ -89,7 +89,7 @@ public class MarkerType {
         matrices.scale(4.f, 4.f, 3.f);
         matrices.translate(-0.125, 0.125, 0.0);
         VertexConsumer vertices = vertexConsumers.getBuffer(this.renderLayer);
-        Matrix4f model = matrices.peek().getModel();
+        Matrix4f model = matrices.peek().getPositionMatrix();
         WorldMapRenderer.vertex(vertices, model, -1.f, 1.f, this.uMin, this.vMin, light);
         WorldMapRenderer.vertex(vertices, model, 1.f, 1.f, this.uMax, this.vMin, light);
         WorldMapRenderer.vertex(vertices, model, 1.f, -1.f, this.uMax, this.vMax, light);
@@ -105,7 +105,7 @@ public class MarkerType {
             matrices.scale(scale, scale, -1.f);
             matrices.translate(0.f, 0.f, 0.10000000149011612D);
 
-            model = matrices.peek().getModel();
+            model = matrices.peek().getPositionMatrix();
             textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, false, 0xaa000000, light);
             matrices.pop();
         }

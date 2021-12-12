@@ -18,10 +18,10 @@
 package dev.lambdaurora.lambdamap.util;
 
 import dev.lambdaurora.lambdamap.map.MapChunk;
+import dev.lambdaurora.lambdamap.mixin.MapColorAccessor;
 import dev.lambdaurora.spruceui.util.ColorUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
@@ -65,7 +65,7 @@ public class ClientWorldWrapper implements BlockRenderView {
         var biome = this.chunk.getBiome(pos.getX(), pos.getZ());
         if (biome == null) {
             int color = this.chunk.getColor(pos.getX(), pos.getZ()) & 255;
-            return MapColor.COLORS[color / 4].color; // Give up
+            return MapColorAccessor.getColors()[color / 4].color; // Give up
         }
         int color = colorResolver.getColor(biome, pos.getX(), pos.getZ());
 

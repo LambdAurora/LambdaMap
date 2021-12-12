@@ -23,6 +23,7 @@ import dev.lambdaurora.lambdamap.map.marker.Marker;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.lambdamap.map.storage.MapRegionFile;
+import dev.lambdaurora.lambdamap.mixin.MapColorAccessor;
 import dev.lambdaurora.lambdamap.util.ClientWorldWrapper;
 import dev.lambdaurora.spruceui.util.ColorUtil;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -147,7 +148,7 @@ public class WorldMap {
         if (color / 4 == 0)
             return 0;
         else {
-            var mapColor = MapColor.COLORS[color / 4];
+            var mapColor = MapColorAccessor.getColors()[color / 4];
             if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
                 if (mapColor == MapColor.WATER_BLUE) {
                     var biome = chunk.getBiome(index);
