@@ -72,7 +72,7 @@ public class MapHud implements AutoCloseable {
             int absoluteZ = corner.getZ() + z;
             for (int x = 0; x < height; ++x) {
                 int absoluteX = corner.getX() + x;
-                this.texture.getImage().setPixelColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
+                this.texture.getImage().setColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
             }
         }
 
@@ -119,7 +119,7 @@ public class MapHud implements AutoCloseable {
             textureWidth = 128;
             textureHeight = 128;
         }
-        var model = matrices.peek().getModel();
+        var model = matrices.peek().getPositionMatrix();
         var vertices = immediate.getBuffer(this.mapRenderLayer);
         WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
         WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
@@ -152,7 +152,7 @@ public class MapHud implements AutoCloseable {
             var pos = this.client.player.getBlockPos();
             var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
             int strWidth = this.client.textRenderer.getWidth(str);
-            this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate,
+            this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getPositionMatrix(), immediate,
                     false, 0, light);
             immediate.draw();
         } else {
