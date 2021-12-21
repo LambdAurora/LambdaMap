@@ -22,6 +22,7 @@ import dev.lambdaurora.lambdamap.gui.MapHud;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
 import dev.lambdaurora.lambdamap.map.WorldMap;
+import dev.lambdaurora.lambdamap.mixin.BiomeAccessAccessor;
 import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -125,7 +126,8 @@ public class LambdaMap implements ClientModInitializer {
         if (client.getServer() != null) {
             directory = getWorldMapDirectorySP(client, world.getRegistryKey());
         } else {
-            directory = getWorldMapDirectoryMP(client, world.getRegistryKey());
+            var hashedSeed = ((BiomeAccessAccessor) world.getBiomeAccess()).getSeed();
+            directory = getWorldMapDirectoryMP(client, world.getRegistryKey(), hashedSeed);
         }
         this.map = new WorldMap(world, directory);
         this.renderer.setWorldMap(this.map);
@@ -281,12 +283,13 @@ public class LambdaMap implements ClientModInitializer {
         return mapDirectory;
     }
 
-    public static File getWorldMapDirectoryMP(MinecraftClient client, RegistryKey<World> worldKey) {
+    public static File getWorldMapDirectoryMP(MinecraftClient client, RegistryKey<World> worldKey, long hashedSeed) {
         var serverInfo = client.getCurrentServerEntry();
         var gameDir = FabricLoader.getInstance().getGameDir().toFile();
         var lambdaMapDir = new File(gameDir, NAMESPACE);
         var serverDir = new File(lambdaMapDir, (serverInfo.name + "_" + serverInfo.address).replaceAll("[^A-Za-z0-9_.]", "_"));
-        var worldDir = new File(serverDir, worldKey.getValue().getNamespace() + "/" + worldKey.getValue().getPath());
+        var seedDir = new File(serverDir, String.valueOf(hashedSeed));
+        var worldDir = new File(seedDir, worldKey.getValue().getNamespace() + "/" + worldKey.getValue().getPath());
         if (!worldDir.exists())
             worldDir.mkdirs();
         return worldDir;

@@ -3,6 +3,7 @@
   "package": "dev.lambdaurora.lambdamap.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "BiomeAccessAccessor",
     "BlockColorsAccessor",
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ClientPlayerInteractionManagerMixin",
