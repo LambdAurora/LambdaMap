@@ -72,9 +72,9 @@ public class WorldMapWidget extends AbstractSpruceWidget {
     @Override
     public boolean onNavigation(@NotNull NavigationDirection direction, boolean tab) {
         if (!tab) {
-            int viewX = this.mod.getMap().getViewX();
-            int viewZ = this.mod.getMap().getViewZ();
-            int multiplier = Screen.hasShiftDown() ? 10 : 1;
+            double viewX = this.mod.getMap().getViewX();
+            double viewZ = this.mod.getMap().getViewZ();
+            double multiplier = Screen.hasShiftDown() ? 10 : 1;
             switch (direction) {
                 case LEFT -> this.renderer.updateView(viewX - multiplier, viewZ);
                 case RIGHT -> this.renderer.updateView(viewX + multiplier, viewZ);
@@ -96,13 +96,13 @@ public class WorldMapWidget extends AbstractSpruceWidget {
     @Override
     protected boolean onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-            int viewX = this.mod.getMap().getViewX();
-            int viewZ = this.mod.getMap().getViewZ();
-            float scaleCompensation = 1.f / this.scale;
+            double viewX = this.mod.getMap().getViewX();
+            double viewZ = this.mod.getMap().getViewZ();
+            double scaleCompensation = 1d / this.scale;
             if (this.renderer.scale() != 1) {
                 scaleCompensation = this.renderer.scale();
             }
-            this.renderer.updateView((int) (viewX - deltaX * scaleCompensation), (int) (viewZ - deltaY * scaleCompensation));
+            this.renderer.updateView(viewX - deltaX * scaleCompensation, viewZ - deltaY * scaleCompensation);
             return true;
         }
         return super.onMouseDrag(mouseX, mouseY, button, deltaX, deltaY);

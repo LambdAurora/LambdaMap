@@ -93,13 +93,13 @@ public class WorldMapRenderer {
         this.scale = 1 << scale;
 
         if (this.worldMap != null) {
-            int x = this.worldMap.getViewX();
-            int z = this.worldMap.getViewZ();
+            double x = this.worldMap.getViewX();
+            double z = this.worldMap.getViewZ();
 
             this.worldMap.updateViewPos(x, z);
 
-            this.cornerViewX = x - (this.scaledWidth() / 2);
-            this.cornerViewZ = z - (this.scaledHeight() / 2);
+            this.cornerViewX = (int) (x - (this.scaledWidth() / 2));
+            this.cornerViewZ = (int) (z - (this.scaledHeight() / 2));
 
             if (this.textureManager != null) {
                 this.textureManager.updateTextures();
@@ -163,11 +163,11 @@ public class WorldMapRenderer {
         return this.height() * this.scale();
     }
 
-    public void updateView(int x, int z) {
+    public void updateView(double x, double z) {
         this.updateView(x, z, false);
     }
 
-    public void updateView(int x, int z, boolean forceUpdate) {
+    public void updateView(double x, double z, boolean forceUpdate) {
         this.worldMap.updateViewPos(x, z);
 
         x -= (this.scaledWidth() / 2);
@@ -176,7 +176,7 @@ public class WorldMapRenderer {
         boolean shouldUpdate = false;
         if (this.cornerViewX != x && this.textureManager != null) {
             int oldChunkX = this.getCornerMapChunkX();
-            int newChunkX = MapChunk.blockToChunk(x);
+            int newChunkX = MapChunk.blockToChunk((int) x);
 
             if (oldChunkX != newChunkX) {
                 int offset = Math.abs(newChunkX - oldChunkX);
@@ -188,7 +188,7 @@ public class WorldMapRenderer {
 
         if (this.cornerViewZ != z && this.textureManager != null) {
             int oldChunkZ = this.getCornerMapChunkZ();
-            int newChunkZ = MapChunk.blockToChunk(z);
+            int newChunkZ = MapChunk.blockToChunk((int) z);
 
             if (oldChunkZ != newChunkZ) {
                 int offset = Math.abs(newChunkZ - oldChunkZ);
@@ -198,8 +198,8 @@ public class WorldMapRenderer {
             }
         }
 
-        this.cornerViewX = x;
-        this.cornerViewZ = z;
+        this.cornerViewX = (int) x;
+        this.cornerViewZ = (int) z;
 
         if (shouldUpdate || forceUpdate)
             this.update();
