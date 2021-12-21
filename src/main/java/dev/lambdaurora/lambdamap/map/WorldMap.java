@@ -70,10 +70,10 @@ public class WorldMap {
 
     private final World world;
 
-    private int viewX = 0;
-    private int viewZ = 0;
-    private int playerViewX = 0;
-    private int playerViewZ = 0;
+    private double viewX = 0;
+    private double viewZ = 0;
+    private double playerViewX = 0;
+    private double playerViewZ = 0;
 
     public WorldMap(World world, File directory) {
         this.directory = directory;
@@ -105,15 +105,15 @@ public class WorldMap {
         return this.getRegistryManager().get(Registry.BIOME_KEY);
     }
 
-    public int getViewX() {
+    public double getViewX() {
         return this.viewX;
     }
 
-    public int getViewZ() {
+    public double getViewZ() {
         return this.viewZ;
     }
 
-    public boolean updateViewPos(int viewX, int viewZ) {
+    public boolean updateViewPos(double viewX, double viewZ) {
         boolean changed = viewX != this.viewX || viewZ != this.viewZ;
         this.viewX = viewX;
         this.viewZ = viewZ;
@@ -355,10 +355,10 @@ public class WorldMap {
         int playerViewEndX = (chunkX + viewDistance) >> 3;
         int playerViewEndZ = (chunkZ + viewDistance) >> 3;
 
-        int viewStartX = this.viewX - VIEW_RANGE;
-        int viewStartZ = this.viewZ - VIEW_RANGE;
-        int viewEndX = this.viewX + VIEW_RANGE;
-        int viewEndZ = this.viewZ + VIEW_RANGE;
+        int viewStartX = (int) (this.viewX - VIEW_RANGE);
+        int viewStartZ = (int) (this.viewZ - VIEW_RANGE);
+        int viewEndX = (int) (this.viewX + VIEW_RANGE);
+        int viewEndZ = (int) (this.viewZ + VIEW_RANGE);
 
         boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
         this.chunks.values().removeIf(chunk -> {

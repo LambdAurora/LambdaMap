@@ -59,6 +59,9 @@ public class MapHud implements AutoCloseable {
         this.config.setHudVisible(visible);
     }
 
+	private int renderPosX;
+	private int renderPosZ;
+
     public void updateTexture(WorldMap map) {
         if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
             return;
@@ -77,6 +80,8 @@ public class MapHud implements AutoCloseable {
         }
 
         this.texture.upload();
+		renderPosX = this.client.player.getBlockPos().getX();
+		renderPosZ = this.client.player.getBlockPos().getZ();
     }
 
     public void render(MatrixStack matrices, int light, float delta) {
@@ -119,6 +124,13 @@ public class MapHud implements AutoCloseable {
             textureWidth = 128;
             textureHeight = 128;
         }
+
+		// Translate by offset from position that map was last rendered from
+		var lerped = this.client.player.getLerpedPos(delta);
+		float offsetX = (float) ((renderPosX - lerped.getX())) * scaleCompensation;
+		float offsetZ = (float) ((renderPosZ - lerped.getZ())) * scaleCompensation;
+		matrices.translate(offsetX, offsetZ, 0);
+
         var model = matrices.peek().getPositionMatrix();
         var vertices = immediate.getBuffer(this.mapRenderLayer);
         WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
@@ -127,8 +139,8 @@ public class MapHud implements AutoCloseable {
         WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, uStart, vStart, light);
 
         {
-            double cornerX = this.client.player.getX() - (textureWidth / 2.f);
-            double cornerZ = this.client.player.getZ() - (textureWidth / 2.f);
+            double cornerX = renderPosX - (textureWidth / 2.f);
+            double cornerZ = renderPosZ - (textureWidth / 2.f);
             LambdaMap.get().getMap().getMarkerManager().forEachInBox((int) cornerX, (int) cornerZ, textureWidth, textureHeight, marker -> {
                 matrices.push();
 
