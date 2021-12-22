@@ -86,7 +86,7 @@ public class LambdaMap implements ClientModInitializer {
 
         ClientTickEvents.START_WORLD_TICK.register(world -> {
             var client = MinecraftClient.getInstance();
-            if (this.map.updatePlayerViewPos(client.player.getBlockX(), client.player.getBlockZ())) {
+            if (this.map.updatePlayerViewPos(client.player.getBlockX(), client.player.getBlockZ(), this.hud.getMovementThreshold())) {
                 this.hud.markDirty();
             }
             this.map.tick();
