@@ -18,9 +18,9 @@
 package dev.lambdaurora.lambdamap.extension;
 
 public interface WorldChunkExtension {
-    boolean lambdamap$isDirty();
+	boolean lambdamap$isDirty();
 
-    void lambdamap$markDirty();
+	void lambdamap$markDirty();
 
-    void lambdamap$markClean();
+	void lambdamap$markClean();
 }

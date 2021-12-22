@@ -39,7 +39,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -58,154 +57,153 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class MarkerManager implements Iterable<Marker> {
-    private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger();
 
-    private final List<Marker> markers = new ArrayList<>();
-    private final WorldMap map;
-    private final File file;
-    private final FileConfig config;
+	private final List<Marker> markers = new ArrayList<>();
+	private final WorldMap map;
+	private final File file;
+	private final FileConfig config;
 
-    private ItemStack lastFilledMapStack;
+	private ItemStack lastFilledMapStack;
 
-    public MarkerManager(WorldMap map) {
-        this.map = map;
-        this.file = new File(this.map.getDirectory(), "markers.toml");
-        this.config = FileConfig.builder(this.file).autosave().build();
-    }
+	public MarkerManager(WorldMap map) {
+		this.map = map;
+		this.file = new File(this.map.getDirectory(), "markers.toml");
+		this.config = FileConfig.builder(this.file).autosave().build();
+	}
 
-    public Marker addMarker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text text) {
-        Marker marker = new Marker(type, source, x, y, z, rotation, text);
-        this.addMarker(marker);
+	public Marker addMarker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text text) {
+		Marker marker = new Marker(type, source, x, y, z, rotation, text);
+		this.addMarker(marker);
 
-        this.save();
-        return marker;
-    }
+		this.save();
+		return marker;
+	}
 
-    public void addMarker(Marker marker) {
-        for (Marker o : this) {
-            if (o.isAt(marker)) {
-                o.merge(marker);
-                return;
-            }
-        }
+	public void addMarker(Marker marker) {
+		for (Marker o : this) {
+			if (o.isAt(marker)) {
+				o.merge(marker);
+				return;
+			}
+		}
 
-        this.markers.add(marker);
-    }
+		this.markers.add(marker);
+	}
 
-    public void removeMarkersAt(BlockPos pos) {
-        this.markers.removeIf(other -> pos.getX() == other.getX() && pos.getY() == other.getY() && pos.getZ() == other.getZ());
-    }
+	public void removeMarkersAt(BlockPos pos) {
+		this.markers.removeIf(other -> pos.getX() == other.getX() && pos.getY() == other.getY() && pos.getZ() == other.getZ());
+	}
 
-    public void removeMarker(Marker marker) {
-        this.markers.remove(marker);
-    }
+	public void removeMarker(Marker marker) {
+		this.markers.remove(marker);
+	}
 
-    @NotNull
-    @Override
-    public Iterator<Marker> iterator() {
-        return this.markers.iterator();
-    }
+	@Override
+	public Iterator<Marker> iterator() {
+		return this.markers.iterator();
+	}
 
-    public void forEachInBox(int minX, int minZ, int sizeX, int sizeZ, Consumer<Marker> consumer) {
-        int maxX = minX + sizeX;
-        int maxZ = minZ + sizeZ;
-        for (Marker marker : this.markers) {
-            if (marker.isIn(minX, minZ, maxX, maxZ))
-                consumer.accept(marker);
-        }
-    }
+	public void forEachInBox(int minX, int minZ, int sizeX, int sizeZ, Consumer<Marker> consumer) {
+		int maxX = minX + sizeX;
+		int maxZ = minZ + sizeZ;
+		for (Marker marker : this.markers) {
+			if (marker.isIn(minX, minZ, maxX, maxZ))
+				consumer.accept(marker);
+		}
+	}
 
-    public void tick(World world) {
-        // Check for existence of the banner markers in the world if possible.
-        Iterator<Marker> it = this.markers.iterator();
-        while (it.hasNext()) {
-            Marker marker = it.next();
-            if (marker.getSource() != MarkerSource.BANNER)
-                continue;
-            Chunk chunk = world.getChunk(marker.getChunkX(), marker.getChunkZ(), ChunkStatus.FULL, false);
-            if (chunk == null)
-                continue;
-            Marker bannerMarker = Marker.fromBanner(world, marker.getPos());
-            if (bannerMarker == null)
-                it.remove();
-        }
+	public void tick(World world) {
+		// Check for existence of the banner markers in the world if possible.
+		Iterator<Marker> it = this.markers.iterator();
+		while (it.hasNext()) {
+			Marker marker = it.next();
+			if (marker.getSource() != MarkerSource.BANNER)
+				continue;
+			Chunk chunk = world.getChunk(marker.getChunkX(), marker.getChunkZ(), ChunkStatus.FULL, false);
+			if (chunk == null)
+				continue;
+			Marker bannerMarker = Marker.fromBanner(world, marker.getPos());
+			if (bannerMarker == null)
+				it.remove();
+		}
 
-        MinecraftClient client = MinecraftClient.getInstance();
+		MinecraftClient client = MinecraftClient.getInstance();
 
-        // Filled map stuff
-        // 1. Try to import the markers of the filled map.
-        // 2. Try to import the colors of the filled map if it has absolute coordinates markers.
-        ItemStack stack = client.player.getMainHandStack();
-        if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasNbt() && stack != this.lastFilledMapStack) {
-            NbtCompound nbt = stack.getNbt();
-            var mapMarkers = new ArrayList<Marker>();
-            nbt.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((NbtCompound) decoration)).forEach(decoration -> {
-                var type = MapIcon.Type.byId(decoration.getByte("type"));
-                if (type.isAlwaysRendered()) {
-                    mapMarkers.add(this.addMarker(MarkerType.getVanillaMarkerType(type), MarkerSource.FILLED_MAP,
-                            (int) decoration.getDouble("x"), 64, (int) decoration.getDouble("z"),
-                            decoration.getFloat("rot"), null));
-                }
-            });
+		// Filled map stuff
+		// 1. Try to import the markers of the filled map.
+		// 2. Try to import the colors of the filled map if it has absolute coordinates markers.
+		ItemStack stack = client.player.getMainHandStack();
+		if (!stack.isEmpty() && stack.isOf(Items.FILLED_MAP) && stack.hasNbt() && stack != this.lastFilledMapStack) {
+			NbtCompound nbt = stack.getNbt();
+			var mapMarkers = new ArrayList<Marker>();
+			nbt.getList("Decorations", NbtType.COMPOUND).stream().map(decoration -> ((NbtCompound) decoration)).forEach(decoration -> {
+				var type = MapIcon.Type.byId(decoration.getByte("type"));
+				if (type.isAlwaysRendered()) {
+					mapMarkers.add(this.addMarker(MarkerType.getVanillaMarkerType(type), MarkerSource.FILLED_MAP,
+							(int) decoration.getDouble("x"), 64, (int) decoration.getDouble("z"),
+							decoration.getFloat("rot"), null));
+				}
+			});
 
-            if (!mapMarkers.isEmpty()) {
-                Integer mapId = FilledMapItem.getMapId(stack);
-                if (mapId != null) {
-                    MapState mapState = FilledMapItem.getMapState(mapId, world);
-                    if (mapState != null) {
-                        this.map.importMapState(mapState, mapMarkers);
-                    }
-                }
-            }
-            this.lastFilledMapStack = stack;
-        }
-    }
+			if (!mapMarkers.isEmpty()) {
+				Integer mapId = FilledMapItem.getMapId(stack);
+				if (mapId != null) {
+					MapState mapState = FilledMapItem.getMapState(mapId, world);
+					if (mapState != null) {
+						this.map.importMapState(mapState, mapMarkers);
+					}
+				}
+			}
+			this.lastFilledMapStack = stack;
+		}
+	}
 
-    public void load() {
-        if (!this.file.exists()) {
-            var nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
-            if (nbtFile.exists()) {
-                try {
-                    this.readNbt(NbtIo.readCompressed(nbtFile));
-                    return;
-                } catch (IOException e) {
-                    LOGGER.error("Failed to read markers from " + nbtFile + ".", e);
-                }
-            }
-        }
+	public void load() {
+		if (!this.file.exists()) {
+			var nbtFile = new File(this.file.getParentFile(), this.file.getName().replace(".toml", ".nbt"));
+			if (nbtFile.exists()) {
+				try {
+					this.readNbt(NbtIo.readCompressed(nbtFile));
+					return;
+				} catch (IOException e) {
+					LOGGER.error("Failed to read markers from " + nbtFile + ".", e);
+				}
+			}
+		}
 
-        this.config.load();
+		this.config.load();
 
-        this.markers.clear();
-        List<Config> markers = this.config.getOrElse("markers", ArrayList::new);
-        markers.forEach(config -> this.markers.add(Marker.fromConfig(config)));
-    }
+		this.markers.clear();
+		List<Config> markers = this.config.getOrElse("markers", ArrayList::new);
+		markers.forEach(config -> this.markers.add(Marker.fromConfig(config)));
+	}
 
-    public void save() {
+	public void save() {
         /*try {
             NbtIo.writeCompressed(this.toNbt(), this.file);
         } catch (IOException e) {
             LOGGER.error("Failed to save markers to " + this.file + ".", e);
         }*/
 
-        List<Config> markers = new ArrayList<>();
-        this.markers.forEach(marker -> markers.add(
-                marker.writeTo(InMemoryCommentedFormat.defaultInstance().createConfig(Object2ObjectOpenHashMap::new))
-        ));
+		List<Config> markers = new ArrayList<>();
+		this.markers.forEach(marker -> markers.add(
+				marker.writeTo(InMemoryCommentedFormat.defaultInstance().createConfig(Object2ObjectOpenHashMap::new))
+		));
 
-        this.config.set("markers", markers);
-    }
+		this.config.set("markers", markers);
+	}
 
-    public void readNbt(NbtCompound nbt) {
-        this.markers.clear();
+	public void readNbt(NbtCompound nbt) {
+		this.markers.clear();
 
-        NbtList list = nbt.getList("markers", NbtType.COMPOUND);
-        list.forEach(child -> this.markers.add(Marker.fromNbt((NbtCompound) child)));
-    }
+		NbtList list = nbt.getList("markers", NbtType.COMPOUND);
+		list.forEach(child -> this.markers.add(Marker.fromNbt((NbtCompound) child)));
+	}
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.put("markers", this.markers.stream().map(Marker::toNbt).collect(Collectors.toCollection(NbtList::new)));
-        return nbt;
-    }
+	public NbtCompound toNbt() {
+		NbtCompound nbt = new NbtCompound();
+		nbt.put("markers", this.markers.stream().map(Marker::toNbt).collect(Collectors.toCollection(NbtList::new)));
+		return nbt;
+	}
 }

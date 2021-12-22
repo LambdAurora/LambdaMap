@@ -27,31 +27,31 @@ import org.jetbrains.annotations.Nullable;
  * @since 1.0.0
  */
 public enum ChunkGetterMode {
-    /**
-     * Gets the chunk from memory.
-     */
-    GET(WorldMap::getChunk),
-    /**
-     * Gets the chunk from memory, or if absent loads the chunk from disk.
-     */
-    LOAD(WorldMap::getChunkOrLoad),
-    /**
-     * Gets or loads the chunk, if absent creates a new empty chunk.
-     */
-    CREATE(WorldMap::getChunkOrCreate);
+	/**
+	 * Gets the chunk from memory.
+	 */
+	GET(WorldMap::getChunk),
+	/**
+	 * Gets the chunk from memory, or if absent loads the chunk from disk.
+	 */
+	LOAD(WorldMap::getChunkOrLoad),
+	/**
+	 * Gets or loads the chunk, if absent creates a new empty chunk.
+	 */
+	CREATE(WorldMap::getChunkOrCreate);
 
-    private final ChunkFactory factory;
+	private final ChunkFactory factory;
 
-    ChunkGetterMode(ChunkFactory factory) {
-        this.factory = factory;
-    }
+	ChunkGetterMode(ChunkFactory factory) {
+		this.factory = factory;
+	}
 
-    public @Nullable MapChunk getChunk(WorldMap map, int x, int z) {
-        return this.factory.getChunk(map, x, z);
-    }
+	public @Nullable MapChunk getChunk(WorldMap map, int x, int z) {
+		return this.factory.getChunk(map, x, z);
+	}
 
-    @FunctionalInterface
-    public interface ChunkFactory {
-        @Nullable MapChunk getChunk(WorldMap map, int x, int z);
-    }
+	@FunctionalInterface
+	public interface ChunkFactory {
+		@Nullable MapChunk getChunk(WorldMap map, int x, int z);
+	}
 }

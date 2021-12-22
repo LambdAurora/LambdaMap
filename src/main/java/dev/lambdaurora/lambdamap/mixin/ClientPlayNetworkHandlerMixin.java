@@ -29,19 +29,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
-    @Inject(method = "onChunkData", at = @At("RETURN"))
-    private void onChunkData(ChunkDataS2CPacket packet, CallbackInfo ci) {
-        LambdaMap.get().onChunkUpdate(packet.getX(), packet.getZ());
-    }
+	@Inject(method = "onChunkData", at = @At("RETURN"))
+	private void onChunkData(ChunkDataS2CPacket packet, CallbackInfo ci) {
+		LambdaMap.get().onChunkUpdate(packet.getX(), packet.getZ());
+	}
 
-    @Inject(method = "onChunkDeltaUpdate", at = @At("RETURN"))
-    private void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet, CallbackInfo ci) {
-        var accessor = (ChunkDeltaUpdateS2CPacketAccessor) packet;
-        LambdaMap.get().onChunkUpdate(accessor.getSectionPos().getX(), accessor.getSectionPos().getZ());
-    }
+	@Inject(method = "onChunkDeltaUpdate", at = @At("RETURN"))
+	private void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet, CallbackInfo ci) {
+		var accessor = (ChunkDeltaUpdateS2CPacketAccessor) packet;
+		LambdaMap.get().onChunkUpdate(accessor.getSectionPos().getX(), accessor.getSectionPos().getZ());
+	}
 
-    @Inject(method = "onBlockUpdate", at = @At("RETURN"))
-    private void onBlockUpdate(BlockUpdateS2CPacket packet, CallbackInfo ci) {
-        LambdaMap.get().onBlockUpdate(packet.getPos().getX(), packet.getPos().getZ());
-    }
+	@Inject(method = "onBlockUpdate", at = @At("RETURN"))
+	private void onBlockUpdate(BlockUpdateS2CPacket packet, CallbackInfo ci) {
+		LambdaMap.get().onBlockUpdate(packet.getPos().getX(), packet.getPos().getZ());
+	}
 }

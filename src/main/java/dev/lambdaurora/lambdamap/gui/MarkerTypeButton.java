@@ -33,60 +33,69 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.Consumer;
 
 public class MarkerTypeButton extends SpruceButtonWidget {
-    private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("textures/gui/icon_selection.png");
-    private final Consumer<MarkerType> changeListener;
-    private MarkerType type;
+	private static final Identifier FOCUSED_TEXTURE = LambdaMap.id("textures/gui/icon_selection.png");
+	private final Consumer<MarkerType> changeListener;
+	private MarkerType type;
 
-    public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
-        super(position, 20, 20, LiteralText.EMPTY, btn -> {
-            MarkerType next = MarkerType.next(((MarkerTypeButton) btn).type);
-            ((MarkerTypeButton) btn).type = next;
-            changeListener.accept(next);
-        });
-        this.changeListener = changeListener;
-        this.type = type;
-    }
+	public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
+		super(position, 20, 20, LiteralText.EMPTY, btn -> {
+			MarkerType next = MarkerType.next(((MarkerTypeButton) btn).type);
+			((MarkerTypeButton) btn).type = next;
+			changeListener.accept(next);
+		});
+		this.changeListener = changeListener;
+		this.type = type;
+	}
 
-    @Override
-    protected boolean onMouseClick(double mouseX, double mouseY, int button) {
-        if (super.onMouseClick(mouseX, mouseY, button)) {
-            return true;
-        } else if (button == GLFW.GLFW_MOUSE_BUTTON_2) {
-            this.playDownSound();
-            MarkerType next = MarkerType.previous(this.type);
-            this.type = next;
-            this.changeListener.accept(next);
-            return true;
-        }
-        return false;
-    }
+	@Override
+	protected boolean onMouseClick(double mouseX, double mouseY, int button) {
+		if (super.onMouseClick(mouseX, mouseY, button)) {
+			return true;
+		} else if (button == GLFW.GLFW_MOUSE_BUTTON_2) {
+			this.playDownSound();
+			MarkerType next = MarkerType.previous(this.type);
+			this.type = next;
+			this.changeListener.accept(next);
+			return true;
+		}
+		return false;
+	}
 
-    public MarkerType getMarkerType() {
-        return this.type;
-    }
+	@Override
+	protected boolean onMouseScroll(double mouseX, double mouseY, double amount) {
+		this.playDownSound();
+		MarkerType next = amount > 0 ? MarkerType.next(this.type) : MarkerType.previous(this.type);
+		this.type = next;
+		this.changeListener.accept(next);
+		return true;
+	}
 
-    public void setMarkerType(MarkerType type) {
-        this.type = type;
-    }
+	public MarkerType getMarkerType() {
+		return this.type;
+	}
 
-    @Override
-    protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        matrices.push();
-        matrices.translate(this.getX() + 9, this.getY() + 11, 5);
-        matrices.scale(2, 2, 1);
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-        this.type.render(matrices, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
-        immediate.draw();
-        matrices.pop();
-    }
+	public void setMarkerType(MarkerType type) {
+		this.type = type;
+	}
 
-    @Override
-    protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        if (this.isFocused()) {
-            int width = this.getWidth();
-            int height = this.getHeight();
-            RenderSystem.setShaderTexture(0, FOCUSED_TEXTURE);
-            drawTexture(matrices, this.getX(), this.getY(), 0, 0, width, height, width, height);
-        }
-    }
+	@Override
+	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		matrices.push();
+		matrices.translate(this.getX() + 9, this.getY() + 11, 5);
+		matrices.scale(2, 2, 1);
+		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+		this.type.render(matrices, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
+		immediate.draw();
+		matrices.pop();
+	}
+
+	@Override
+	protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		if (this.isFocused()) {
+			int width = this.getWidth();
+			int height = this.getHeight();
+			RenderSystem.setShaderTexture(0, FOCUSED_TEXTURE);
+			drawTexture(matrices, this.getX(), this.getY(), 0, 0, width, height, width, height);
+		}
+	}
 }

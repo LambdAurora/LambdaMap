@@ -25,6 +25,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BlockColors.class)
 public interface BlockColorsAccessor {
-    @Accessor
-    IdList<BlockColorProvider> getProviders();
+	@Accessor
+	IdList<BlockColorProvider> getProviders();
 }

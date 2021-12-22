@@ -25,6 +25,6 @@ import java.io.File;
 
 @Mixin(PersistentStateManager.class)
 public interface PersistentStateManagerAccessor {
-    @Accessor
-    File getDirectory();
+	@Accessor
+	File getDirectory();
 }

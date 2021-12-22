@@ -44,80 +44,80 @@ import java.util.Random;
  * @since 1.0.0
  */
 public class RandomPrideFlagBackground implements Background {
-    private static final Background SECOND_LAYER = new SimpleColorBackground(0xe0101010);
-    private static final Random RANDOM = new Random();
+	private static final Background SECOND_LAYER = new SimpleColorBackground(0xe0101010);
+	private static final Random RANDOM = new Random();
 
-    private final PrideFlag flag;
+	private final PrideFlag flag;
 
-    public RandomPrideFlagBackground(PrideFlag flag) {
-        this.flag = flag;
-    }
+	public RandomPrideFlagBackground(PrideFlag flag) {
+		this.flag = flag;
+	}
 
-    @Override
-    public void render(MatrixStack matrices, SpruceWidget widget, int vOffset, int mouseX, int mouseY, float delta) {
-        int x = widget.getX();
-        int y = widget.getY();
+	@Override
+	public void render(MatrixStack matrices, SpruceWidget widget, int vOffset, int mouseX, int mouseY, float delta) {
+		int x = widget.getX();
+		int y = widget.getY();
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (this.flag.getShape() == PrideFlagShapes.get(new Identifier("pride", "horizontal_stripes"))) {
-            RenderSystem.disableTexture();
-            var model = matrices.peek().getPositionMatrix();
-            var tessellator = Tessellator.getInstance();
-            var vertices = tessellator.getBuffer();
-            vertices.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+		RenderSystem.setShader(GameRenderer::getPositionColorShader);
+		if (this.flag.getShape() == PrideFlagShapes.get(new Identifier("pride", "horizontal_stripes"))) {
+			RenderSystem.disableTexture();
+			var model = matrices.peek().getPositionMatrix();
+			var tessellator = Tessellator.getInstance();
+			var vertices = tessellator.getBuffer();
+			vertices.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
 
-            int width = widget.getWidth();
-            int height = widget.getHeight();
+			int width = widget.getWidth();
+			int height = widget.getHeight();
 
-            float partHeight = height / (this.flag.getColors().size() - 1.f);
+			float partHeight = height / (this.flag.getColors().size() - 1.f);
 
-            // First one
-            float rightY = y;
-            float leftY = y;
+			// First one
+			float rightY = y;
+			float leftY = y;
 
-            int[] color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(0));
-            vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+			int[] color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(0));
+			vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+			vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+			vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
 
-            rightY += partHeight;
+			rightY += partHeight;
 
-            for (int i = 1; i < this.flag.getColors().size() - 1; i++) {
-                color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(i));
+			for (int i = 1; i < this.flag.getColors().size() - 1; i++) {
+				color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(i));
 
-                vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
 
-                vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
-                vertices.vertex(model, x, leftY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x + width, rightY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+				vertices.vertex(model, x, leftY + partHeight, 0).color(color[0], color[1], color[2], color[3]).next();
 
-                rightY += partHeight;
-                leftY += partHeight;
-            }
+				rightY += partHeight;
+				leftY += partHeight;
+			}
 
-            // Last one
-            color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(this.flag.getColors().size() - 1));
-            vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
-            vertices.vertex(model, x, y + height, 0).color(color[0], color[1], color[2], color[3]).next();
+			// Last one
+			color = ColorUtil.unpackARGBColor(this.flag.getColors().getInt(this.flag.getColors().size() - 1));
+			vertices.vertex(model, x + width, rightY, 0).color(color[0], color[1], color[2], color[3]).next();
+			vertices.vertex(model, x, leftY, 0).color(color[0], color[1], color[2], color[3]).next();
+			vertices.vertex(model, x, y + height, 0).color(color[0], color[1], color[2], color[3]).next();
 
-            tessellator.draw();
-            RenderSystem.enableTexture();
-        } else {
-            this.flag.render(matrices, x, y, widget.getWidth(), widget.getHeight());
-        }
+			tessellator.draw();
+			RenderSystem.enableTexture();
+		} else {
+			this.flag.render(matrices, x, y, widget.getWidth(), widget.getHeight());
+		}
 
-        SECOND_LAYER.render(matrices, widget, vOffset, mouseX, mouseY, delta);
-    }
+		SECOND_LAYER.render(matrices, widget, vOffset, mouseX, mouseY, delta);
+	}
 
-    /**
-     * Returns a random pride flag as background.
-     *
-     * @return the background
-     */
-    public static Background random() {
-        return new RandomPrideFlagBackground(PrideFlags.getRandomFlag(RANDOM));
-    }
+	/**
+	 * Returns a random pride flag as background.
+	 *
+	 * @return the background
+	 */
+	public static Background random() {
+		return new RandomPrideFlagBackground(PrideFlags.getRandomFlag(RANDOM));
+	}
 }

@@ -24,21 +24,21 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(WorldChunk.class)
 public class WorldChunkMixin implements WorldChunkExtension {
-    @Unique
-    private boolean lambdamap$dirty;
+	@Unique
+	private boolean lambdamap$dirty;
 
-    @Override
-    public boolean lambdamap$isDirty() {
-        return this.lambdamap$dirty;
-    }
+	@Override
+	public boolean lambdamap$isDirty() {
+		return this.lambdamap$dirty;
+	}
 
-    @Override
-    public void lambdamap$markDirty() {
-        this.lambdamap$dirty = true;
-    }
+	@Override
+	public void lambdamap$markDirty() {
+		this.lambdamap$dirty = true;
+	}
 
-    @Override
-    public void lambdamap$markClean() {
-        this.lambdamap$dirty = false;
-    }
+	@Override
+	public void lambdamap$markClean() {
+		this.lambdamap$dirty = false;
+	}
 }

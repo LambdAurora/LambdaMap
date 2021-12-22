@@ -34,109 +34,111 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
-    private final LambdaMapConfig config;
-    private final MinecraftClient client;
-    private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
-    private final RenderLayer mapRenderLayer;
-    private boolean dirty = true;
-
-    public MapHud(LambdaMapConfig config, MinecraftClient client) {
-        this.config = config;
-        this.client = client;
-        var id = LambdaMap.id("hud");
-        client.getTextureManager().registerTexture(id, this.texture);
-        this.mapRenderLayer = RenderLayer.getText(id);
-    }
-
-    public void markDirty() {
-        this.dirty = true;
-    }
-
-    public boolean isVisible() {
-        return this.config.isHudVisible();
-    }
-
-    public void setVisible(boolean visible) {
-        this.config.setHudVisible(visible);
-    }
-
-    private final int TEXTURE_SIZE = 128 + 64;
-    private final int HUD_SIZE = 128;
-    private final float THRESHOLD_NORTH_LOCKED = ((TEXTURE_SIZE - HUD_SIZE) / 2f) - 1f;
-    private final float THRESHOLD_ROTATED = ((TEXTURE_SIZE / 2f) - MathHelper.sqrt((HUD_SIZE * HUD_SIZE) / 2f)) - 1f;
-
-    /**
-     * Returns the threshold of distance between rendered and current player position after which to update the map.
-     * Greater if the map is north-locked, as there is a larger margin around the map.
-     */
-    public float getMovementThreshold() {
-        return this.config.isNorthLocked() ? THRESHOLD_NORTH_LOCKED : THRESHOLD_ROTATED;
-    }
-
+	private final LambdaMapConfig config;
+	private final MinecraftClient client;
+	private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
+	private final RenderLayer mapRenderLayer;
+	private boolean dirty = true;
 	private int renderPosX;
 	private int renderPosZ;
 
-    public void updateTexture(WorldMap map) {
-        if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
-            return;
-        if (!this.dirty) return;
-        else this.dirty = false;
+	public MapHud(LambdaMapConfig config, MinecraftClient client) {
+		this.config = config;
+		this.client = client;
+		var id = LambdaMap.id("hud");
+		client.getTextureManager().registerTexture(id, this.texture);
+		this.mapRenderLayer = RenderLayer.getText(id);
+	}
 
-        int width = this.texture.getImage().getWidth();
-        int height = this.texture.getImage().getHeight();
-        var corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
-        for (int z = 0; z < width; ++z) {
-            int absoluteZ = corner.getZ() + z;
-            for (int x = 0; x < height; ++x) {
-                int absoluteX = corner.getX() + x;
-                this.texture.getImage().setColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
-            }
-        }
+	public void markDirty() {
+		this.dirty = true;
+	}
 
-        this.texture.upload();
-		renderPosX = this.client.player.getBlockPos().getX();
-		renderPosZ = this.client.player.getBlockPos().getZ();
-    }
+	public boolean isVisible() {
+		return this.config.isHudVisible();
+	}
 
-    public void render(MatrixStack matrices, int light, float delta) {
-        if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
-            return;
+	public void setVisible(boolean visible) {
+		this.config.setHudVisible(visible);
+	}
 
-        float scaleFactor = (float) this.client.getWindow().getScaleFactor();
-        float newScaleFactor = scaleFactor;
-        float scaleCompensation = 1.f;
-        if (!(scaleFactor <= 2)) {
-            newScaleFactor = (float) (this.client.getWindow().getScaleFactor() - 1);
-            scaleCompensation = newScaleFactor / scaleFactor;
-        }
-        {
-            int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
-            int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
-            ScissorManager.push(scaledWidth - 128, 0, 128, 128, newScaleFactor);
-        }
-        int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
-        matrices.push();
-        matrices.translate(width - 128 * scaleCompensation, 0, -20);
-        matrices.scale(scaleCompensation, scaleCompensation, 1);
+	private static final int TEXTURE_SIZE = 128 + 64;
+	private static final int HUD_SIZE = 128;
+	private static final float THRESHOLD_NORTH_LOCKED = ((TEXTURE_SIZE - HUD_SIZE) / 2f) - 1f;
+	private static final float THRESHOLD_ROTATED = ((TEXTURE_SIZE / 2f) - MathHelper.sqrt((HUD_SIZE * HUD_SIZE) / 2f)) - 1f;
 
-        var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+	/**
+	 * Returns the threshold of distance between rendered and current player position after which to update the map.
+	 * Greater if the map is north-locked, as there is a larger margin around the map.
+	 */
+	public float getMovementThreshold() {
+		return this.config.isNorthLocked() ? THRESHOLD_NORTH_LOCKED : THRESHOLD_ROTATED;
+	}
 
-        int textureWidth = this.texture.getImage().getWidth();
-        int textureHeight = this.texture.getImage().getHeight();
+	public void updateTexture(WorldMap map) {
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+			return;
+		if (!this.dirty) return;
+		else this.dirty = false;
 
-        matrices.push();
+		int width = this.texture.getImage().getWidth();
+		int height = this.texture.getImage().getHeight();
+		var corner = this.client.player.getBlockPos().add(-(width / 2), 0, -(height / 2));
 
-        float uStart = 0.f;
-        float uEnd = 1.f;
-        float vStart = 0.f;
-        float vEnd = 1.f;
-        if (!this.config.isNorthLocked()) {
-            matrices.translate(64, 64, 0);
-            matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.getYaw(delta) + 180));
-            matrices.translate(-64, -64, 0);
-        }
-        // Translate so map is centred
-        matrices.translate(-32, -32, 0);
+		for (int z = 0; z < width; ++z) {
+			int absoluteZ = corner.getZ() + z;
+
+			for (int x = 0; x < height; ++x) {
+				int absoluteX = corner.getX() + x;
+				this.texture.getImage().setColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
+			}
+		}
+
+		this.texture.upload();
+		this.renderPosX = this.client.player.getBlockPos().getX();
+		this.renderPosZ = this.client.player.getBlockPos().getZ();
+	}
+
+	public void render(MatrixStack matrices, int light, float delta) {
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+			return;
+
+		float scaleFactor = (float) this.client.getWindow().getScaleFactor();
+		float newScaleFactor = scaleFactor;
+		float scaleCompensation = 1.f;
+		if (!(scaleFactor <= 2)) {
+			newScaleFactor = (float) (this.client.getWindow().getScaleFactor() - 1);
+			scaleCompensation = newScaleFactor / scaleFactor;
+		}
+		{
+			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
+			int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
+			ScissorManager.push(scaledWidth - 128, 0, 128, 128, newScaleFactor);
+		}
+
+		int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
+		matrices.push();
+		matrices.translate(width - 128 * scaleCompensation, 0, -20);
+		matrices.scale(scaleCompensation, scaleCompensation, 1);
+
+		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+
+		int textureWidth = this.texture.getImage().getWidth();
+		int textureHeight = this.texture.getImage().getHeight();
+
+		matrices.push();
+
+		float uStart = 0.f;
+		float uEnd = 1.f;
+		float vStart = 0.f;
+		float vEnd = 1.f;
+		if (!this.config.isNorthLocked()) {
+			matrices.translate(64, 64, 0);
+			matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.getYaw(delta) + 180));
+			matrices.translate(-64, -64, 0);
+		}
+		// Translate so map is centred
+		matrices.translate(-32, -32, 0);
 
 		// Translate by offset from position that map was last rendered from
 		var lerped = this.client.player.getLerpedPos(delta);
@@ -144,58 +146,59 @@ public class MapHud implements AutoCloseable {
 		float offsetZ = (float) (renderPosZ - lerped.getZ());
 		matrices.translate(offsetX, offsetZ, 0);
 
-        var model = matrices.peek().getPositionMatrix();
-        var vertices = immediate.getBuffer(this.mapRenderLayer);
-        WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
-        WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
-        WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, uEnd, vStart, light);
-        WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, uStart, vStart, light);
+		var model = matrices.peek().getPositionMatrix();
+		var vertices = immediate.getBuffer(this.mapRenderLayer);
+		WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
+		WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
+		WorldMapRenderer.vertex(vertices, model, textureWidth, 0.f, uEnd, vStart, light);
+		WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, uStart, vStart, light);
 
-        {
-            int cornerX = renderPosX - (textureWidth / 2);
-            int cornerZ = renderPosZ - (textureHeight / 2);
-            LambdaMap.get().getMap().getMarkerManager().forEachInBox(cornerX, cornerZ, textureWidth, textureHeight, marker -> {
-                matrices.push();
+		{
+			int cornerX = renderPosX - (textureWidth / 2);
+			int cornerZ = renderPosZ - (textureHeight / 2);
+			LambdaMap.get().getMap().getMarkerManager().forEachInBox(cornerX, cornerZ, textureWidth, textureHeight, marker -> {
+				matrices.push();
 
-                float x = (float) (marker.getX() - cornerX);
-                float z = (float) (marker.getZ() - cornerZ);
+				float x = (float) (marker.getX() - cornerX);
+				float z = (float) (marker.getZ() - cornerZ);
 
-                matrices.translate(x, z, 1.f);
-                if (!this.config.isNorthLocked())
-                    matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.getYaw(delta) - 180));
-                marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
-                matrices.pop();
-            });
-        }
-        matrices.pop();
+				matrices.translate(x, z, 1.f);
+				if (!this.config.isNorthLocked())
+					matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.getYaw(delta) - 180));
+				marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
+				matrices.pop();
+			});
+		}
+		matrices.pop();
 
-        this.renderPlayerIcon(matrices, immediate, light, delta);
-        immediate.draw();
-        ScissorManager.pop();
+		this.renderPlayerIcon(matrices, immediate, light, delta);
+		immediate.draw();
+		ScissorManager.pop();
 
-        if (!this.client.options.debugEnabled) {
-            var pos = this.client.player.getBlockPos();
-            var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
-            int strWidth = this.client.textRenderer.getWidth(str);
-            this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getPositionMatrix(), immediate,
-                    false, 0, light);
-            immediate.draw();
-        } else {
-            matrices.translate(0.f, 0.f, 1.2f);
-            DrawableHelper.fill(matrices, 0, 0, 128, 128, 0x88000000);
-        }
-        matrices.pop();
-        ScissorManager.popScaleFactor();
-    }
+		if (!this.client.options.debugEnabled) {
+			var pos = this.client.player.getBlockPos();
+			var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
+			int strWidth = this.client.textRenderer.getWidth(str);
+			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getPositionMatrix(), immediate,
+					false, 0, light);
+			immediate.draw();
+		} else {
+			matrices.translate(0.f, 0.f, 1.2f);
+			DrawableHelper.fill(matrices, 0, 0, 128, 128, 0x88000000);
+		}
+		matrices.pop();
+		ScissorManager.popScaleFactor();
+	}
 
-    private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
-        matrices.push();
-        matrices.translate(64.f, 64.f, 1.1f);
-        MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
-        matrices.pop();
-    }
+	private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
+		matrices.push();
+		matrices.translate(64.f, 64.f, 1.1f);
+		MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
+		matrices.pop();
+	}
 
-    public void close() {
-        this.texture.close();
-    }
+	@Override
+	public void close() {
+		this.texture.close();
+	}
 }

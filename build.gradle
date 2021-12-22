@@ -1,10 +1,10 @@
 plugins {
-    id 'fabric-loom' version '0.10.+'
-    id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
-    id 'java-library'
-    id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-    id 'org.cadixdev.licenser' version '0.6.1'
+	id 'fabric-loom' version '0.10.+'
+	id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
+	id 'java-library'
+	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '7.1.0'
+	id 'org.cadixdev.licenser' version '0.6.1'
 }
 
 import net.fabricmc.loom.task.RemapJarTask
@@ -13,139 +13,130 @@ group = project.maven_group
 version = "${project.mod_version}+${getMCVersionString()}"
 archivesBaseName = project.archives_base_name
 Set<String> modules = [
-        'fabric-api-base',
-        'fabric-key-binding-api-v1',
-        'fabric-lifecycle-events-v1',
-        'fabric-rendering-v1',
-        'fabric-resource-loader-v0'
+		'fabric-api-base',
+		'fabric-key-binding-api-v1',
+		'fabric-lifecycle-events-v1',
+		'fabric-rendering-v1',
+		'fabric-resource-loader-v0'
 ]
 
 // This field defines the Java version your mod target.
 def targetJavaVersion = 17
 
 boolean isMCVersionNonRelease() {
-    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
-            || project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
+	return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$')
+			|| project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
 }
 
 String getMCVersionString() {
-    if (isMCVersionNonRelease()) {
-        return project.minecraft_version
-    }
-    def version = project.minecraft_version.split('\\.')
-    return version[0] + '.' + version[1]
+	if (isMCVersionNonRelease()) {
+		return project.minecraft_version
+	}
+	def version = project.minecraft_version.split('\\.')
+	return version[0] + '.' + version[1]
 }
 
 minecraft {
 }
 
 repositories {
-    maven {
-        name 'Gegy'
-        url 'https://maven.gegy.dev'
-    }
-    maven {
-        name 'Jitpack'
-        url 'https://jitpack.io'
-    }
-    mavenCentral()
+	maven {
+		name 'Gegy'
+		url 'https://maven.gegy.dev'
+	}
+	maven {
+		name 'Jitpack'
+		url 'https://jitpack.io'
+	}
+	mavenCentral()
 }
 
 configurations {
-    shadow
-    api.extendsFrom shadow
+	shadow
+	api.extendsFrom shadow
 }
 
 dependencies {
-    //to change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	//to change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modules.stream().map { fabricApi.module(it, project.fabric_api_version) }.forEach {
-        modImplementation it
-        include it
-    }
+	modules.stream().map { fabricApi.module(it, project.fabric_api_version) }.forEach {
+		modImplementation it
+		include it
+	}
 
-    modImplementation "dev.lambdaurora:spruceui:${project.spruceui_version}"
-    include "dev.lambdaurora:spruceui:${project.spruceui_version}"
-    modImplementation "io.github.queerbric:pridelib:${project.pridelib_version}"
-    include "io.github.queerbric:pridelib:${project.pridelib_version}"
+	modImplementation "dev.lambdaurora:spruceui:${project.spruceui_version}"
+	include "dev.lambdaurora:spruceui:${project.spruceui_version}"
+	modImplementation "io.github.queerbric:pridelib:${project.pridelib_version}"
+	include "io.github.queerbric:pridelib:${project.pridelib_version}"
 
-    shadow 'com.electronwill.night-config:core:3.6.4'
-    shadow "com.electronwill.night-config:toml:3.6.4"
+	shadow 'com.electronwill.night-config:core:3.6.4'
+	shadow "com.electronwill.night-config:toml:3.6.4"
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
-    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
+	sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+	targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
 
-    withSourcesJar()
+	withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = 'UTF-8'
+	it.options.encoding = 'UTF-8'
 
-    it.options.release.set(targetJavaVersion)
+	it.options.release.set(targetJavaVersion)
 }
 
 processResources {
-    inputs.property 'version', project.version
+	inputs.property 'version', project.version
 
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
+	filesMatching('fabric.mod.json') {
+		expand 'version': project.version
+	}
 }
 
 jar {
-    from('LICENSE') {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
+	from('LICENSE') {
+		rename { "${it}_${project.archivesBaseName}" }
+	}
 }
 
 license {
-    header file('HEADER')
-    include '**/*.java'
+	header file('HEADER')
+	include '**/*.java'
 }
 
 shadowJar {
-    dependsOn(project(':').jar)
-    configurations = [project.configurations.shadow]
-    archiveClassifier.set('dev')
+	dependsOn(project(':').jar)
+	configurations = [project.configurations.shadow]
+	archiveClassifier.set('dev')
 
-    relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
+	relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
 }
 remapJar.dependsOn(shadowJar)
 
 task shadowRemapJar(type: RemapJarTask) {
-    dependsOn shadowJar
+	dependsOn shadowJar
 
-    input.set(file("${project.buildDir}/libs/$archivesBaseName-${project.version}-dev.jar"))
-    archiveFileName = "${archivesBaseName}-${project.version}.jar"
-    addNestedDependencies.set(true)
+	input.set(file("${project.buildDir}/libs/$archivesBaseName-${project.version}-dev.jar"))
+	archiveFileName = "${archivesBaseName}-${project.version}.jar"
+	addNestedDependencies.set(true)
 }
 build.dependsOn(shadowRemapJar)
 
 // configure the maven publication
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            // add all the jars that should be included when publishing to maven
-            artifact(jar) {
-                builtBy remapJar
-            }
-            artifact("${project.buildDir.absolutePath}/libs/${archivesBaseName}-${project.version}.jar") {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
-        }
-    }
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
 
-    // select the repositories you want to publish to
-    repositories {
-        // uncomment to publish to the local maven
-        // mavenLocal()
-    }
+	// select the repositories you want to publish to
+	repositories {
+		// uncomment to publish to the local maven
+		// mavenLocal()
+	}
 }

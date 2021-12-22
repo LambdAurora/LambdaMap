@@ -23,6 +23,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BiomeAccess.class)
 public interface BiomeAccessAccessor {
-    @Accessor
-    long getSeed();
+	@Accessor
+	long getSeed();
 }

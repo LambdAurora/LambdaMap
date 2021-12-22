@@ -39,7 +39,6 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Matrix4f;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -48,232 +47,232 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.MarkerEntry> {
-    private final MarkerManager markerManager;
-    private int lastIndex = 0;
+	private final MarkerManager markerManager;
+	private int lastIndex = 0;
 
-    public MarkerListWidget(@NotNull Position position, int width, int height, MarkerManager markerManager) {
-        super(position, width, height, 0, MarkerEntry.class);
-        this.markerManager = markerManager;
+	public MarkerListWidget(Position position, int width, int height, MarkerManager markerManager) {
+		super(position, width, height, 0, MarkerEntry.class);
+		this.markerManager = markerManager;
 
-        this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
-        this.setRenderTransition(false);
-        this.rebuildList();
-    }
+		this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
+		this.setRenderTransition(false);
+		this.rebuildList();
+	}
 
-    public void rebuildList() {
-        this.clearEntries();
-        this.markerManager.forEach(this::addMarker);
-    }
+	public void rebuildList() {
+		this.clearEntries();
+		this.markerManager.forEach(this::addMarker);
+	}
 
-    public void addMarker(Marker marker) {
-        this.addEntry(new MarkerEntry(this, marker));
-    }
+	public void addMarker(Marker marker) {
+		this.addEntry(new MarkerEntry(this, marker));
+	}
 
-    public static class MarkerEntry extends SpruceEntryListWidget.Entry implements SpruceParentWidget<SpruceWidget> {
-        private final MarkerListWidget parent;
-        private final Marker marker;
-        private final List<SpruceWidget> children = new ArrayList<>();
-        private @Nullable SpruceWidget focused;
+	public static class MarkerEntry extends SpruceEntryListWidget.Entry implements SpruceParentWidget<SpruceWidget> {
+		private final MarkerListWidget parent;
+		private final Marker marker;
+		private final List<SpruceWidget> children = new ArrayList<>();
+		private @Nullable SpruceWidget focused;
 
-        public MarkerEntry(MarkerListWidget parent, Marker marker) {
-            this.parent = parent;
-            this.marker = marker;
+		public MarkerEntry(MarkerListWidget parent, Marker marker) {
+			this.parent = parent;
+			this.marker = marker;
 
-            var typeBtn = new MarkerTypeButton(Position.of(this, 3, 2), this.marker.getType(), this.marker::setType);
-            typeBtn.setActive(this.marker.getSource() == MarkerSource.USER);
-            this.children.add(typeBtn);
-            this.addNameFieldWidget();
-            this.addPositionFieldWidgets();
+			var typeBtn = new MarkerTypeButton(Position.of(this, 3, 2), this.marker.getType(), this.marker::setType);
+			typeBtn.setActive(this.marker.getSource() == MarkerSource.USER);
+			this.children.add(typeBtn);
+			this.addNameFieldWidget();
+			this.addPositionFieldWidgets();
 
-            this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
-                    btn -> {
-                        this.parent.markerManager.removeMarker(this.marker);
-                        this.parent.removeEntry(this);
-                    }));
-        }
+			this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
+					btn -> {
+						this.parent.markerManager.removeMarker(this.marker);
+						this.parent.removeEntry(this);
+					}));
+		}
 
-        private void addNameFieldWidget() {
-            var fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, new LiteralText("Marker Name Field"));
-            if (this.marker.getName() != null)
-                fieldWidget.setText(this.marker.getName().getString());
-            if (this.marker.getSource() != MarkerSource.BANNER)
-                fieldWidget.setChangedListener(newName -> {
-                    if (newName.isEmpty()) this.marker.setName(null);
-                    else this.marker.setName(new LiteralText(newName));
-                });
-            else {
-                fieldWidget.setActive(false);
-                fieldWidget.setRenderTextProvider((displayedText, offset) -> {
-                    Style style = Style.EMPTY;
-                    if (this.marker.getName() != null)
-                        style = this.marker.getName().getStyle();
-                    return OrderedText.styledForwardsVisitedString(displayedText, style);
-                });
-            }
-            this.children.add(fieldWidget);
-        }
+		private void addNameFieldWidget() {
+			var fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, new LiteralText("Marker Name Field"));
+			if (this.marker.getName() != null)
+				fieldWidget.setText(this.marker.getName().getString());
+			if (this.marker.getSource() != MarkerSource.BANNER)
+				fieldWidget.setChangedListener(newName -> {
+					if (newName.isEmpty()) this.marker.setName(null);
+					else this.marker.setName(new LiteralText(newName));
+				});
+			else {
+				fieldWidget.setActive(false);
+				fieldWidget.setRenderTextProvider((displayedText, offset) -> {
+					Style style = Style.EMPTY;
+					if (this.marker.getName() != null)
+						style = this.marker.getName().getStyle();
+					return OrderedText.styledForwardsVisitedString(displayedText, style);
+				});
+			}
+			this.children.add(fieldWidget);
+		}
 
-        private void addPositionFieldWidgets() {
-            int x = this.getWidth() / 2;
+		private void addPositionFieldWidgets() {
+			int x = this.getWidth() / 2;
 
-            var xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
-            xField.setText(String.valueOf(this.marker.getX()));
-            xField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
-            xField.setChangedListener(input -> this.marker.setX(SpruceUtil.parseIntFromString(input)));
-            this.children.add(xField);
+			var xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
+			xField.setText(String.valueOf(this.marker.getX()));
+			xField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
+			xField.setChangedListener(input -> this.marker.setX(SpruceUtil.parseIntFromString(input)));
+			this.children.add(xField);
 
-            var zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
-            zField.setText(String.valueOf(this.marker.getZ()));
-            zField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
-            zField.setChangedListener(input -> this.marker.setZ(SpruceUtil.parseIntFromString(input)));
-            this.children.add(zField);
+			var zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
+			zField.setText(String.valueOf(this.marker.getZ()));
+			zField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
+			zField.setChangedListener(input -> this.marker.setZ(SpruceUtil.parseIntFromString(input)));
+			this.children.add(zField);
 
-            if (this.marker.getSource() != MarkerSource.USER) {
-                xField.setActive(false);
-                zField.setActive(false);
-            }
-        }
+			if (this.marker.getSource() != MarkerSource.USER) {
+				xField.setActive(false);
+				zField.setActive(false);
+			}
+		}
 
-        @Override
-        public int getWidth() {
-            return this.parent.getWidth() - 6;
-        }
+		@Override
+		public int getWidth() {
+			return this.parent.getWidth() - 6;
+		}
 
-        @Override
-        public int getHeight() {
-            return 24 + 2;
-        }
+		@Override
+		public int getHeight() {
+			return 24 + 2;
+		}
 
-        @Override
-        public List<SpruceWidget> children() {
-            return this.children;
-        }
+		@Override
+		public List<SpruceWidget> children() {
+			return this.children;
+		}
 
-        @Override
-        public @Nullable SpruceWidget getFocused() {
-            return this.focused;
-        }
+		@Override
+		public @Nullable SpruceWidget getFocused() {
+			return this.focused;
+		}
 
-        @Override
-        public void setFocused(@Nullable SpruceWidget focused) {
-            if (this.focused == focused)
-                return;
-            if (this.focused != null)
-                this.focused.setFocused(false);
-            this.focused = focused;
-            if (this.focused != null)
-                this.focused.setFocused(true);
-        }
+		@Override
+		public void setFocused(@Nullable SpruceWidget focused) {
+			if (this.focused == focused)
+				return;
+			if (this.focused != null)
+				this.focused.setFocused(false);
+			this.focused = focused;
+			if (this.focused != null)
+				this.focused.setFocused(true);
+		}
 
-        @Override
-        public void setFocused(boolean focused) {
-            super.setFocused(focused);
-            if (!focused) {
-                this.setFocused(null);
-            }
-        }
+		@Override
+		public void setFocused(boolean focused) {
+			super.setFocused(focused);
+			if (!focused) {
+				this.setFocused(null);
+			}
+		}
 
-        /* Navigation */
+		/* Navigation */
 
-        @Override
-        public boolean onNavigation(NavigationDirection direction, boolean tab) {
-            if (this.requiresCursor()) return false;
-            if (!tab && direction.isVertical()) {
-                if (this.isFocused()) {
-                    this.setFocused(null);
-                    return false;
-                }
-                int lastIndex = this.parent.lastIndex;
-                if (lastIndex >= this.children.size())
-                    lastIndex = this.children.size() - 1;
-                if (!this.children.get(lastIndex).onNavigation(direction, tab))
-                    return false;
-                this.setFocused(this.children.get(lastIndex));
-                return true;
-            }
+		@Override
+		public boolean onNavigation(NavigationDirection direction, boolean tab) {
+			if (this.requiresCursor()) return false;
+			if (!tab && direction.isVertical()) {
+				if (this.isFocused()) {
+					this.setFocused(null);
+					return false;
+				}
+				int lastIndex = this.parent.lastIndex;
+				if (lastIndex >= this.children.size())
+					lastIndex = this.children.size() - 1;
+				if (!this.children.get(lastIndex).onNavigation(direction, tab))
+					return false;
+				this.setFocused(this.children.get(lastIndex));
+				return true;
+			}
 
-            boolean result = NavigationUtils.tryNavigate(direction, tab, this.children, this.focused, this::setFocused, true);
-            if (result) {
-                this.setFocused(true);
-                if (direction.isHorizontal() && this.getFocused() != null) {
-                    this.parent.lastIndex = this.children.indexOf(this.getFocused());
-                }
-            }
-            return result;
-        }
+			boolean result = NavigationUtils.tryNavigate(direction, tab, this.children, this.focused, this::setFocused, true);
+			if (result) {
+				this.setFocused(true);
+				if (direction.isHorizontal() && this.getFocused() != null) {
+					this.parent.lastIndex = this.children.indexOf(this.getFocused());
+				}
+			}
+			return result;
+		}
 
-        /* Input */
+		/* Input */
 
-        @Override
-        protected boolean onMouseClick(double mouseX, double mouseY, int button) {
-            Iterator<SpruceWidget> it = this.iterator();
+		@Override
+		protected boolean onMouseClick(double mouseX, double mouseY, int button) {
+			Iterator<SpruceWidget> it = this.iterator();
 
-            SpruceWidget element;
-            do {
-                if (!it.hasNext()) {
-                    return false;
-                }
+			SpruceWidget element;
+			do {
+				if (!it.hasNext()) {
+					return false;
+				}
 
-                element = it.next();
-            } while (!element.mouseClicked(mouseX, mouseY, button));
+				element = it.next();
+			} while (!element.mouseClicked(mouseX, mouseY, button));
 
-            this.setFocused(element);
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1)
-                this.dragging = true;
+			this.setFocused(element);
+			if (button == GLFW.GLFW_MOUSE_BUTTON_1)
+				this.dragging = true;
 
-            return true;
-        }
+			return true;
+		}
 
-        @Override
-        protected boolean onMouseRelease(double mouseX, double mouseY, int button) {
-            this.dragging = false;
-            return this.hoveredElement(mouseX, mouseY).filter(element -> element.mouseReleased(mouseX, mouseY, button)).isPresent();
-        }
+		@Override
+		protected boolean onMouseRelease(double mouseX, double mouseY, int button) {
+			this.dragging = false;
+			return this.hoveredElement(mouseX, mouseY).filter(element -> element.mouseReleased(mouseX, mouseY, button)).isPresent();
+		}
 
-        @Override
-        protected boolean onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-            return this.getFocused() != null && this.dragging && button == GLFW.GLFW_MOUSE_BUTTON_1
-                    && this.getFocused().mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-        }
+		@Override
+		protected boolean onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+			return this.getFocused() != null && this.dragging && button == GLFW.GLFW_MOUSE_BUTTON_1
+					&& this.getFocused().mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+		}
 
-        @Override
-        protected boolean onKeyPress(int keyCode, int scanCode, int modifiers) {
-            return this.focused != null && this.focused.keyPressed(keyCode, scanCode, modifiers);
-        }
+		@Override
+		protected boolean onKeyPress(int keyCode, int scanCode, int modifiers) {
+			return this.focused != null && this.focused.keyPressed(keyCode, scanCode, modifiers);
+		}
 
-        @Override
-        protected boolean onKeyRelease(int keyCode, int scanCode, int modifiers) {
-            return this.focused != null && this.focused.keyReleased(keyCode, scanCode, modifiers);
-        }
+		@Override
+		protected boolean onKeyRelease(int keyCode, int scanCode, int modifiers) {
+			return this.focused != null && this.focused.keyReleased(keyCode, scanCode, modifiers);
+		}
 
-        @Override
-        protected boolean onCharTyped(char chr, int keyCode) {
-            return this.focused != null && this.focused.charTyped(chr, keyCode);
-        }
+		@Override
+		protected boolean onCharTyped(char chr, int keyCode) {
+			return this.focused != null && this.focused.charTyped(chr, keyCode);
+		}
 
-        /* Rendering */
+		/* Rendering */
 
-        @Override
-        protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-            this.forEach(widget -> widget.render(matrices, mouseX, mouseY, delta));
+		@Override
+		protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			this.forEach(widget -> widget.render(matrices, mouseX, mouseY, delta));
 
-            int light = LightmapTextureManager.pack(15, 15);
+			int light = LightmapTextureManager.pack(15, 15);
 
-            VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
 
-            float textY = this.getY() + this.getHeight() / 2.f - 5;
+			float textY = this.getY() + this.getHeight() / 2.f - 5;
 
-            Matrix4f model = matrices.peek().getPositionMatrix();
+			Matrix4f model = matrices.peek().getPositionMatrix();
 
-            this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
-            this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);
+			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
+			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);
 
-            immediate.draw();
-        }
+			immediate.draw();
+		}
 
-        @Override
-        protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-            fill(matrices, this.getX(), this.getY(), this.getX() + this.parent.getInnerWidth(), this.getY() + this.getHeight() - 2, 0x55555555);
-        }
-    }
+		@Override
+		protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			fill(matrices, this.getX(), this.getY(), this.getX() + this.parent.getInnerWidth(), this.getY() + this.getHeight() - 2, 0x55555555);
+		}
+	}
 }

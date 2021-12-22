@@ -24,6 +24,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ChunkDeltaUpdateS2CPacket.class)
 public interface ChunkDeltaUpdateS2CPacketAccessor {
-    @Accessor
-    ChunkSectionPos getSectionPos();
+	@Accessor
+	ChunkSectionPos getSectionPos();
 }

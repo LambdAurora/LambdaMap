@@ -41,218 +41,218 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public class Marker {
-    private MarkerType type;
-    private MarkerSource source;
-    private int x;
-    private int y;
-    private int z;
-    private float rotation;
-    private @Nullable Text name;
+	private MarkerType type;
+	private MarkerSource source;
+	private int x;
+	private int y;
+	private int z;
+	private float rotation;
+	private @Nullable Text name;
 
-    public Marker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text name) {
-        this.type = type;
-        this.source = source;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.rotation = rotation;
-        this.name = name;
-    }
+	public Marker(MarkerType type, MarkerSource source, int x, int y, int z, float rotation, @Nullable Text name) {
+		this.type = type;
+		this.source = source;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.rotation = rotation;
+		this.name = name;
+	}
 
-    public MarkerType getType() {
-        return this.type;
-    }
+	public MarkerType getType() {
+		return this.type;
+	}
 
-    public void setType(MarkerType type) {
-        this.type = type;
-    }
+	public void setType(MarkerType type) {
+		this.type = type;
+	}
 
-    public MarkerSource getSource() {
-        return this.source;
-    }
+	public MarkerSource getSource() {
+		return this.source;
+	}
 
-    public void setSource(MarkerSource source) {
-        this.source = source;
-    }
+	public void setSource(MarkerSource source) {
+		this.source = source;
+	}
 
-    public int getX() {
-        return this.x;
-    }
+	public int getX() {
+		return this.x;
+	}
 
-    public void setX(int x) {
-        this.x = x;
-    }
+	public void setX(int x) {
+		this.x = x;
+	}
 
-    public int getY() {
-        return this.y;
-    }
+	public int getY() {
+		return this.y;
+	}
 
-    public void setY(int y) {
-        this.y = y;
-    }
+	public void setY(int y) {
+		this.y = y;
+	}
 
-    public int getZ() {
-        return this.z;
-    }
+	public int getZ() {
+		return this.z;
+	}
 
-    public void setZ(int z) {
-        this.z = z;
-    }
+	public void setZ(int z) {
+		this.z = z;
+	}
 
-    public BlockPos getPos() {
-        return new BlockPos(this.getX(), this.getY(), this.getZ());
-    }
+	public BlockPos getPos() {
+		return new BlockPos(this.getX(), this.getY(), this.getZ());
+	}
 
-    public int getChunkX() {
-        return ChunkSectionPos.getSectionCoord(this.getX());
-    }
+	public int getChunkX() {
+		return ChunkSectionPos.getSectionCoord(this.getX());
+	}
 
-    public int getChunkZ() {
-        return ChunkSectionPos.getSectionCoord(this.getZ());
-    }
+	public int getChunkZ() {
+		return ChunkSectionPos.getSectionCoord(this.getZ());
+	}
 
-    public float getRotation() {
-        return this.rotation;
-    }
+	public float getRotation() {
+		return this.rotation;
+	}
 
-    public void setRotation(float rotation) {
-        this.rotation = rotation;
-    }
+	public void setRotation(float rotation) {
+		this.rotation = rotation;
+	}
 
-    public @Nullable Text getName() {
-        return this.name;
-    }
+	public @Nullable Text getName() {
+		return this.name;
+	}
 
-    public void setName(@Nullable Text name) {
-        this.name = name;
-    }
+	public void setName(@Nullable Text name) {
+		this.name = name;
+	}
 
-    /**
-     * Returns whether this marker is in the specified box.
-     *
-     * @param minX the minimum X-coordinate of the box
-     * @param minZ the minimum Z-coordinate of the box
-     * @param maxX the maximum X-coordinate of the box
-     * @param maxZ the maximum Z-coordinate of the box
-     * @return {@code true} if the marker is in the box, else {@code false}
-     */
-    public boolean isIn(int minX, int minZ, int maxX, int maxZ) {
-        return this.getX() >= minX && this.getZ() >= minZ && this.getX() < maxX && this.getZ() < maxZ;
-    }
+	/**
+	 * Returns whether this marker is in the specified box.
+	 *
+	 * @param minX the minimum X-coordinate of the box
+	 * @param minZ the minimum Z-coordinate of the box
+	 * @param maxX the maximum X-coordinate of the box
+	 * @param maxZ the maximum Z-coordinate of the box
+	 * @return {@code true} if the marker is in the box, else {@code false}
+	 */
+	public boolean isIn(int minX, int minZ, int maxX, int maxZ) {
+		return this.getX() >= minX && this.getZ() >= minZ && this.getX() < maxX && this.getZ() < maxZ;
+	}
 
-    public boolean isAt(int x, int y, int z) {
-        return this.getX() == x && this.getY() == y && this.getZ() == z;
-    }
+	public boolean isAt(int x, int y, int z) {
+		return this.getX() == x && this.getY() == y && this.getZ() == z;
+	}
 
-    public boolean isAt(Marker marker) {
-        return this.isAt(marker.getX(), marker.getY(), marker.getZ());
-    }
+	public boolean isAt(Marker marker) {
+		return this.isAt(marker.getX(), marker.getY(), marker.getZ());
+	}
 
-    public void merge(Marker marker) {
-        this.setType(marker.getType());
-        this.setSource(marker.getSource());
-        this.setX(marker.getX());
-        this.setY(marker.getY());
-        this.setZ(marker.getZ());
-        this.setRotation(marker.getRotation());
-        if (marker.getName() != null)
-            this.setName(marker.getName());
-    }
+	public void merge(Marker marker) {
+		this.setType(marker.getType());
+		this.setSource(marker.getSource());
+		this.setX(marker.getX());
+		this.setY(marker.getY());
+		this.setZ(marker.getZ());
+		this.setRotation(marker.getRotation());
+		if (marker.getName() != null)
+			this.setName(marker.getName());
+	}
 
-    @Environment(EnvType.CLIENT)
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
-        matrices.push();
-        int x = this.getX() - startX;
-        int z = this.getZ() - startZ;
+	@Environment(EnvType.CLIENT)
+	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
+		matrices.push();
+		int x = this.getX() - startX;
+		int z = this.getZ() - startZ;
 
-        matrices.translate(x / scale, z / scale, 1.f);
-        this.getType().render(matrices, vertexConsumers, this.getRotation(), this.getName(), light);
-        matrices.pop();
-    }
+		matrices.translate(x / scale, z / scale, 1.f);
+		this.getType().render(matrices, vertexConsumers, this.getRotation(), this.getName(), light);
+		matrices.pop();
+	}
 
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putString("type", this.type.getId());
-        nbt.putString("source", this.source.getId());
-        nbt.putInt("x", this.x);
-        nbt.putInt("y", this.y);
-        nbt.putInt("z", this.z);
-        nbt.putFloat("rotation", this.rotation);
-        if (this.name != null) {
-            nbt.putString("name", Text.Serializer.toJson(this.name));
-        }
-        return nbt;
-    }
+	public NbtCompound toNbt() {
+		NbtCompound nbt = new NbtCompound();
+		nbt.putString("type", this.type.getId());
+		nbt.putString("source", this.source.getId());
+		nbt.putInt("x", this.x);
+		nbt.putInt("y", this.y);
+		nbt.putInt("z", this.z);
+		nbt.putFloat("rotation", this.rotation);
+		if (this.name != null) {
+			nbt.putString("name", Text.Serializer.toJson(this.name));
+		}
+		return nbt;
+	}
 
-    public Config writeTo(Config config) {
-        config.set("type", this.type.getId());
-        config.set("source", this.source.getId());
-        config.set("x", this.x);
-        config.set("y", this.y);
-        config.set("z", this.z);
-        config.set("rotation", this.rotation);
-        if (this.name != null) {
-            config.set("name", Text.Serializer.toJson(this.name));
-        }
-        return config;
-    }
+	public Config writeTo(Config config) {
+		config.set("type", this.type.getId());
+		config.set("source", this.source.getId());
+		config.set("x", this.x);
+		config.set("y", this.y);
+		config.set("z", this.z);
+		config.set("rotation", this.rotation);
+		if (this.name != null) {
+			config.set("name", Text.Serializer.toJson(this.name));
+		}
+		return config;
+	}
 
-    @Override
-    public String toString() {
-        return "Marker{" +
-                "type=" + this.getType() +
-                ", source=" + this.getSource() +
-                ", x=" + this.getX() +
-                ", y=" + this.getY() +
-                ", z=" + this.getZ() +
-                ", rotation=" + this.getRotation() +
-                ", name=" + this.getName() +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "Marker{" +
+				"type=" + this.getType() +
+				", source=" + this.getSource() +
+				", x=" + this.getX() +
+				", y=" + this.getY() +
+				", z=" + this.getZ() +
+				", rotation=" + this.getRotation() +
+				", name=" + this.getName() +
+				'}';
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Marker marker = (Marker) o;
-        return this.x == marker.x && this.y == marker.y && this.z == marker.z && this.rotation == marker.rotation
-                && Objects.equals(this.type, marker.type) && Objects.equals(this.name, marker.name);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Marker marker = (Marker) o;
+		return this.x == marker.x && this.y == marker.y && this.z == marker.z && this.rotation == marker.rotation
+				&& Objects.equals(this.type, marker.type) && Objects.equals(this.name, marker.name);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, x, y, z, rotation, name);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, x, y, z, rotation, name);
+	}
 
-    public static @Nullable Marker fromBanner(BlockView world, BlockPos pos) {
-        MapBannerMarker bannerMarker = MapBannerMarker.fromWorldBlock(world, pos);
-        if (bannerMarker == null)
-            return null;
+	public static @Nullable Marker fromBanner(BlockView world, BlockPos pos) {
+		MapBannerMarker bannerMarker = MapBannerMarker.fromWorldBlock(world, pos);
+		if (bannerMarker == null)
+			return null;
 
-        return new Marker(MarkerType.getVanillaMarkerType(bannerMarker.getIconType()), MarkerSource.BANNER,
-                pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
-    }
+		return new Marker(MarkerType.getVanillaMarkerType(bannerMarker.getIconType()), MarkerSource.BANNER,
+				pos.getX(), pos.getY(), pos.getZ(), 180.f, bannerMarker.getName());
+	}
 
-    public static Marker fromNbt(NbtCompound nbt) {
-        MarkerType type = MarkerType.getMarkerType(nbt.getString("type"));
-        Text name = null;
-        if (nbt.contains("name", NbtType.STRING))
-            name = Text.Serializer.fromJson(nbt.getString("name"));
-        return new Marker(type, MarkerSource.fromId(nbt.getString("source")),
-                nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"), nbt.getFloat("rotation"), name);
-    }
+	public static Marker fromNbt(NbtCompound nbt) {
+		MarkerType type = MarkerType.getMarkerType(nbt.getString("type"));
+		Text name = null;
+		if (nbt.contains("name", NbtType.STRING))
+			name = Text.Serializer.fromJson(nbt.getString("name"));
+		return new Marker(type, MarkerSource.fromId(nbt.getString("source")),
+				nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"), nbt.getFloat("rotation"), name);
+	}
 
-    public static Marker fromConfig(Config config) {
-        MarkerType type = MarkerType.getMarkerType(config.getOrElse("type", MarkerType.TARGET_POINT.getId()));
-        MarkerSource source = MarkerSource.fromId(config.getOrElse("source", MarkerSource.USER.getId()));
-        Text name = null;
-        if (config.contains("name"))
-            name = Text.Serializer.fromJson(config.getOrElse("name", "{}"));
-        return new Marker(type, source,
-                config.getIntOrElse("x", 0),
-                config.getIntOrElse("y", 0),
-                config.getIntOrElse("z", 0),
-                config.getOrElse("rotation", 0.0).floatValue(),
-                name);
-    }
+	public static Marker fromConfig(Config config) {
+		MarkerType type = MarkerType.getMarkerType(config.getOrElse("type", MarkerType.TARGET_POINT.getId()));
+		MarkerSource source = MarkerSource.fromId(config.getOrElse("source", MarkerSource.USER.getId()));
+		Text name = null;
+		if (config.contains("name"))
+			name = Text.Serializer.fromJson(config.getOrElse("name", "{}"));
+		return new Marker(type, source,
+				config.getIntOrElse("x", 0),
+				config.getIntOrElse("y", 0),
+				config.getIntOrElse("z", 0),
+				config.getOrElse("rotation", 0.0).floatValue(),
+				name);
+	}
 }

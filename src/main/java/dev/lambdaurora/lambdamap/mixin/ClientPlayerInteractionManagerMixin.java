@@ -32,14 +32,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class ClientPlayerInteractionManagerMixin {
-    @Inject(
-            method = "interactBlock",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;", ordinal = 0)
-    )
-    private void onInteractBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        var marker = Marker.fromBanner(world, hitResult.getBlockPos());
-        if (marker != null) {
-            LambdaMap.get().getMap().getMarkerManager().addMarker(marker);
-        }
-    }
+	@Inject(
+			method = "interactBlock",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;", ordinal = 0)
+	)
+	private void onInteractBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
+		var marker = Marker.fromBanner(world, hitResult.getBlockPos());
+		if (marker != null) {
+			LambdaMap.get().getMap().getMarkerManager().addMarker(marker);
+		}
+	}
 }

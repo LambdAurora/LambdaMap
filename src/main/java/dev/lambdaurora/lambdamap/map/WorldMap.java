@@ -56,331 +56,331 @@ import java.util.concurrent.ScheduledExecutorService;
  * @since 1.0.0
  */
 public class WorldMap {
-    private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final int VIEW_RANGE = 10000;
+	private static final int VIEW_RANGE = 10000;
 
-    private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
-    private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
-    private final MinecraftClient client = MinecraftClient.getInstance();
-    private final File directory;
-    private final MarkerManager markerManager;
+	private final Long2ObjectMap<MapRegionFile> regionFiles = new Long2ObjectOpenHashMap<>();
+	private final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
+	private final MinecraftClient client = MinecraftClient.getInstance();
+	private final File directory;
+	private final MarkerManager markerManager;
 
-    final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+	final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
-    private final World world;
+	private final World world;
 
-    private double viewX = 0;
-    private double viewZ = 0;
-    private double playerViewX = 0;
-    private double playerViewZ = 0;
+	private double viewX = 0;
+	private double viewZ = 0;
+	private double playerViewX = 0;
+	private double playerViewZ = 0;
 
-    public WorldMap(World world, File directory) {
-        this.directory = directory;
-        if (!this.directory.exists())
-            this.directory.mkdirs();
-        this.markerManager = new MarkerManager(this);
-        this.markerManager.load();
+	public WorldMap(World world, File directory) {
+		this.directory = directory;
+		if (!this.directory.exists())
+			this.directory.mkdirs();
+		this.markerManager = new MarkerManager(this);
+		this.markerManager.load();
 
-        this.world = world;
-    }
+		this.world = world;
+	}
 
-    public File getDirectory() {
-        return this.directory;
-    }
+	public File getDirectory() {
+		return this.directory;
+	}
 
-    public MarkerManager getMarkerManager() {
-        return this.markerManager;
-    }
+	public MarkerManager getMarkerManager() {
+		return this.markerManager;
+	}
 
-    public World getWorld() {
-        return this.world;
-    }
+	public World getWorld() {
+		return this.world;
+	}
 
-    public DynamicRegistryManager getRegistryManager() {
-        return this.world.getRegistryManager();
-    }
+	public DynamicRegistryManager getRegistryManager() {
+		return this.world.getRegistryManager();
+	}
 
-    public Registry<Biome> getBiomeRegistry() {
-        return this.getRegistryManager().get(Registry.BIOME_KEY);
-    }
+	public Registry<Biome> getBiomeRegistry() {
+		return this.getRegistryManager().get(Registry.BIOME_KEY);
+	}
 
-    public double getViewX() {
-        return this.viewX;
-    }
+	public double getViewX() {
+		return this.viewX;
+	}
 
-    public double getViewZ() {
-        return this.viewZ;
-    }
+	public double getViewZ() {
+		return this.viewZ;
+	}
 
-    public boolean updateViewPos(double viewX, double viewZ) {
-        boolean changed = viewX != this.viewX || viewZ != this.viewZ;
-        this.viewX = viewX;
-        this.viewZ = viewZ;
-        return changed;
-    }
+	public boolean updateViewPos(double viewX, double viewZ) {
+		boolean changed = viewX != this.viewX || viewZ != this.viewZ;
+		this.viewX = viewX;
+		this.viewZ = viewZ;
+		return changed;
+	}
 
-    public boolean updatePlayerViewPos(int viewX, int viewZ, float threshold) {
-        if (Math.abs(viewX - this.playerViewX) > threshold || Math.abs(viewZ - this.playerViewZ) > threshold) {
-            this.playerViewX = viewX;
-            this.playerViewZ = viewZ;
-            if (!(client.currentScreen instanceof WorldMapScreen))
-                this.updateViewPos(viewX, viewZ);
-            return true;
-        } else {
-            return false;
-        }
-    }
+	public boolean updatePlayerViewPos(int viewX, int viewZ, float threshold) {
+		if (Math.abs(viewX - this.playerViewX) > threshold || Math.abs(viewZ - this.playerViewZ) > threshold) {
+			this.playerViewX = viewX;
+			this.playerViewZ = viewZ;
+			if (!(client.currentScreen instanceof WorldMapScreen))
+				this.updateViewPos(viewX, viewZ);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * Returns the ARGB color at the specified coordinates.
-     * <p>
-     * Coordinates are absolute.
-     *
-     * @param x the X coordinate
-     * @param z the Z coordinate
-     * @param mode the chunk getter mode
-     * @return the ARGB color
-     */
-    public int getRenderColor(int x, int z, ChunkGetterMode mode) {
-        var chunk = mode.getChunk(this, MapChunk.blockToChunk(x), MapChunk.blockToChunk(z));
-        if (chunk == null || chunk.isEmpty())
-            return 0;
-        int index = chunk.getIndex(x, z);
-        int color = chunk.getColor(index) & 255;
-        if (color / 4 == 0)
-            return 0;
-        else {
-            var mapColor = MapColorAccessor.getColors()[color / 4];
-            if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
-                if (mapColor == MapColor.WATER_BLUE) {
-                    var biome = chunk.getBiome(index);
-                    if (biome != null) {
-                        return this.calculateWaterColor(x, z, biome, color & 3, mode);
-                    }
-                } else {
-                    var state = chunk.getBlockState(index);
-                    if (state != null) {
-                        int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
-                        return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
-                    }
-                }
-            }
-            return applyShade(mapColor.color, color & 3);
-        }
-    }
+	/**
+	 * Returns the ARGB color at the specified coordinates.
+	 * <p>
+	 * Coordinates are absolute.
+	 *
+	 * @param x the X coordinate
+	 * @param z the Z coordinate
+	 * @param mode the chunk getter mode
+	 * @return the ARGB color
+	 */
+	public int getRenderColor(int x, int z, ChunkGetterMode mode) {
+		var chunk = mode.getChunk(this, MapChunk.blockToChunk(x), MapChunk.blockToChunk(z));
+		if (chunk == null || chunk.isEmpty())
+			return 0;
+		int index = chunk.getIndex(x, z);
+		int color = chunk.getColor(index) & 255;
+		if (color / 4 == 0)
+			return 0;
+		else {
+			var mapColor = MapColorAccessor.getColors()[color / 4];
+			if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
+				if (mapColor == MapColor.WATER_BLUE) {
+					var biome = chunk.getBiome(index);
+					if (biome != null) {
+						return this.calculateWaterColor(x, z, biome, color & 3, mode);
+					}
+				} else {
+					var state = chunk.getBlockState(index);
+					if (state != null) {
+						int argb = 0xff000000 | this.client.getBlockColors().getColor(state, new ClientWorldWrapper(this.client.world, chunk), new BlockPos(x, 64, z), 0);
+						return applyShade(ColorUtil.argbMultiply(argb, 0xffb9bcb9), color & 3);
+					}
+				}
+			}
+			return applyShade(mapColor.color, color & 3);
+		}
+	}
 
-    private int calculateWaterColor(int x, int z, Biome sourceBiome, int shade, ChunkGetterMode mode) {
-        int biomeBlendRadius = this.client.options.biomeBlendRadius;
-        if (biomeBlendRadius == 0) {
-            return applyShade(ColorUtil.argbDarken(sourceBiome.getWaterColor()), shade);
-        } else {
-            biomeBlendRadius = 2;
-            int multiplier = (biomeBlendRadius * 2 + 1) * (biomeBlendRadius * 2 + 1);
-            int r = 0;
-            int g = 0;
-            int b = 0;
+	private int calculateWaterColor(int x, int z, Biome sourceBiome, int shade, ChunkGetterMode mode) {
+		int biomeBlendRadius = this.client.options.biomeBlendRadius;
+		if (biomeBlendRadius == 0) {
+			return applyShade(ColorUtil.argbDarken(sourceBiome.getWaterColor()), shade);
+		} else {
+			biomeBlendRadius = 2;
+			int multiplier = (biomeBlendRadius * 2 + 1) * (biomeBlendRadius * 2 + 1);
+			int r = 0;
+			int g = 0;
+			int b = 0;
 
-            for (int offsetZ = -biomeBlendRadius; offsetZ < biomeBlendRadius; offsetZ++) {
-                int resolveZ = z + offsetZ;
-                for (int offsetX = -biomeBlendRadius; offsetX < biomeBlendRadius; offsetX++) {
-                    int resolveX = x + offsetX;
-                    var chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
-                    if (chunk != null) {
-                        var biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
-                        if (biome != null) {
-                            int waterColor = biome.getWaterColor();
-                            r += (waterColor & 0x00ff0000) >> 16;
-                            g += (waterColor & 0x0000ff00) >> 8;
-                            b += waterColor & 0xff;
-                        }
-                    } else multiplier--;
-                }
-            }
+			for (int offsetZ = -biomeBlendRadius; offsetZ < biomeBlendRadius; offsetZ++) {
+				int resolveZ = z + offsetZ;
+				for (int offsetX = -biomeBlendRadius; offsetX < biomeBlendRadius; offsetX++) {
+					int resolveX = x + offsetX;
+					var chunk = mode.getChunk(this, MapChunk.blockToChunk(resolveX), MapChunk.blockToChunk(resolveZ));
+					if (chunk != null) {
+						var biome = chunk.getBiome(chunk.getIndex(resolveX, resolveZ));
+						if (biome != null) {
+							int waterColor = biome.getWaterColor();
+							r += (waterColor & 0x00ff0000) >> 16;
+							g += (waterColor & 0x0000ff00) >> 8;
+							b += waterColor & 0xff;
+						}
+					} else multiplier--;
+				}
+			}
 
-            return applyShade(ColorUtil.packARGBColor(r / multiplier & 255, g / multiplier & 255, b / multiplier & 255, 0xff), shade);
-        }
-    }
+			return applyShade(ColorUtil.packARGBColor(r / multiplier & 255, g / multiplier & 255, b / multiplier & 255, 0xff), shade);
+		}
+	}
 
-    private static int applyShade(int color, int shade) {
-        int modifier = 220;
-        if (shade == 3) {
-            modifier = 135;
-        }
+	private static int applyShade(int color, int shade) {
+		int modifier = 220;
+		if (shade == 3) {
+			modifier = 135;
+		}
 
-        if (shade == 2) {
-            modifier = 255;
-        }
+		if (shade == 2) {
+			modifier = 255;
+		}
 
-        if (shade == 0) {
-            modifier = 180;
-        }
+		if (shade == 0) {
+			modifier = 180;
+		}
 
-        int j = (color >> 16 & 255) * modifier / 255;
-        int k = (color >> 8 & 255) * modifier / 255;
-        int l = (color & 255) * modifier / 255;
-        return -16777216 | l << 16 | k << 8 | j;
-    }
+		int j = (color >> 16 & 255) * modifier / 255;
+		int k = (color >> 8 & 255) * modifier / 255;
+		int l = (color & 255) * modifier / 255;
+		return -16777216 | l << 16 | k << 8 | j;
+	}
 
-    public @Nullable MapChunk getChunk(int x, int z) {
-        return this.getChunk(ChunkPos.toLong(x, z));
-    }
+	public @Nullable MapChunk getChunk(int x, int z) {
+		return this.getChunk(ChunkPos.toLong(x, z));
+	}
 
-    public @Nullable MapChunk getChunk(long pos) {
-        return this.chunks.get(pos);
-    }
+	public @Nullable MapChunk getChunk(long pos) {
+		return this.chunks.get(pos);
+	}
 
-    public @Nullable MapChunk getChunkOrLoad(int x, int z) {
-        return this.getChunkOrLoad(ChunkPos.toLong(x, z));
-    }
+	public @Nullable MapChunk getChunkOrLoad(int x, int z) {
+		return this.getChunkOrLoad(ChunkPos.toLong(x, z));
+	}
 
-    public @Nullable MapChunk getChunkOrLoad(long pos) {
-        var chunk = this.getChunk(pos);
-        if (chunk == null) {
-            int x = ChunkPos.getPackedX(pos);
-            int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.load(this, x, z);
-            if (chunk != null)
-                this.chunks.put(pos, chunk);
-        }
-        return chunk;
-    }
+	public @Nullable MapChunk getChunkOrLoad(long pos) {
+		var chunk = this.getChunk(pos);
+		if (chunk == null) {
+			int x = ChunkPos.getPackedX(pos);
+			int z = ChunkPos.getPackedZ(pos);
+			chunk = MapChunk.load(this, x, z);
+			if (chunk != null)
+				this.chunks.put(pos, chunk);
+		}
+		return chunk;
+	}
 
-    public MapChunk getChunkOrCreate(int x, int z) {
-        long pos = ChunkPos.toLong(x, z);
-        var chunk = this.getChunk(pos);
-        if (chunk == null) {
-            chunk = MapChunk.loadOrCreate(this, x, z);
-            this.chunks.put(pos, chunk);
-        }
-        return chunk;
-    }
+	public MapChunk getChunkOrCreate(int x, int z) {
+		long pos = ChunkPos.toLong(x, z);
+		var chunk = this.getChunk(pos);
+		if (chunk == null) {
+			chunk = MapChunk.loadOrCreate(this, x, z);
+			this.chunks.put(pos, chunk);
+		}
+		return chunk;
+	}
 
-    public MapChunk getChunkOrCreate(long pos) {
-        var chunk = this.getChunk(pos);
-        if (chunk == null) {
-            int x = ChunkPos.getPackedX(pos);
-            int z = ChunkPos.getPackedZ(pos);
-            chunk = MapChunk.loadOrCreate(this, x, z);
-            this.chunks.put(pos, chunk);
-        }
-        return chunk;
-    }
+	public MapChunk getChunkOrCreate(long pos) {
+		var chunk = this.getChunk(pos);
+		if (chunk == null) {
+			int x = ChunkPos.getPackedX(pos);
+			int z = ChunkPos.getPackedZ(pos);
+			chunk = MapChunk.loadOrCreate(this, x, z);
+			this.chunks.put(pos, chunk);
+		}
+		return chunk;
+	}
 
-    public @Nullable MapRegionFile getOrLoadRegion(int x, int z) {
-        x = MapChunk.chunkToRegion(x);
-        z = MapChunk.chunkToRegion(z);
-        long pos = ChunkPos.toLong(x, z);
-        var regionFile = this.regionFiles.get(pos);
+	public @Nullable MapRegionFile getOrLoadRegion(int x, int z) {
+		x = MapChunk.chunkToRegion(x);
+		z = MapChunk.chunkToRegion(z);
+		long pos = ChunkPos.toLong(x, z);
+		var regionFile = this.regionFiles.get(pos);
 
-        if (regionFile == null) {
-            try {
-                regionFile = MapRegionFile.load(this, x, z);
-                if (regionFile != null)
-                    this.regionFiles.put(pos, regionFile);
-            } catch (IOException e) {
-                LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
-                return null;
-            }
-        }
+		if (regionFile == null) {
+			try {
+				regionFile = MapRegionFile.load(this, x, z);
+				if (regionFile != null)
+					this.regionFiles.put(pos, regionFile);
+			} catch (IOException e) {
+				LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
+				return null;
+			}
+		}
 
-        return regionFile;
-    }
+		return regionFile;
+	}
 
-    public MapRegionFile getOrCreateRegion(int x, int z) {
-        x = MapChunk.chunkToRegion(x);
-        z = MapChunk.chunkToRegion(z);
-        long pos = ChunkPos.toLong(x, z);
-        var regionFile = this.regionFiles.get(pos);
+	public MapRegionFile getOrCreateRegion(int x, int z) {
+		x = MapChunk.chunkToRegion(x);
+		z = MapChunk.chunkToRegion(z);
+		long pos = ChunkPos.toLong(x, z);
+		var regionFile = this.regionFiles.get(pos);
 
-        if (regionFile == null) {
-            try {
-                regionFile = MapRegionFile.loadOrCreate(this, x, z);
-                this.regionFiles.put(pos, regionFile);
-            } catch (IOException e) {
-                LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
-                return null;
-            }
-        }
+		if (regionFile == null) {
+			try {
+				regionFile = MapRegionFile.loadOrCreate(this, x, z);
+				this.regionFiles.put(pos, regionFile);
+			} catch (IOException e) {
+				LOGGER.error("Could not load or create region file (" + x + ", " + z + ")", e);
+				return null;
+			}
+		}
 
-        return regionFile;
-    }
+		return regionFile;
+	}
 
-    public void unloadRegion(MapRegionFile regionFile) {
-        this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(), regionFile.getZ()));
-    }
+	public void unloadRegion(MapRegionFile regionFile) {
+		this.regionFiles.remove(ChunkPos.toLong(regionFile.getX(), regionFile.getZ()));
+	}
 
-    public void importMapState(MapState mapState, List<Marker> markers) {
-        int scale = 1 << mapState.scale;
+	public void importMapState(MapState mapState, List<Marker> markers) {
+		int scale = 1 << mapState.scale;
 
-        int cornerX = mapState.centerX - 64 * scale;
-        int cornerZ = mapState.centerZ - 64 * scale;
+		int cornerX = mapState.centerX - 64 * scale;
+		int cornerZ = mapState.centerZ - 64 * scale;
 
-        var marker = markers.get(0);
-        for (var icon : mapState.getIcons()) {
-            if (marker.getType() == MarkerType.getVanillaMarkerType(icon.getType())) {
-                int iconX = (int) (icon.getX() / 2.f + 64) * scale;
-                int iconZ = (int) (icon.getZ() / 2.f + 64) * scale;
+		var marker = markers.get(0);
+		for (var icon : mapState.getIcons()) {
+			if (marker.getType() == MarkerType.getVanillaMarkerType(icon.getType())) {
+				int iconX = (int) (icon.getX() / 2.f + 64) * scale;
+				int iconZ = (int) (icon.getZ() / 2.f + 64) * scale;
 
-                cornerX = marker.getX() - iconX;
-                cornerZ = marker.getZ() - iconZ;
-            }
-        }
+				cornerX = marker.getX() - iconX;
+				cornerZ = marker.getZ() - iconZ;
+			}
+		}
 
-        for (int z = 0; z < 128 * scale; z++) {
-            int i = z / scale;
-            int chunkZ = MapChunk.blockToChunk(cornerZ + z);
+		for (int z = 0; z < 128 * scale; z++) {
+			int i = z / scale;
+			int chunkZ = MapChunk.blockToChunk(cornerZ + z);
 
-            for (int x = 0; x < 128 * scale; x++) {
-                byte color = mapState.colors[x / scale + i * 128];
-                if (color / 4 == 0)
-                    continue;
+			for (int x = 0; x < 128 * scale; x++) {
+				byte color = mapState.colors[x / scale + i * 128];
+				if (color / 4 == 0)
+					continue;
 
-                int chunkX = MapChunk.blockToChunk(cornerX + x);
-                var chunk = this.getChunkOrCreate(chunkX, chunkZ);
+				int chunkX = MapChunk.blockToChunk(cornerX + x);
+				var chunk = this.getChunkOrCreate(chunkX, chunkZ);
 
-                if (chunk.getColor(cornerX + x, cornerZ + z) / 4 == 0) {
-                    chunk.putColor(cornerX + x, cornerZ + z, color);
-                }
-            }
-        }
-    }
+				if (chunk.getColor(cornerX + x, cornerZ + z) / 4 == 0) {
+					chunk.putColor(cornerX + x, cornerZ + z, color);
+				}
+			}
+		}
+	}
 
-    public void tick() {
-        var client = MinecraftClient.getInstance();
-        int viewDistance = Math.max(2, client.options.viewDistance - 2);
+	public void tick() {
+		var client = MinecraftClient.getInstance();
+		int viewDistance = Math.max(2, client.options.viewDistance - 2);
 
-        int chunkX = ChunkSectionPos.getSectionCoord(this.playerViewX);
-        int chunkZ = ChunkSectionPos.getSectionCoord(this.playerViewZ);
+		int chunkX = ChunkSectionPos.getSectionCoord(this.playerViewX);
+		int chunkZ = ChunkSectionPos.getSectionCoord(this.playerViewZ);
 
-        int playerViewStartX = (chunkX - viewDistance) >> 3;
-        int playerViewStartZ = (chunkZ - viewDistance) >> 3;
-        int playerViewEndX = (chunkX + viewDistance) >> 3;
-        int playerViewEndZ = (chunkZ + viewDistance) >> 3;
+		int playerViewStartX = (chunkX - viewDistance) >> 3;
+		int playerViewStartZ = (chunkZ - viewDistance) >> 3;
+		int playerViewEndX = (chunkX + viewDistance) >> 3;
+		int playerViewEndZ = (chunkZ + viewDistance) >> 3;
 
-        int viewStartX = (int) (this.viewX - VIEW_RANGE);
-        int viewStartZ = (int) (this.viewZ - VIEW_RANGE);
-        int viewEndX = (int) (this.viewX + VIEW_RANGE);
-        int viewEndZ = (int) (this.viewZ + VIEW_RANGE);
+		int viewStartX = (int) (this.viewX - VIEW_RANGE);
+		int viewStartZ = (int) (this.viewZ - VIEW_RANGE);
+		int viewEndX = (int) (this.viewX + VIEW_RANGE);
+		int viewEndZ = (int) (this.viewZ + VIEW_RANGE);
 
-        boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
-        this.chunks.values().removeIf(chunk -> {
-            if (!((chunk.getX() >= playerViewStartX && chunk.getX() <= playerViewEndX && chunk.getZ() >= playerViewStartZ && chunk.getZ() <= playerViewEndZ)
-                    || (hasViewer && chunk.isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
-                chunk.unload();
-                return true;
-            }
-            return false;
-        });
+		boolean hasViewer = this.viewX != this.playerViewX || this.viewZ != this.playerViewZ;
+		this.chunks.values().removeIf(chunk -> {
+			if (!((chunk.getX() >= playerViewStartX && chunk.getX() <= playerViewEndX && chunk.getZ() >= playerViewStartZ && chunk.getZ() <= playerViewEndZ)
+					|| (hasViewer && chunk.isCenterInBox(viewStartX, viewStartZ, viewEndX, viewEndZ)))) {
+				chunk.unload();
+				return true;
+			}
+			return false;
+		});
 
-        this.getMarkerManager().tick(this.world);
-    }
+		this.getMarkerManager().tick(this.world);
+	}
 
-    public void unload() {
-        this.service.shutdown();
-        this.markerManager.save();
-        this.chunks.forEach((pos, chunk) -> chunk.unload());
-        this.chunks.clear();
-        this.regionFiles.clear();
-    }
+	public void unload() {
+		this.service.shutdown();
+		this.markerManager.save();
+		this.chunks.forEach((pos, chunk) -> chunk.unload());
+		this.chunks.clear();
+		this.regionFiles.clear();
+	}
 }

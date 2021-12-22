@@ -27,24 +27,24 @@ import java.util.Locale;
  * @since 1.0.0
  */
 public enum MarkerSource {
-    USER,
-    FILLED_MAP,
-    BANNER;
+	USER,
+	FILLED_MAP,
+	BANNER;
 
-    public String getId() {
-        return this.name().toLowerCase(Locale.ROOT);
-    }
+	public String getId() {
+		return this.name().toLowerCase(Locale.ROOT);
+	}
 
-    @Override
-    public String toString() {
-        return this.getId();
-    }
+	@Override
+	public String toString() {
+		return this.getId();
+	}
 
-    public static MarkerSource fromId(String id) {
-        for (MarkerSource source : values()) {
-            if (source.getId().equalsIgnoreCase(id))
-                return source;
-        }
-        return USER;
-    }
+	public static MarkerSource fromId(String id) {
+		for (MarkerSource source : values()) {
+			if (source.getId().equalsIgnoreCase(id))
+				return source;
+		}
+		return USER;
+	}
 }

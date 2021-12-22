@@ -40,77 +40,76 @@ import org.jetbrains.annotations.Nullable;
  * @since 1.0.0
  */
 public class ClientWorldWrapper implements BlockRenderView {
-    private final ClientWorld world;
-    private final MapChunk chunk;
+	private final ClientWorld world;
+	private final MapChunk chunk;
 
-    public ClientWorldWrapper(ClientWorld world, MapChunk chunk) {
-        this.world = world;
-        this.chunk = chunk;
-    }
+	public ClientWorldWrapper(ClientWorld world, MapChunk chunk) {
+		this.world = world;
+		this.chunk = chunk;
+	}
 
-    @Override
-    public float getBrightness(Direction direction, boolean shaded) {
-        return this.world.getBrightness(direction, shaded);
-    }
+	@Override
+	public float getBrightness(Direction direction, boolean shaded) {
+		return this.world.getBrightness(direction, shaded);
+	}
 
-    @Override
-    public LightingProvider getLightingProvider() {
-        return this.world.getLightingProvider();
-    }
+	@Override
+	public LightingProvider getLightingProvider() {
+		return this.world.getLightingProvider();
+	}
 
-    @Override
-    public int getColor(BlockPos pos, ColorResolver colorResolver) {
-        if (this.chunk == null || this.chunk.isEmpty())
-            return 0;
-        var biome = this.chunk.getBiome(pos.getX(), pos.getZ());
-        if (biome == null) {
-            int color = this.chunk.getColor(pos.getX(), pos.getZ()) & 255;
-            return MapColorAccessor.getColors()[color / 4].color; // Give up
-        }
-        int color = colorResolver.getColor(biome, pos.getX(), pos.getZ());
+	@Override
+	public int getColor(BlockPos pos, ColorResolver colorResolver) {
+		if (this.chunk == null || this.chunk.isEmpty())
+			return 0;
+		var biome = this.chunk.getBiome(pos.getX(), pos.getZ());
+		if (biome == null) {
+			int color = this.chunk.getColor(pos.getX(), pos.getZ()) & 255;
+			return MapColorAccessor.getColors()[color / 4].color; // Give up
+		}
+		int color = colorResolver.getColor(biome, pos.getX(), pos.getZ());
 
-        var state = chunk.getBlockState(pos.getX(), pos.getZ());
-        if (state != null && (state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.TALL_GRASS
-                || state.getBlock() == Blocks.VINE)) {
-            return ColorUtil.argbMultiply(color, .8f, 0xff);
-        }
+		var state = chunk.getBlockState(pos.getX(), pos.getZ());
+		if (state != null && (state.getBlock() == Blocks.GRASS || state.getBlock() == Blocks.TALL_GRASS
+				|| state.getBlock() == Blocks.VINE)) {
+			return ColorUtil.argbMultiply(color, .8f, 0xff);
+		}
 
-        return color;
-    }
+		return color;
+	}
 
-    @Nullable
-    @Override
-    public BlockEntity getBlockEntity(BlockPos pos) {
-        return this.world.getBlockEntity(pos);
-    }
+	@Override
+	public @Nullable BlockEntity getBlockEntity(BlockPos pos) {
+		return this.world.getBlockEntity(pos);
+	}
 
-    @Override
-    public BlockState getBlockState(BlockPos pos) {
-        return this.world.getBlockState(pos);
-    }
+	@Override
+	public BlockState getBlockState(BlockPos pos) {
+		return this.world.getBlockState(pos);
+	}
 
-    @Override
-    public FluidState getFluidState(BlockPos pos) {
-        return this.world.getFluidState(pos);
-    }
+	@Override
+	public FluidState getFluidState(BlockPos pos) {
+		return this.world.getFluidState(pos);
+	}
 
-    @Override
-    public int getBottomSectionCoord() {
-        return this.world.getBottomSectionCoord();
-    }
+	@Override
+	public int getBottomSectionCoord() {
+		return this.world.getBottomSectionCoord();
+	}
 
-    @Override
-    public int getHeight() {
-        return this.world.getHeight();
-    }
+	@Override
+	public int getHeight() {
+		return this.world.getHeight();
+	}
 
-    @Override
-    public int getBottomY() {
-        return this.world.getBottomY();
-    }
+	@Override
+	public int getBottomY() {
+		return this.world.getBottomY();
+	}
 
-    @Override
-    public int countVerticalSections() {
-        return this.world.countVerticalSections();
-    }
+	@Override
+	public int countVerticalSections() {
+		return this.world.countVerticalSections();
+	}
 }

@@ -31,55 +31,55 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 public class WorldMapScreen extends SpruceScreen {
-    private final LambdaMap mod = LambdaMap.get();
+	private final LambdaMap mod = LambdaMap.get();
 
-    public WorldMapScreen() {
-        super(new LiteralText("World Map"));
-    }
+	public WorldMapScreen() {
+		super(new LiteralText("World Map"));
+	}
 
-    @Override
-    public void removed() {
-        super.removed();
-    }
+	@Override
+	public void removed() {
+		super.removed();
+	}
 
-    @Override
-    protected void init() {
-        super.init();
+	@Override
+	protected void init() {
+		super.init();
 
-        SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
-        tabs.getList().setBackground(RandomPrideFlagBackground.random());
-        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
-                (width, height) -> new WorldMapWidget(Position.origin(), width, height));
-        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.markers"), new TranslatableText("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
-                (width, height) -> {
-                    SpruceContainerWidget containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
-                    MarkerManager markers = this.mod.getMap().getMarkerManager();
+		SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
+		tabs.getList().setBackground(RandomPrideFlagBackground.random());
+		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
+				(width, height) -> new WorldMapWidget(Position.origin(), width, height));
+		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.markers"), new TranslatableText("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
+				(width, height) -> {
+					var containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
+					MarkerManager markers = this.mod.getMap().getMarkerManager();
 
-                    int newMarkerFormHeight = width < 480 ? 80 : 40;
+					int newMarkerFormHeight = width < 480 ? 80 : 40;
 
-                    MarkerListWidget list = new MarkerListWidget(Position.origin(), width, height - newMarkerFormHeight, markers);
-                    containerWidget.addChild(list);
-                    containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, list.getHeight()), width, newMarkerFormHeight, markers, list));
-                    return containerWidget;
-                });
-        tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
-                this::buildConfigTab);
-    }
+					var list = new MarkerListWidget(Position.origin(), width, height - newMarkerFormHeight, markers);
+					containerWidget.addChild(list);
+					containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, list.getHeight()), width, newMarkerFormHeight, markers, list));
+					return containerWidget;
+				});
+		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
+				this::buildConfigTab);
+	}
 
-    private SpruceOptionListWidget buildConfigTab(int width, int height) {
-        SpruceOptionListWidget list = new SpruceOptionListWidget(Position.origin(), width, height);
-        list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
+	private SpruceOptionListWidget buildConfigTab(int width, int height) {
+		var list = new SpruceOptionListWidget(Position.origin(), width, height);
+		list.setBackground(EmptyBackground.EMPTY_BACKGROUND);
 
-        list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.general", true, null));
-        list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
-        list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.hud", true, null));
-        list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
-        list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
-        return list;
-    }
+		list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.general", true, null));
+		list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
+		list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.hud", true, null));
+		list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
+		list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
+		return list;
+	}
 
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-    }
+	@Override
+	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+	}
 }
