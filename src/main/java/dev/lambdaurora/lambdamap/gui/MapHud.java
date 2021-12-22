@@ -30,6 +30,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
@@ -57,6 +58,19 @@ public class MapHud implements AutoCloseable {
 
     public void setVisible(boolean visible) {
         this.config.setHudVisible(visible);
+    }
+
+    private final int TEXTURE_SIZE = 128 + 64;
+    private final int HUD_SIZE = 128;
+    private final float THRESHOLD_NORTH_LOCKED = ((TEXTURE_SIZE - HUD_SIZE) / 2f) - 1f;
+    private final float THRESHOLD_ROTATED = ((TEXTURE_SIZE / 2f) - MathHelper.sqrt((HUD_SIZE * HUD_SIZE) / 2f)) - 1f;
+
+    /**
+     * Returns the threshold of distance between rendered and current player position after which to update the map.
+     * Greater if the map is north-locked, as there is a larger margin around the map.
+     */
+    public float getMovementThreshold() {
+        return this.config.isNorthLocked() ? THRESHOLD_NORTH_LOCKED : THRESHOLD_ROTATED;
     }
 
 	private int renderPosX;
@@ -119,16 +133,15 @@ public class MapHud implements AutoCloseable {
         if (!this.config.isNorthLocked()) {
             matrices.translate(64, 64, 0);
             matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.getYaw(delta) + 180));
-            matrices.translate(-64 - 32, -64 - 32, 0);
-        } else {
-            textureWidth = 128;
-            textureHeight = 128;
+            matrices.translate(-64, -64, 0);
         }
+        // Translate so map is centred
+        matrices.translate(-32, -32, 0);
 
 		// Translate by offset from position that map was last rendered from
 		var lerped = this.client.player.getLerpedPos(delta);
-		float offsetX = (float) ((renderPosX - lerped.getX())) * scaleCompensation;
-		float offsetZ = (float) ((renderPosZ - lerped.getZ())) * scaleCompensation;
+		float offsetX = (float) (renderPosX - lerped.getX());
+		float offsetZ = (float) (renderPosZ - lerped.getZ());
 		matrices.translate(offsetX, offsetZ, 0);
 
         var model = matrices.peek().getPositionMatrix();
@@ -139,9 +152,9 @@ public class MapHud implements AutoCloseable {
         WorldMapRenderer.vertex(vertices, model, 0.f, 0.f, uStart, vStart, light);
 
         {
-            double cornerX = renderPosX - (textureWidth / 2.f);
-            double cornerZ = renderPosZ - (textureWidth / 2.f);
-            LambdaMap.get().getMap().getMarkerManager().forEachInBox((int) cornerX, (int) cornerZ, textureWidth, textureHeight, marker -> {
+            int cornerX = renderPosX - (textureWidth / 2);
+            int cornerZ = renderPosZ - (textureHeight / 2);
+            LambdaMap.get().getMap().getMarkerManager().forEachInBox(cornerX, cornerZ, textureWidth, textureHeight, marker -> {
                 matrices.push();
 
                 float x = (float) (marker.getX() - cornerX);

@@ -120,13 +120,16 @@ public class WorldMap {
         return changed;
     }
 
-    public boolean updatePlayerViewPos(int viewX, int viewZ) {
-        boolean changed = viewX != this.playerViewX || viewZ != this.playerViewZ;
-        this.playerViewX = viewX;
-        this.playerViewZ = viewZ;
-        if (!(client.currentScreen instanceof WorldMapScreen))
-            this.updateViewPos(viewX, viewZ);
-        return changed;
+    public boolean updatePlayerViewPos(int viewX, int viewZ, float threshold) {
+        if (Math.abs(viewX - this.playerViewX) > threshold || Math.abs(viewZ - this.playerViewZ) > threshold) {
+            this.playerViewX = viewX;
+            this.playerViewZ = viewZ;
+            if (!(client.currentScreen instanceof WorldMapScreen))
+                this.updateViewPos(viewX, viewZ);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
