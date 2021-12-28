@@ -230,6 +230,24 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		}
 
 		@Override
+		protected boolean onMouseScroll(double mouseX, double mouseY, double amount) {
+			Iterator<SpruceWidget> it = this.iterator();
+
+			SpruceWidget element;
+			do {
+				if (!it.hasNext()) {
+					return false;
+				}
+
+				element = it.next();
+			} while (!element.mouseScrolled(mouseX, mouseY, amount));
+
+			this.setFocused(element);
+
+			return true;
+		}
+
+		@Override
 		protected boolean onMouseDrag(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
 			return this.getFocused() != null && this.dragging && button == GLFW.GLFW_MOUSE_BUTTON_1
 					&& this.getFocused().mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
