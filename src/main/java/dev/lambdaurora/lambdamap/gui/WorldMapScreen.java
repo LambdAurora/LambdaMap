@@ -51,17 +51,7 @@ public class WorldMapScreen extends SpruceScreen {
 		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
 				(width, height) -> new WorldMapWidget(Position.origin(), width, height));
 		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.markers"), new TranslatableText("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
-				(width, height) -> {
-					var containerWidget = new SpruceContainerWidget(Position.origin(), width, height);
-					MarkerManager markers = this.mod.getMap().getMarkerManager();
-
-					int newMarkerFormHeight = width < 480 ? 80 : 40;
-
-					var list = new MarkerListWidget(Position.origin(), width, height - newMarkerFormHeight, markers);
-					containerWidget.addChild(list);
-					containerWidget.addChild(new NewMarkerFormWidget(Position.of(containerWidget, 0, list.getHeight()), width, newMarkerFormHeight, markers, list));
-					return containerWidget;
-				});
+				(width, height) -> new MarkerTabWidget(mod, Position.origin(), width, height));
 		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
 				this::buildConfigTab);
 	}
