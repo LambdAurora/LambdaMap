@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 public class ConfirmDeletionWidget extends SpruceContainerWidget {
     private MarkerListWidget.MarkerEntry markerEntry;
@@ -19,13 +20,15 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
         this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
         int offset = 5;
         int spacing = 10;
-        SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
-        SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
+
+        SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
             this.markerEntry.parent.removeMarker(markerEntry);
             parent.switchBack();
         });
-        this.addChild(cancelButton);
+        SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
+
         this.addChild(deleteButton);
+        this.addChild(cancelButton);
     }
 
     @Override
@@ -36,6 +39,7 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
 
         String name = this.markerEntry.marker.getName() == null ? "" : this.markerEntry.marker.getName().asString();
         OrderedText prompt = new TranslatableText("lambdamap.marker.confirm_deletion.prompt",
+                    new TranslatableText("lambdamap.marker.confirm_deletion.prompt.action").formatted(Formatting.RED),
                     name.equals("") ? new TranslatableText("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
                 .asOrderedText();
 

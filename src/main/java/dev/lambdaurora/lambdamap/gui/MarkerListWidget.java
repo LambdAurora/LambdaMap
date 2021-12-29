@@ -93,7 +93,9 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
 					btn -> {
-						if(GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS) {
+						// Force Deletion using SHIFT key to skip the confirmation dialog, might be worth making configurable?
+						if(GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS ||
+								GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS) {
 							this.parent.removeMarker(this);
 						} else {
 							parent.parent.promptForDeletion(this);
