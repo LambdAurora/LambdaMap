@@ -17,8 +17,10 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
     public ConfirmDeletionWidget(MarkerTabWidget parent, Position position, int width, int height) {
         super(position, width, height);
         this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
-        SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, 10, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 20, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
-        SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + 10, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 20, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
+        int offset = 5;
+        int spacing = 10;
+        SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
+        SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
             this.markerEntry.parent.removeMarker(markerEntry);
             parent.switchBack();
         });
