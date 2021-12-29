@@ -13,42 +13,42 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 public class ConfirmDeletionWidget extends SpruceContainerWidget {
-    private MarkerListWidget.MarkerEntry markerEntry;
+	private MarkerListWidget.MarkerEntry markerEntry;
 
-    public ConfirmDeletionWidget(MarkerTabWidget parent, Position position, int width, int height) {
-        super(position, width, height);
-        this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
-        int offset = 5;
-        int spacing = 10;
+	public ConfirmDeletionWidget(MarkerTabWidget parent, Position position, int width, int height) {
+		super(position, width, height);
+		this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
+		int offset = 5;
+		int spacing = 10;
 
-        SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
-            this.markerEntry.parent.removeMarker(markerEntry);
-            parent.switchBack();
-        });
-        SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
+		SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
+			this.markerEntry.parent.removeMarker(markerEntry);
+			parent.switchBack();
+		});
+		SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
 
-        this.addChild(deleteButton);
-        this.addChild(cancelButton);
-    }
+		this.addChild(deleteButton);
+		this.addChild(cancelButton);
+	}
 
-    @Override
-    protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.forEach(child -> child.render(matrices, mouseX, mouseY, delta));
+	@Override
+	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		this.forEach(child -> child.render(matrices, mouseX, mouseY, delta));
 
-        VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
 
-        String name = this.markerEntry.marker.getName() == null ? "" : this.markerEntry.marker.getName().asString();
-        OrderedText prompt = new TranslatableText("lambdamap.marker.confirm_deletion.prompt",
-                    new TranslatableText("lambdamap.marker.confirm_deletion.prompt.action").formatted(Formatting.RED),
-                    name.equals("") ? new TranslatableText("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
-                .asOrderedText();
+		String name = this.markerEntry.marker.getName() == null ? "" : this.markerEntry.marker.getName().asString();
+		OrderedText prompt = new TranslatableText("lambdamap.marker.confirm_deletion.prompt",
+				new TranslatableText("lambdamap.marker.confirm_deletion.prompt.action").formatted(Formatting.RED),
+				name.equals("") ? new TranslatableText("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
+				.asOrderedText();
 
-        DrawableHelper.drawCenteredTextWithShadow(matrices, this.client.textRenderer, prompt, this.getX() + this.getWidth() / 2, this.getHeight() / 3, 0xffffffff);
+		DrawableHelper.drawCenteredTextWithShadow(matrices, this.client.textRenderer, prompt, this.getX() + this.getWidth() / 2, this.getHeight() / 3, 0xffffffff);
 
-        immediate.draw();
-    }
+		immediate.draw();
+	}
 
-    public void setMarkerEntry(MarkerListWidget.MarkerEntry markerEntry) {
-        this.markerEntry = markerEntry;
-    }
+	public void setMarkerEntry(MarkerListWidget.MarkerEntry markerEntry) {
+		this.markerEntry = markerEntry;
+	}
 }
