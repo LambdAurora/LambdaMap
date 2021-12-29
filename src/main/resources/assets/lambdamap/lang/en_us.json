@@ -13,6 +13,10 @@
   "lambdamap.marker.new.player_pos": "Player Pos",
   "lambdamap.marker.new.x": "X:",
   "lambdamap.marker.new.z": "Z:",
+  "lambdamap.marker.confirm_deletion.prompt": "Are you sure you want to delete %s?",
+  "lambdamap.marker.confirm_deletion.prompt.unnamed": "Unnamed Marker",
+  "lambdamap.marker.confirm_deletion.cancel": "Cancel",
+  "lambdamap.marker.confirm_deletion.confirm": "I'm sure",
 
   "lambdamap.tabs.config": "Config",
   "lambdamap.tabs.config.description": "Mod configuration",
