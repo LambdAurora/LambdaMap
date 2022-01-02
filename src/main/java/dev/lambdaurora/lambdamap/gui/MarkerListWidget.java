@@ -47,11 +47,13 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.MarkerEntry> {
-	private final MarkerManager markerManager;
+	protected final MarkerTabWidget parent;
+	protected final MarkerManager markerManager;
 	private int lastIndex = 0;
 
-	public MarkerListWidget(Position position, int width, int height, MarkerManager markerManager) {
+	public MarkerListWidget(MarkerTabWidget parent, Position position, int width, int height, MarkerManager markerManager) {
 		super(position, width, height, 0, MarkerEntry.class);
+		this.parent = parent;
 		this.markerManager = markerManager;
 
 		this.setBackground(EmptyBackground.EMPTY_BACKGROUND);
@@ -68,9 +70,14 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		this.addEntry(new MarkerEntry(this, marker));
 	}
 
+	public void removeMarker(MarkerEntry entry) {
+		markerManager.removeMarker(entry.marker);
+		removeEntry(entry);
+	}
+
 	public static class MarkerEntry extends SpruceEntryListWidget.Entry implements SpruceParentWidget<SpruceWidget> {
-		private final MarkerListWidget parent;
-		private final Marker marker;
+		protected final MarkerListWidget parent;
+		final Marker marker;
 		private final List<SpruceWidget> children = new ArrayList<>();
 		private @Nullable SpruceWidget focused;
 
@@ -86,8 +93,13 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
 					btn -> {
-						this.parent.markerManager.removeMarker(this.marker);
-						this.parent.removeEntry(this);
+						// Force Deletion using SHIFT key to skip the confirmation dialog, might be worth making configurable?
+						if(GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS ||
+								GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS) {
+							this.parent.removeMarker(this);
+						} else {
+							parent.parent.promptForDeletion(this);
+						}
 					}));
 		}
 
