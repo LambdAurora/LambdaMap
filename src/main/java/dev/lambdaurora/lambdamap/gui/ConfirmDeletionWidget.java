@@ -5,6 +5,7 @@ import dev.lambdaurora.spruceui.background.EmptyBackground;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -21,11 +22,16 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
 		int offset = 5;
 		int spacing = 10;
 
-		SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.confirm"), button -> {
+		int fixedY = this.getHeight() / 3 * 2 - 10;
+		int fixedWidth = this.getWidth() / 2 - 2 * spacing;
+
+		SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, fixedY),
+				fixedWidth, 20, ScreenTexts.PROCEED, button -> {
 			this.markerEntry.parent.removeMarker(markerEntry);
 			parent.switchBack();
 		});
-		SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, this.getHeight() / 3 * 2 - 10), this.getWidth() / 2 - 2 * spacing, 20, new TranslatableText("lambdamap.marker.confirm_deletion.cancel"), button -> parent.switchBack());
+		SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, fixedY),
+				fixedWidth, 20, ScreenTexts.CANCEL, button -> parent.switchBack());
 
 		this.addChild(deleteButton);
 		this.addChild(cancelButton);
