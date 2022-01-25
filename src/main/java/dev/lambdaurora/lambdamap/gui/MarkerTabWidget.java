@@ -3,9 +3,16 @@ package dev.lambdaurora.lambdamap.gui;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.spruceui.Position;
+import dev.lambdaurora.spruceui.navigation.NavigationDirection;
+import dev.lambdaurora.spruceui.navigation.NavigationUtils;
+import dev.lambdaurora.spruceui.widget.SpruceWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MarkerTabWidget extends SpruceContainerWidget {
+	private final List<SpruceWidget> nonModalChildren = new ArrayList<>();
 	private final MarkerListWidget list;
 	private final NewMarkerFormWidget newMarkerFormWidget;
 	private final ConfirmDeletionWidget confirmDeletionWidget;
@@ -18,6 +25,8 @@ public class MarkerTabWidget extends SpruceContainerWidget {
 		int newMarkerFormHeight = width < 480 ? 80 : 40;
 		this.list = new MarkerListWidget(this, Position.origin(), width, height - newMarkerFormHeight, markers);
 		this.newMarkerFormWidget = new NewMarkerFormWidget(Position.of(this, 0, list.getHeight()), width, newMarkerFormHeight, markers, list);
+		nonModalChildren.add(list);
+		nonModalChildren.add(newMarkerFormWidget);
 		this.confirmDeletionWidget = new ConfirmDeletionWidget(this, Position.origin(), width, height);
 
 		this.addChild(list);
@@ -37,6 +46,20 @@ public class MarkerTabWidget extends SpruceContainerWidget {
 		this.list.setVisible(true);
 		this.newMarkerFormWidget.setVisible(true);
 		this.confirmDeletionWidget.setVisible(false);
+	}
+
+	@Override
+	public boolean onNavigation(NavigationDirection direction, boolean tab) {
+		boolean result;
+		if(list.isVisible()) {
+			result = NavigationUtils.tryNavigate(direction, tab, nonModalChildren, getFocused(), this::setFocused, false);
+		} else {
+			result = confirmDeletionWidget.onNavigation(direction, tab);
+		}
+
+		if (result)
+			this.setFocused(true);
+		return result;
 	}
 
 	@Override
