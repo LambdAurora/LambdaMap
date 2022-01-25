@@ -61,4 +61,12 @@ public class MarkerTabWidget extends SpruceContainerWidget {
 			this.setFocused(true);
 		return result;
 	}
+
+	@Override
+	public void setFocused(boolean focused) {
+		if(!focused) {
+			this.switchBack();
+		}
+		super.setFocused(focused);
+	}
 }
