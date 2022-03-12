@@ -268,7 +268,7 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Cl
 				lastHeights[xOffset] = searcher.getHeight();
 				int x = mapChunkStartX + xOffset;
 				int z = mapChunkStartZ + zOffset;
-				if (mapChunk.putPixelAndPreserve(x, z, (byte) (mapColor.id * 4 + shade), biome, searcher.getState())) {
+				if (mapChunk.putPixelAndPreserve(x, z, (byte) (mapColor.id * 4 + shade), biome.value(), searcher.getState())) {
 					this.hud.markDirty();
 				}
 			}

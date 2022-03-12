@@ -76,7 +76,7 @@ public class MapHud implements AutoCloseable {
 	}
 
 	public void updateTexture(WorldMap map) {
-		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.shouldPause())
 			return;
 		if (!this.dirty) return;
 		else this.dirty = false;
@@ -100,7 +100,7 @@ public class MapHud implements AutoCloseable {
 	}
 
 	public void render(MatrixStack matrices, int light, float delta) {
-		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.shouldPause())
 			return;
 
 		float scaleFactor = (float) this.client.getWindow().getScaleFactor();
