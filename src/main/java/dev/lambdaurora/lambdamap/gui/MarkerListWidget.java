@@ -292,7 +292,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			float textY = this.getY() + this.getHeight() / 2.f - 5;
 
-			Matrix4f model = matrices.peek().getPositionMatrix();
+			Matrix4f model = matrices.peek().getModel();
 
 			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
 			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);

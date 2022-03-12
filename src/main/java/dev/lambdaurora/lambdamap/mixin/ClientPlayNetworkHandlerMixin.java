@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ClientPlayNetworkHandlerMixin {
 	@Inject(method = "onChunkData", at = @At("RETURN"))
 	private void onChunkData(ChunkDataS2CPacket packet, CallbackInfo ci) {
-		LambdaMap.get().onChunkUpdate(packet.getX(), packet.getZ());
+		LambdaMap.get().onChunkUpdate(packet.chunkX(), packet.chunkZ());
 	}
 
 	@Inject(method = "onChunkDeltaUpdate", at = @At("RETURN"))

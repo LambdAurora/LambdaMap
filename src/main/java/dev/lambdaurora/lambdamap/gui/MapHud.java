@@ -76,7 +76,7 @@ public class MapHud implements AutoCloseable {
 	}
 
 	public void updateTexture(WorldMap map) {
-		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.shouldPause())
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
 			return;
 		if (!this.dirty) return;
 		else this.dirty = false;
@@ -90,7 +90,7 @@ public class MapHud implements AutoCloseable {
 
 			for (int x = 0; x < height; ++x) {
 				int absoluteX = corner.getX() + x;
-				this.texture.getImage().setColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
+				this.texture.getImage().setPixelColor(x, z, map.getRenderColor(absoluteX, absoluteZ, ChunkGetterMode.LOAD));
 			}
 		}
 
@@ -100,7 +100,7 @@ public class MapHud implements AutoCloseable {
 	}
 
 	public void render(MatrixStack matrices, int light, float delta) {
-		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.shouldPause())
+		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
 			return;
 
 		float scaleFactor = (float) this.client.getWindow().getScaleFactor();
@@ -146,7 +146,7 @@ public class MapHud implements AutoCloseable {
 		float offsetZ = (float) (renderPosZ - lerped.getZ());
 		matrices.translate(offsetX, offsetZ, 0);
 
-		var model = matrices.peek().getPositionMatrix();
+		var model = matrices.peek().getModel();
 		var vertices = immediate.getBuffer(this.mapRenderLayer);
 		WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
 		WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
@@ -179,7 +179,7 @@ public class MapHud implements AutoCloseable {
 			var pos = this.client.player.getBlockPos();
 			var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
 			int strWidth = this.client.textRenderer.getWidth(str);
-			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getPositionMatrix(), immediate,
+			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate,
 					false, 0, light);
 			immediate.draw();
 		} else {
