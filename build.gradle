@@ -8,9 +8,6 @@ plugins {
 	id 'org.cadixdev.licenser' version '0.6.1'
 }
 
-
-import net.fabricmc.loom.task.RemapJarTask
-
 group = project.maven_group
 version = "${project.mod_version}+${getMCVersionString()}"
 archivesBaseName = project.archives_base_name
@@ -111,22 +108,14 @@ license {
 }
 
 shadowJar {
-	dependsOn(project(':').jar)
+	dependsOn jar
 	configurations = [project.configurations.shadow]
+	destinationDirectory.set(file("${project.buildDir}/devlibs"))
 	archiveClassifier.set('dev')
 
 	relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
 }
-remapJar.dependsOn(shadowJar)
-
-task shadowRemapJar(type: RemapJarTask) {
-	dependsOn shadowJar
-
-	input = (file("${project.buildDir}/devlibs/$archivesBaseName-${project.version}-dev.jar"))
-	archiveFileName = "${archivesBaseName}-${project.version}.jar"
-	addNestedDependencies.set(true)
-}
-build.dependsOn(shadowRemapJar)
+prepareRemapJar.dependsOn(shadowJar)
 
 // configure the maven publication
 publishing {
