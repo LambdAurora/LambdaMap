@@ -401,7 +401,7 @@ public class WorldMapRenderer {
 
 					renderColor = opacity | (renderColor & 0x00ffffff);
 
-					this.texture.getImage().setColor(textureX, textureZ, renderColor);
+					this.texture.getImage().setPixelColor(textureX, textureZ, renderColor);
 				}
 			}
 
@@ -411,7 +411,7 @@ public class WorldMapRenderer {
 		public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
 		                   int offsetX, int offsetY,
 		                   float width, float height, int light) {
-			var model = matrices.peek().getPositionMatrix();
+			var model = matrices.peek().getModel();
 			var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
 			float uOffset = offsetX / 128.f;
