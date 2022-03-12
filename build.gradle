@@ -122,7 +122,7 @@ remapJar.dependsOn(shadowJar)
 task shadowRemapJar(type: RemapJarTask) {
 	dependsOn shadowJar
 
-	input.set(file("${project.buildDir}/libs/$archivesBaseName-${project.version}-dev.jar"))
+	input = (file("${project.buildDir}/devlibs/$archivesBaseName-${project.version}-dev.jar"))
 	archiveFileName = "${archivesBaseName}-${project.version}.jar"
 	addNestedDependencies.set(true)
 }
