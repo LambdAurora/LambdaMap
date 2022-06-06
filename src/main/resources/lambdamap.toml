@@ -4,4 +4,5 @@
 render_biome_colors = true
 [map.hud]
 visible = true
+scale = 2
 north_lock = false

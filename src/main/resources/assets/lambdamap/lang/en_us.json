@@ -3,6 +3,8 @@
   "lambdamap.config.render_biome_colors":  "Render Biome Colors",
   "lambdamap.config.category.hud": "HUD",
   "lambdamap.config.hud.visible": "Show HUD",
+  "lambdamap.config.hud.scale": "HUD Scale",
+  "lambdamap.config.hud.scale.tooltip": "Scales the HUD map independently from the GUI scale.",
   "lambdamap.config.hud.north_lock": "North Lock",
   "lambdamap.config.hud.north_lock.tooltip": "Locks the HUD map to always have north on top.",
 

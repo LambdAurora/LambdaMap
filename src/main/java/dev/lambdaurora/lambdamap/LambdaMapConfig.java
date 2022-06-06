@@ -19,10 +19,14 @@ package dev.lambdaurora.lambdamap;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import dev.lambdaurora.spruceui.option.SpruceCheckboxBooleanOption;
+import dev.lambdaurora.spruceui.option.SpruceCyclingOption;
 import dev.lambdaurora.spruceui.option.SpruceOption;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Range;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +43,7 @@ import java.nio.file.Paths;
 public final class LambdaMapConfig {
 	private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
 	private static final boolean DEFAULT_SHOW_HUD = true;
+	private static final int DEFAULT_HUD_SCALE = 2;
 	private static final boolean DEFAULT_NORTH_LOCK = false;
 
 	public static final Path CONFIG_FILE_PATH = Paths.get(LambdaMap.NAMESPACE, "config.toml");
@@ -50,10 +55,12 @@ public final class LambdaMapConfig {
 
 	private final SpruceOption renderBiomeColorsOption;
 	private final SpruceOption showHudOption;
+	private final SpruceOption hudScaleOption;
 	private final SpruceOption northLockOption;
 
 	private boolean renderBiomeColors;
 	private boolean showHud;
+	private int hudScale;
 	private boolean northLock;
 
 	public LambdaMapConfig(LambdaMap mod) {
@@ -68,6 +75,9 @@ public final class LambdaMapConfig {
 		}, null, true);
 		this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
 				this::isHudVisible, this::setHudVisible, null, true);
+		this.hudScaleOption = new SpruceCyclingOption("lambdamap.config.hud.scale",
+				amount -> this.setHudScale((this.hudScale + amount) % 4), option -> option.getDisplayText(new LiteralText(String.valueOf(this.getHudScale()))),
+				new TranslatableText("lambdamap.config.hud.scale.tooltip"));
 		this.northLockOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.north_lock",
 				this::isNorthLocked, this::setNorthLock,
 				new TranslatableText("lambdamap.config.hud.north_lock.tooltip"), true);
@@ -89,6 +99,7 @@ public final class LambdaMapConfig {
 
 		this.renderBiomeColors = this.config.getOrElse("map.render_biome_colors", DEFAULT_RENDER_BIOME_COLORS);
 		this.showHud = this.config.getOrElse("map.hud.visible", DEFAULT_SHOW_HUD);
+		this.hudScale = MathHelper.clamp(this.config.getIntOrElse("map.hud.scale", DEFAULT_HUD_SCALE), 1, 3);
 		this.northLock = this.config.getOrElse("map.hud.north_lock", DEFAULT_NORTH_LOCK);
 
 		LOGGER.info("Configuration loaded.");
@@ -106,6 +117,9 @@ public final class LambdaMapConfig {
 	 */
 	public void reset() {
 		this.setRenderBiomeColors(DEFAULT_RENDER_BIOME_COLORS);
+		this.setHudVisible(DEFAULT_SHOW_HUD);
+		this.setHudScale(DEFAULT_HUD_SCALE);
+		this.setNorthLock(DEFAULT_NORTH_LOCK);
 	}
 
 	public boolean shouldRenderBiomeColors() {
@@ -121,6 +135,9 @@ public final class LambdaMapConfig {
 		return this.renderBiomeColorsOption;
 	}
 
+	/**
+	 * {@return {@code true} if the map HUD is visible, otherwise {@code false}}
+	 */
 	public boolean isHudVisible() {
 		return this.showHud;
 	}
@@ -134,6 +151,30 @@ public final class LambdaMapConfig {
 		return this.showHudOption;
 	}
 
+	/**
+	 * {@return the scale of the map HUD}
+	 */
+	public int getHudScale() {
+		return this.hudScale;
+	}
+
+	/**
+	 * Sets the scale of the map HUD
+	 *
+	 * @param scale the scale
+	 */
+	public void setHudScale(@Range(from = 1, to = 3) int scale) {
+		this.hudScale = MathHelper.clamp(scale, 1, 3);
+		this.config.set("map.hud.scale", this.hudScale);
+	}
+
+	public SpruceOption getHudScaleOption() {
+		return this.hudScaleOption;
+	}
+
+	/**
+	 * {@return {@code true} if the map is locked in place with North being towards up, otherwise {@code false}}
+	 */
 	public boolean isNorthLocked() {
 		return this.northLock;
 	}

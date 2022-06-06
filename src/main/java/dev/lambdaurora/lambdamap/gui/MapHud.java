@@ -104,12 +104,8 @@ public class MapHud implements AutoCloseable {
 			return;
 
 		float scaleFactor = (float) this.client.getWindow().getScaleFactor();
-		float newScaleFactor = scaleFactor;
-		float scaleCompensation = 1.f;
-		if (!(scaleFactor <= 2)) {
-			newScaleFactor = (float) (this.client.getWindow().getScaleFactor() - 1);
-			scaleCompensation = newScaleFactor / scaleFactor;
-		}
+		float newScaleFactor = this.config.getHudScale();
+		float scaleCompensation =  newScaleFactor / scaleFactor;
 		{
 			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
 			int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
