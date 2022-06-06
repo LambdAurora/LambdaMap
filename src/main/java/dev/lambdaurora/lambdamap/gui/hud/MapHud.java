@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package dev.lambdaurora.lambdamap.gui;
+package dev.lambdaurora.lambdamap.gui.hud;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.LambdaMapConfig;
+import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
@@ -105,19 +106,31 @@ public class MapHud implements AutoCloseable {
 
 		float scaleFactor = (float) this.client.getWindow().getScaleFactor();
 		float newScaleFactor = this.config.getHudScale();
-		float scaleCompensation =  newScaleFactor / scaleFactor;
-		{
-			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
-			int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
-			ScissorManager.push(scaledWidth - 128, 0, 128, 128, newScaleFactor);
-		}
+		float scaleCompensation = newScaleFactor / scaleFactor;
 
 		int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
 		matrices.push();
-		matrices.translate(width - 128 * scaleCompensation, 0, -20);
+		matrices.translate(width - HUD_SIZE * scaleCompensation, 0, -20);
 		matrices.scale(scaleCompensation, scaleCompensation, 1);
 
 		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+
+		HudDecorator decorator = this.config.getHudDecorator();
+		int margin = decorator.getMargin();
+
+		matrices.translate(-margin * 2, 0, -2);
+
+		matrices.push();
+		decorator.render(matrices, immediate, HUD_SIZE + margin * 2, HUD_SIZE + margin * 2);
+		matrices.pop();
+
+		matrices.translate(margin, margin, 2);
+
+		{
+			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
+			int scaledWidth = (double) this.client.getWindow().getFramebufferWidth() / newScaleFactor > (double) i ? i + 1 : i;
+			ScissorManager.push(scaledWidth - HUD_SIZE - margin, margin, HUD_SIZE, HUD_SIZE, newScaleFactor);
+		}
 
 		int textureWidth = this.texture.getImage().getWidth();
 		int textureHeight = this.texture.getImage().getHeight();

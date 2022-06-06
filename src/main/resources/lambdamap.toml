@@ -6,3 +6,4 @@ render_biome_colors = true
 visible = true
 scale = 2
 north_lock = false
+decorator = "lambdamap:map"

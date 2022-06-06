@@ -66,6 +66,7 @@ public class WorldMapScreen extends SpruceScreen {
 		list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
 		list.addOptionEntry(this.mod.getConfig().getHudScaleOption(), null);
 		list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
+		list.addSingleOptionEntry(this.mod.getConfig().getHudDecoratorOption());
 		return list;
 	}
 

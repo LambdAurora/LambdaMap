@@ -58,7 +58,7 @@ public class BlockSearcher {
 	public void searchForBlock(Chunk chunk, Heightmap surfaceHeightmap, int x, int z, int chunkStartX, int chunkStartZ) {
 		this.height = surfaceHeightmap.get(x & 15, z & 15);
 		this.pos.set(chunkStartX + x, this.height, chunkStartZ + z);
-		int minimumY = this.world.getBottomSectionCoord();
+		int minimumY = this.world.getBottomY();
 		if (this.height <= minimumY + 1) {
 			this.state = Blocks.AIR.getDefaultState();
 		} else {

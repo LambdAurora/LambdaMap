@@ -18,7 +18,7 @@
 package dev.lambdaurora.lambdamap;
 
 import dev.lambdaurora.lambdamap.extension.WorldChunkExtension;
-import dev.lambdaurora.lambdamap.gui.MapHud;
+import dev.lambdaurora.lambdamap.gui.hud.MapHud;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
 import dev.lambdaurora.lambdamap.map.WorldMap;
