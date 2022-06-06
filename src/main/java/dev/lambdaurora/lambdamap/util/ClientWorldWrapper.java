@@ -23,13 +23,13 @@ import dev.lambdaurora.spruceui.util.ColorUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.class_6539;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.level.ColorResolver;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -59,7 +59,7 @@ public class ClientWorldWrapper implements BlockRenderView {
 	}
 
 	@Override
-	public int getColor(BlockPos pos, ColorResolver colorResolver) {
+	public int getColor(BlockPos pos, class_6539 colorResolver) {
 		if (this.chunk == null || this.chunk.isEmpty())
 			return 0;
 		var biome = this.chunk.getBiome(pos.getX(), pos.getZ());

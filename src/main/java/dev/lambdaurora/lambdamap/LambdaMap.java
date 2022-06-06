@@ -24,9 +24,6 @@ import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.mixin.BiomeAccessAccessor;
 import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -46,6 +43,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
+import org.quiltmc.loader.api.ModContainer;
+import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
+import org.quiltmc.qsl.lifecycle.api.client.event.ClientLifecycleEvents;
+import org.quiltmc.qsl.lifecycle.api.client.event.ClientWorldTickEvents;
 
 import java.io.File;
 
@@ -56,11 +57,12 @@ import java.io.File;
  * @version 1.0.0
  * @since 1.0.0
  */
-public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.ClientStarted, ClientTickEvents.StartWorldTick {
+public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Ready, ClientWorldTickEvents.Start {
+	public static final LambdaMap INSTANCE = new LambdaMap();
+
 	public static final String NAMESPACE = "lambdamap";
 	public static final Identifier MAP_ICONS_TEXTURE = new Identifier("textures/map/map_icons.png");
 	public static final RenderLayer MAP_ICONS = RenderLayer.getText(MAP_ICONS_TEXTURE);
-	private static LambdaMap INSTANCE;
 	private final KeyBind hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.misc"));
 	private final KeyBind mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
 	private final LambdaMapConfig config = new LambdaMapConfig(this);
@@ -71,18 +73,12 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Cl
 	private int updatedChunks = 0;
 
 	@Override
-	public void onInitializeClient() {
-		INSTANCE = this;
-
+	public void onInitializeClient(ModContainer mod) {
 		this.config.load();
-
-		ClientLifecycleEvents.CLIENT_STARTED.register(this);
 
 		HudRenderCallback.EVENT.register((matrices, delta) -> {
 			this.hud.render(matrices, LightmapTextureManager.pack(15, 15), delta);
 		});
-
-		ClientTickEvents.START_WORLD_TICK.register(this);
 	}
 
 	/**
@@ -103,13 +99,12 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Cl
 	}
 
 	@Override
-	public void onClientStarted(MinecraftClient client) {
+	public void readyClient(MinecraftClient client) {
 		this.hud = new MapHud(this.config, client);
 	}
 
 	@Override
-	public void onStartTick(ClientWorld world) {
-		var client = MinecraftClient.getInstance();
+	public void startWorldTick(MinecraftClient client, ClientWorld world) {
 		if (this.map.updatePlayerViewPos(client.player.getBlockX(), client.player.getBlockZ(), this.hud.getMovementThreshold())) {
 			this.hud.markDirty();
 		}

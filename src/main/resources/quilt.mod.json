@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "quilt_loader": {
+    "group": "dev.lambdaurora",
+    "id": "lambdamap",
+    "version": "${version}",
+    "metadata": {
+      "name": "LambdaMap",
+      "description": "Minimap mod",
+      "contributors": {
+        "LambdAurora": "Author"
+      },
+      "contact": {
+        "homepage": "https://modrinth.com/mod/lambdamap",
+        "sources": "https://github.com/LambdAurora/LambdaMap.git",
+        "issues": "https://github.com/LambdAurora/LambdaMap/issues"
+      },
+      "license": "LGPL-3.0-only",
+      "icon": "assets/lambdamap/icon.png"
+    },
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "entrypoints": {
+      "client_init": [
+        "dev.lambdaurora.lambdamap.LambdaMap::INSTANCE"
+      ],
+      "client_events": [
+        "dev.lambdaurora.lambdamap.LambdaMap::INSTANCE"
+      ]
+    },
+    "depends": [
+      {
+        "id": "minecraft",
+        "versions": ">=1.18.2"
+      },
+      {
+        "id": "quilt_loader",
+        "versions": "0.16.1"
+      },
+      "quilt_crash_info",
+      "quilt_lifecycle_events",
+      "quilt_resource_loader",
+      "quilted_fabric_key_binding_api_v1",
+      "quilted_fabric_rendering_v1",
+      {
+        "id": "spruceui",
+        "versions": ">=3.1.0"
+      }
+    ]
+  },
+  "mixin": "lambdamap.mixins.json"
+}
