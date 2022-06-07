@@ -60,5 +60,9 @@ public abstract class HudDecorator {
 
 	public abstract int getMargin();
 
+	public int getCoordinatesOffset() {
+		return 0;
+	}
+
 	public abstract void render(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, int width, int height);
 }

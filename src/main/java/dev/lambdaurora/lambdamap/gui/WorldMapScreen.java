@@ -65,7 +65,7 @@ public class WorldMapScreen extends SpruceScreen {
 		list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.hud", true, null));
 		list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
 		list.addOptionEntry(this.mod.getConfig().getHudScaleOption(), null);
-		list.addSingleOptionEntry(this.mod.getConfig().getNorthLockOption());
+		list.addOptionEntry(this.mod.getConfig().getNorthLockOption(), this.mod.getConfig().getDirectionIndicatorsOption());
 		list.addSingleOptionEntry(this.mod.getConfig().getHudDecoratorOption());
 		return list;
 	}

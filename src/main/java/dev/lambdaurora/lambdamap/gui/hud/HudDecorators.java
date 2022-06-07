@@ -19,7 +19,6 @@ package dev.lambdaurora.lambdamap.gui.hud;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +27,10 @@ public final class HudDecorators {
 	private static final List<HudDecorator> DECORATORS = new ArrayList<>();
 
 	public static final HudDecorator NONE = register(new EmptyHudDecorator());
-	public static final HudDecorator MAP = register(new TexturedHudDecorator(LambdaMap.id("map"), 6,
+	public static final HudDecorator MAP = register(new CompositeTexturedHudDecorator(LambdaMap.id("map"), 7,
 			new Identifier("textures/map/map_background_checkerboard.png"), new Identifier("textures/map/map_background.png")));
+	public static final HudDecorator SLOT = register(new SimpleTexturedHudDecorator(LambdaMap.id("slot"), 3,
+			LambdaMap.id("textures/gui/map_hud_slot.png"), 13, 2));
 
 	public static <T extends HudDecorator> T register(T decorator) {
 		DECORATORS.add(decorator);

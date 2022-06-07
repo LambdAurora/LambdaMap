@@ -23,19 +23,19 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
-public class TexturedHudDecorator extends HudDecorator {
+public class CompositeTexturedHudDecorator extends HudDecorator {
 	private final int margin;
 	private final Identifier textureId;
 	private final Identifier bottomId;
 
-	public TexturedHudDecorator(Identifier id, int margin, Identifier textureId, Identifier bottomId) {
+	public CompositeTexturedHudDecorator(Identifier id, int margin, Identifier textureId, Identifier bottomId) {
 		super(id);
 		this.margin = margin;
 		this.textureId = textureId;
 		this.bottomId = bottomId;
 	}
 
-	public TexturedHudDecorator(Identifier id, int margin, Identifier textureId) {
+	public CompositeTexturedHudDecorator(Identifier id, int margin, Identifier textureId) {
 		this(id, margin, textureId, textureId);
 	}
 
@@ -46,7 +46,6 @@ public class TexturedHudDecorator extends HudDecorator {
 
 	@Override
 	public void render(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, int width, int height) {
-		RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
 		RenderSystem.setShaderTexture(0, this.textureId);
 		DrawableHelper.drawTexture(matrices, 0, 0, width, height - this.margin, 0, 0,
 				128, 128 - this.margin - 8, 128, 128);

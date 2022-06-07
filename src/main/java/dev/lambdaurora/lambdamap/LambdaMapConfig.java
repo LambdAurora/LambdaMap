@@ -47,6 +47,7 @@ public final class LambdaMapConfig {
 	private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
 	private static final boolean DEFAULT_SHOW_HUD = true;
 	private static final int DEFAULT_HUD_SCALE = 2;
+	private static final boolean DEFAULT_SHOW_DIRECTION_INDICATORS = true;
 	private static final boolean DEFAULT_NORTH_LOCK = false;
 
 	public static final Path CONFIG_FILE_PATH = Paths.get(LambdaMap.NAMESPACE, "config.toml");
@@ -60,12 +61,14 @@ public final class LambdaMapConfig {
 	private final SpruceOption showHudOption;
 	private final SpruceOption hudScaleOption;
 	private final SpruceOption northLockOption;
+	private final SpruceOption directionIndicatorsOption;
 	private final SpruceOption hudDecoratorOption;
 
 	private boolean renderBiomeColors;
 	private boolean showHud;
 	private int hudScale;
 	private boolean northLock;
+	private boolean showDirectionIndicators;
 	private HudDecorator hudDecorator;
 
 	public LambdaMapConfig(LambdaMap mod) {
@@ -86,6 +89,9 @@ public final class LambdaMapConfig {
 		this.northLockOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.north_lock",
 				this::isNorthLocked, this::setNorthLock,
 				new TranslatableText("lambdamap.config.hud.north_lock.tooltip"), true);
+		this.directionIndicatorsOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.direction_indicators",
+				this::isDirectionIndicatorsVisible, this::setDirectionIndicatorsVisible,
+				new TranslatableText("lambdamap.config.hud.direction_indicators.tooltip"), true);
 		this.hudDecoratorOption = new SpruceCyclingOption("lambdamap.config.hud.decorator",
 				amount -> this.setHudDecorator(HudDecorators.pick(this.getHudDecorator(), amount)),
 				option -> option.getDisplayText(this.getHudDecorator().getName()),
@@ -110,6 +116,7 @@ public final class LambdaMapConfig {
 		this.showHud = this.config.getOrElse("map.hud.visible", DEFAULT_SHOW_HUD);
 		this.hudScale = MathHelper.clamp(this.config.getIntOrElse("map.hud.scale", DEFAULT_HUD_SCALE), 1, 3);
 		this.northLock = this.config.getOrElse("map.hud.north_lock", DEFAULT_NORTH_LOCK);
+		this.showDirectionIndicators = this.config.getOrElse("map.hud.direction_indicators", DEFAULT_SHOW_DIRECTION_INDICATORS);
 		this.hudDecorator = this.config.getOptional("map.hud.decorator")
 				.map(o -> {
 					if (o instanceof String name) {
@@ -204,6 +211,22 @@ public final class LambdaMapConfig {
 
 	public SpruceOption getNorthLockOption() {
 		return this.northLockOption;
+	}
+
+	/**
+	 * {@return {@code true} if the direction indicators are shown on the map HUD, otherwise {@code false}}
+	 */
+	public boolean isDirectionIndicatorsVisible() {
+		return this.showDirectionIndicators;
+	}
+
+	public void setDirectionIndicatorsVisible(boolean directionIndicatorsVisible) {
+		this.showDirectionIndicators = directionIndicatorsVisible;
+		this.config.set("map.hud.direction_indicators", directionIndicatorsVisible);
+	}
+
+	public SpruceOption getDirectionIndicatorsOption() {
+		return this.directionIndicatorsOption;
 	}
 
 	/**

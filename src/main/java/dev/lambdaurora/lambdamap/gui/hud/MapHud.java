@@ -17,12 +17,14 @@
 
 package dev.lambdaurora.lambdamap.gui.hud;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.LambdaMapConfig;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
+import dev.lambdaurora.spruceui.util.ColorUtil;
 import dev.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
@@ -31,10 +33,17 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
+	private static final Text NORTH = new TranslatableText("lambdamap.compass.short.north");
+	private static final Text EAST = new TranslatableText("lambdamap.compass.short.east");
+	private static final Text SOUTH = new TranslatableText("lambdamap.compass.short.south");
+	private static final Text WEST = new TranslatableText("lambdamap.compass.short.west");
+
 	private final LambdaMapConfig config;
 	private final MinecraftClient client;
 	private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128 + 64, 128 + 64, true);
@@ -118,13 +127,18 @@ public class MapHud implements AutoCloseable {
 		HudDecorator decorator = this.config.getHudDecorator();
 		int margin = decorator.getMargin();
 
-		matrices.translate(-margin * 2, 0, -2);
+		matrices.translate(-margin * 2, 0, -1);
 
 		matrices.push();
+		if (!this.client.options.debugEnabled) {
+			RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
+		} else {
+			RenderSystem.setShaderColor(0.25f, 0.25f, 0.25f, 0.5f);
+		}
 		decorator.render(matrices, immediate, HUD_SIZE + margin * 2, HUD_SIZE + margin * 2);
 		matrices.pop();
 
-		matrices.translate(margin, margin, 2);
+		matrices.translate(margin, margin, 1);
 
 		{
 			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
@@ -182,14 +196,24 @@ public class MapHud implements AutoCloseable {
 
 		this.renderPlayerIcon(matrices, immediate, light, delta);
 		immediate.draw();
+
 		ScissorManager.pop();
+
+		if (this.config.isDirectionIndicatorsVisible()) {
+			if (this.config.isNorthLocked()) {
+				this.renderStaticCompassIndicators(matrices, immediate, light);
+			} else {
+				this.renderDynamicCompassIndicators(matrices, immediate, light, delta);
+			}
+			immediate.draw();
+		}
 
 		if (!this.client.options.debugEnabled) {
 			var pos = this.client.player.getBlockPos();
 			var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
 			int strWidth = this.client.textRenderer.getWidth(str);
-			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130, 0xffffffff, true, matrices.peek().getModel(), immediate,
-					false, 0, light);
+			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130 + decorator.getCoordinatesOffset(), ColorUtil.WHITE, true,
+					matrices.peek().getModel(), immediate, false, 0, light);
 			immediate.draw();
 		} else {
 			matrices.translate(0.f, 0.f, 1.2f);
@@ -204,6 +228,38 @@ public class MapHud implements AutoCloseable {
 		matrices.translate(64.f, 64.f, 1.1f);
 		MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
 		matrices.pop();
+	}
+
+	private void renderStaticCompassIndicators(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+		int fontHeight = this.client.textRenderer.fontHeight;
+		this.client.textRenderer.draw(NORTH, 64 - this.client.textRenderer.getWidth(NORTH) / 2.f, 0, 0xffff0000, true,
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
+		this.client.textRenderer.draw(SOUTH, 64 - this.client.textRenderer.getWidth(SOUTH) / 2.f, HUD_SIZE - fontHeight, ColorUtil.WHITE, true,
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
+		this.client.textRenderer.draw(EAST, HUD_SIZE - this.client.textRenderer.getWidth(EAST), 64 - fontHeight / 2.f, ColorUtil.WHITE, true,
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
+		this.client.textRenderer.draw(WEST, 0, 64 - fontHeight / 2.f, ColorUtil.WHITE, true,
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
+	}
+
+	private void renderDynamicCompassIndicators(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
+		float yaw = this.client.player.getYaw(delta);
+
+		this.renderCompassIndicator(matrices, vertexConsumers, WEST, light, yaw);
+		this.renderCompassIndicator(matrices, vertexConsumers, NORTH, light, yaw - 90);
+		this.renderCompassIndicator(matrices, vertexConsumers, EAST, light, yaw - 180);
+		this.renderCompassIndicator(matrices, vertexConsumers, SOUTH, light, yaw + 90);
+	}
+
+	private void renderCompassIndicator(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Text text, int light, float yaw) {
+		float x = (64 + 32) * MathHelper.cos(-yaw / 360 * MathHelper.TAU) + 64;
+		float y = (64 + 32) * MathHelper.sin(-yaw / 360 * MathHelper.TAU) + 64;
+
+		x = MathHelper.clamp(x, 0, HUD_SIZE - this.client.textRenderer.getWidth(text));
+		y = MathHelper.clamp(y, 0, HUD_SIZE - this.client.textRenderer.fontHeight);
+
+		this.client.textRenderer.draw(text, x, y, text == NORTH ? 0xffff0000 : ColorUtil.WHITE, true,
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 	}
 
 	@Override
