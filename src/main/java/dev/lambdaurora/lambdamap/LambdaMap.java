@@ -18,15 +18,14 @@
 package dev.lambdaurora.lambdamap;
 
 import dev.lambdaurora.lambdamap.extension.WorldChunkExtension;
-import dev.lambdaurora.lambdamap.gui.hud.MapHud;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import dev.lambdaurora.lambdamap.gui.WorldMapScreen;
+import dev.lambdaurora.lambdamap.gui.hud.MapHud;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.mixin.BiomeAccessAccessor;
 import dev.lambdaurora.lambdamap.mixin.PersistentStateManagerAccessor;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBind;
@@ -44,6 +43,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 import org.quiltmc.loader.api.ModContainer;
+import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
 import org.quiltmc.qsl.lifecycle.api.client.event.ClientLifecycleEvents;
 import org.quiltmc.qsl.lifecycle.api.client.event.ClientWorldTickEvents;
@@ -287,7 +287,7 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 
 	public static File getWorldMapDirectoryMP(MinecraftClient client, RegistryKey<World> worldKey, long hashedSeed) {
 		var serverInfo = client.getCurrentServerEntry();
-		var gameDir = FabricLoader.getInstance().getGameDir().toFile();
+		var gameDir = QuiltLoader.getGameDir().toFile();
 		var lambdaMapDir = new File(gameDir, NAMESPACE);
 		var serverDir = new File(lambdaMapDir, (serverInfo.name + "_" + serverInfo.address).replaceAll("[^A-Za-z0-9_.]", "_"));
 		var seedDir = new File(serverDir, String.valueOf(hashedSeed));
