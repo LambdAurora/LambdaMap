@@ -352,8 +352,7 @@ public class WorldMapRenderer {
 						width = WorldMapRenderer.this.width - (originX + x * 128);
 					}
 
-					line[x].render(matrices, vertexConsumers, originX + x * 128, originZ + z * 128, offsetX, offsetZ,
-							width, height, light);
+					line[x].render(matrices, vertexConsumers, Math.round(originX + x * 128), Math.round(originZ + z * 128), offsetX, offsetZ, width, height, light);
 					offsetX = 0;
 				}
 
