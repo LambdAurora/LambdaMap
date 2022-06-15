@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents the world map renderer.
@@ -102,7 +103,7 @@ public class WorldMapRenderer {
 			this.cornerViewZ = (int) (z - (this.scaledHeight() / 2));
 
 			if (this.textureManager != null) {
-				this.textureManager.updateTextures();
+				this.textureManager.updateTextures(true);
 			}
 		}
 	}
@@ -180,8 +181,8 @@ public class WorldMapRenderer {
 
 			if (oldChunkX != newChunkX) {
 				int offset = Math.abs(newChunkX - oldChunkX);
-				if (newChunkX < oldChunkX) for (int i = 0; i < offset; i++) this.textureManager.shiftLeft();
-				else for (int i = 0; i < offset; i++) this.textureManager.shiftRight();
+				if (newChunkX < oldChunkX) for (int i = 0; i < offset; i++) this.textureManager.shiftRight();
+				else for (int i = 0; i < offset; i++) this.textureManager.shiftLeft();
 				shouldUpdate = true;
 			}
 		}
@@ -192,8 +193,8 @@ public class WorldMapRenderer {
 
 			if (oldChunkZ != newChunkZ) {
 				int offset = Math.abs(newChunkZ - oldChunkZ);
-				if (newChunkZ < oldChunkZ) for (int i = 0; i < offset; i++) this.textureManager.shiftUp();
-				else for (int i = 0; i < offset; i++) this.textureManager.shiftDown();
+				if (newChunkZ < oldChunkZ) for (int i = 0; i < offset; i++) this.textureManager.shiftDown();
+				else for (int i = 0; i < offset; i++) this.textureManager.shiftUp();
 				shouldUpdate = true;
 			}
 		}
@@ -202,12 +203,12 @@ public class WorldMapRenderer {
 		this.cornerViewZ = (int) z;
 
 		if (shouldUpdate || forceUpdate)
-			this.update();
+			this.update(forceUpdate);
 	}
 
-	public void update() {
+	public void update(boolean forceRedraw) {
 		if (this.textureManager != null) {
-			this.textureManager.updateTextures();
+			this.textureManager.updateTextures(forceRedraw);
 		}
 	}
 
@@ -304,7 +305,7 @@ public class WorldMapRenderer {
 			}
 		}
 
-		public void updateTextures() {
+		public void updateTextures(boolean forceRedraw) {
 			int chunkX = WorldMapRenderer.this.getCornerMapChunkX();
 			int chunkZ = WorldMapRenderer.this.getCornerMapChunkZ();
 
@@ -315,6 +316,8 @@ public class WorldMapRenderer {
 			for (int z = 0; z < this.textures.length; z++) {
 				ChunkTexture[] line = this.textures[z];
 				for (int x = 0; x < line.length; x++) {
+					if (forceRedraw)
+						line[x].resetCache();
 					line[x].update(WorldMapRenderer.this.worldMap, chunkX + x * scale, chunkZ + z * scale, scale);
 					count++;
 				}
@@ -371,6 +374,8 @@ public class WorldMapRenderer {
 		private final NativeImageBackedTexture texture = new NativeImageBackedTexture(128, 128, true);
 		private final RenderLayer mapRenderLayer;
 
+		private int cachedState = 0;
+
 		ChunkTexture() {
 			var id = MinecraftClient.getInstance().getTextureManager().registerDynamicTexture("world_map", this.texture);
 			this.mapRenderLayer = RenderLayer.getText(id);
@@ -378,7 +383,17 @@ public class WorldMapRenderer {
 			TEXTURES.add(this);
 		}
 
+		public void resetCache() {
+			cachedState = 0;
+		}
+
 		public void update(WorldMap map, int chunkStartX, int chunkStartZ, int scale) {
+			var paramState = Objects.hash(chunkStartX, chunkStartZ, scale);
+			if (cachedState == paramState)
+				return;
+
+			this.cachedState = paramState;
+
 			for (int textureZ = 0; textureZ < 128; textureZ++) {
 				int z = textureZ * scale;
 				int chunkZ = chunkStartZ + z / 128;

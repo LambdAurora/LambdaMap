@@ -78,7 +78,7 @@ public final class LambdaMapConfig {
 		this.renderBiomeColorsOption = new SpruceCheckboxBooleanOption("lambdamap.config.render_biome_colors",
 				this::shouldRenderBiomeColors, value -> {
 			this.setRenderBiomeColors(value);
-			this.mod.getRenderer().update();
+			this.mod.getRenderer().update(true);
 			this.mod.hud.markDirty();
 		}, null, true);
 		this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
