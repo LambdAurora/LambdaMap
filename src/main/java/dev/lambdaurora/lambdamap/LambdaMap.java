@@ -63,8 +63,8 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 	public static final String NAMESPACE = "lambdamap";
 	public static final Identifier MAP_ICONS_TEXTURE = new Identifier("textures/map/map_icons.png");
 	public static final RenderLayer MAP_ICONS = RenderLayer.getText(MAP_ICONS_TEXTURE);
-	private final KeyBind hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.misc"));
-	private final KeyBind mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.misc"));
+	private final KeyBind hudKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.hud", GLFW.GLFW_KEY_O, "key.categories.lambdamap"));
+	private final KeyBind mapKeybind = KeyBindingHelper.registerKeyBinding(new KeyBind("lambdamap.keybind.map", GLFW.GLFW_KEY_B, "key.categories.lambdamap"));
 	private final LambdaMapConfig config = new LambdaMapConfig(this);
 	private final WorldMapRenderer renderer = new WorldMapRenderer(this);
 	private WorldMap map = null;

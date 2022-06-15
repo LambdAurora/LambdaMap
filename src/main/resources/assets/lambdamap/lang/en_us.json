@@ -11,19 +11,16 @@
   "lambdamap.config.hud.direction_indicators.tooltip": "Sets whether the direction indicators show up in the map HUD.",
   "lambdamap.config.hud.decorator": "Style",
   "lambdamap.config.hud.decorator.tooltip": "Determines how the HUD map will look.",
-
   "lambdamap.hud.decorator.none": "None",
   "lambdamap.hud.decorator.map": "Map-like",
   "lambdamap.hud.decorator.slot": "Slot-like",
-
   "lambdamap.compass.short.north": "N",
   "lambdamap.compass.short.east": "E",
   "lambdamap.compass.short.south": "S",
   "lambdamap.compass.short.west": "W",
-
+  "key.categories.lambdamap": "LambdaMap",
   "lambdamap.keybind.map": "Open World Map",
   "lambdamap.keybind.hud": "Toggle Map HUD",
-
   "lambdamap.marker.new.name": "Marker Name:",
   "lambdamap.marker.new.player_pos": "Player Pos",
   "lambdamap.marker.new.x": "X:",
