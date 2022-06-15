@@ -384,12 +384,12 @@ public class WorldMapRenderer {
 		}
 
 		public void resetCache() {
-			cachedState = 0;
+			this.cachedState = 0;
 		}
 
 		public void update(WorldMap map, int chunkStartX, int chunkStartZ, int scale) {
 			var paramState = Objects.hash(chunkStartX, chunkStartZ, scale);
-			if (cachedState == paramState)
+			if (this.cachedState == paramState)
 				return;
 
 			this.cachedState = paramState;
