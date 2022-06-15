@@ -21,6 +21,7 @@
   "lambdamap.compass.short.south": "S",
   "lambdamap.compass.short.west": "W",
 
+  "key.categories.lambdamap": "LambdaMap",
   "lambdamap.keybind.map": "Open World Map",
   "lambdamap.keybind.hud": "Toggle Map HUD",
 
