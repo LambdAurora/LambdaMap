@@ -171,7 +171,7 @@ public class WorldMap {
 	}
 
 	private int calculateWaterColor(int x, int z, Biome sourceBiome, int shade, ChunkGetterMode mode) {
-		int biomeBlendRadius = this.client.options.biomeBlendRadius;
+		int biomeBlendRadius = this.client.options.getBiomeBlendRadius().get();
 		if (biomeBlendRadius == 0) {
 			return applyShade(ColorUtil.argbDarken(sourceBiome.getWaterColor()), shade);
 		} else {
@@ -348,7 +348,7 @@ public class WorldMap {
 
 	public void tick() {
 		var client = MinecraftClient.getInstance();
-		int viewDistance = Math.max(2, client.options.viewDistance - 2);
+		int viewDistance = Math.max(2, client.options.getEffectiveViewDistance() - 2);
 
 		int chunkX = ChunkSectionPos.getSectionCoord(this.playerViewX);
 		int chunkZ = ChunkSectionPos.getSectionCoord(this.playerViewZ);

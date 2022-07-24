@@ -18,23 +18,20 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
-import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.background.EmptyBackground;
 import dev.lambdaurora.spruceui.option.SpruceSeparatorOption;
 import dev.lambdaurora.spruceui.screen.SpruceScreen;
-import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceOptionListWidget;
 import dev.lambdaurora.spruceui.widget.container.tabbed.SpruceTabbedWidget;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class WorldMapScreen extends SpruceScreen {
 	private final LambdaMap mod = LambdaMap.get();
 
 	public WorldMapScreen() {
-		super(new LiteralText("World Map"));
+		super(Text.literal("World Map"));
 	}
 
 	@Override
@@ -46,13 +43,13 @@ public class WorldMapScreen extends SpruceScreen {
 	protected void init() {
 		super.init();
 
-		SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, new LiteralText("LambdaMap")));
+		SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, Text.literal("LambdaMap")));
 		tabs.getList().setBackground(RandomPrideFlagBackground.random());
-		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.world_map"), new TranslatableText("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
+		tabs.addTabEntry(Text.translatable("lambdamap.tabs.world_map"), Text.translatable("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
 				(width, height) -> new WorldMapWidget(Position.origin(), width, height));
-		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.markers"), new TranslatableText("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
+		tabs.addTabEntry(Text.translatable("lambdamap.tabs.markers"), Text.translatable("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
 				(width, height) -> new MarkerTabWidget(mod, Position.origin(), width, height));
-		tabs.addTabEntry(new TranslatableText("lambdamap.tabs.config"), new TranslatableText("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
+		tabs.addTabEntry(Text.translatable("lambdamap.tabs.config"), Text.translatable("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
 				this::buildConfigTab);
 	}
 

@@ -23,8 +23,7 @@ import dev.lambdaurora.lambdamap.gui.hud.HudDecorators;
 import dev.lambdaurora.spruceui.option.SpruceCheckboxBooleanOption;
 import dev.lambdaurora.spruceui.option.SpruceCyclingOption;
 import dev.lambdaurora.spruceui.option.SpruceOption;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
@@ -84,18 +83,18 @@ public final class LambdaMapConfig {
 		this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
 				this::isHudVisible, this::setHudVisible, null, true);
 		this.hudScaleOption = new SpruceCyclingOption("lambdamap.config.hud.scale",
-				amount -> this.setHudScale((this.hudScale + amount) % 4), option -> option.getDisplayText(new LiteralText(String.valueOf(this.getHudScale()))),
-				new TranslatableText("lambdamap.config.hud.scale.tooltip"));
+				amount -> this.setHudScale((this.hudScale + amount) % 4), option -> option.getDisplayText(Text.literal(String.valueOf(this.getHudScale()))),
+				Text.translatable("lambdamap.config.hud.scale.tooltip"));
 		this.northLockOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.north_lock",
 				this::isNorthLocked, this::setNorthLock,
-				new TranslatableText("lambdamap.config.hud.north_lock.tooltip"), true);
+				Text.translatable("lambdamap.config.hud.north_lock.tooltip"), true);
 		this.directionIndicatorsOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.direction_indicators",
 				this::isDirectionIndicatorsVisible, this::setDirectionIndicatorsVisible,
-				new TranslatableText("lambdamap.config.hud.direction_indicators.tooltip"), true);
+				Text.translatable("lambdamap.config.hud.direction_indicators.tooltip"), true);
 		this.hudDecoratorOption = new SpruceCyclingOption("lambdamap.config.hud.decorator",
 				amount -> this.setHudDecorator(HudDecorators.pick(this.getHudDecorator(), amount)),
 				option -> option.getDisplayText(this.getHudDecorator().getName()),
-				new TranslatableText("lambdamap.config.hud.decorator.tooltip"));
+				Text.translatable("lambdamap.config.hud.decorator.tooltip"));
 	}
 
 	/**

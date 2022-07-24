@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.map.marker;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.gui.WorldMapRenderer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -26,7 +27,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapIcon;
@@ -89,7 +89,7 @@ public class MarkerType {
 		matrices.scale(4.f, 4.f, 3.f);
 		matrices.translate(-0.125, 0.125, 0.0);
 		VertexConsumer vertices = vertexConsumers.getBuffer(this.renderLayer);
-		Matrix4f model = matrices.peek().getModel();
+		Matrix4f model = matrices.peek().getPosition();
 		WorldMapRenderer.vertex(vertices, model, -1.f, 1.f, this.uMin, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, 1.f, this.uMax, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, -1.f, this.uMax, this.vMax, light);
@@ -105,7 +105,7 @@ public class MarkerType {
 			matrices.scale(scale, scale, -1.f);
 			matrices.translate(0.f, 0.f, 0.10000000149011612D);
 
-			model = matrices.peek().getModel();
+			model = matrices.peek().getPosition();
 			textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, false, 0xaa000000, light);
 			matrices.pop();
 		}

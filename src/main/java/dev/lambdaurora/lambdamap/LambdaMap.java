@@ -170,7 +170,7 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 	public void updateChunks(World world, PlayerEntity entity) {
 		var pos = entity.getChunkPos();
 		var client = MinecraftClient.getInstance();
-		int viewDistance = Math.max(2, client.options.viewDistance - 2);
+		int viewDistance = Math.max(2, client.options.getEffectiveViewDistance() - 2);
 		this.updatedChunks = 0;
 		for (int x = pos.x - viewDistance; x <= pos.x + viewDistance; x++) {
 			for (int z = pos.z - viewDistance; z <= pos.z + viewDistance; z++) {

@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.spruceui.Position;
@@ -24,7 +25,6 @@ import dev.lambdaurora.spruceui.navigation.NavigationDirection;
 import dev.lambdaurora.spruceui.util.ScissorManager;
 import dev.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
@@ -121,7 +121,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		matrices.push();
 		matrices.translate(this.getX(), this.getY(), 0);
 		matrices.scale(this.scale, this.scale, 1.f);
-		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 		this.renderer.render(matrices, immediate, delta);
 		immediate.draw();
 		matrices.pop();

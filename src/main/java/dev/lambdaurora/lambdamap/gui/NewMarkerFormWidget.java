@@ -29,10 +29,9 @@ import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceNamedTextFieldWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceTextFieldWidget;
 import net.minecraft.item.map.MapIcon;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
@@ -59,7 +58,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 
 		this.nameField = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(Position.of(this, x, y),
 				width < 480 ? width - 48 : width / 2 - 48,
-				20, new TranslatableText("lambdamap.marker.new.name")));
+				20, Text.translatable("lambdamap.marker.new.name")));
 		this.nameField.setChangedListener(input -> this.doneButton.setActive(true));
 		this.addChild(nameField);
 
@@ -73,7 +72,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 		this.xFieldWidget = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(
 				Position.of(this, x, y),
 				width < 480 ? 64 : 48, 20,
-				new TranslatableText("lambdamap.marker.new.x")));
+				Text.translatable("lambdamap.marker.new.x")));
 		this.xFieldWidget.setChangedListener(input -> this.doneButton.setActive(true));
 		this.setupCoordinatesField(this.xFieldWidget);
 		this.addChild(xFieldWidget);
@@ -81,13 +80,13 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 		this.zFieldWidget = new SpruceNamedTextFieldWidget(new SpruceTextFieldWidget(
 				Position.of(this, x += this.xFieldWidget.getWidth() + 4, y),
 				width < 480 ? 64 : 48, 20,
-				new TranslatableText("lambdamap.marker.new.z")));
+				Text.translatable("lambdamap.marker.new.z")));
 		this.zFieldWidget.setChangedListener(input -> this.doneButton.setActive(true));
 		this.setupCoordinatesField(this.zFieldWidget);
 		this.addChild(this.zFieldWidget);
 
 		this.addChild(new SpruceButtonWidget(Position.of(this, x + this.zFieldWidget.getWidth() + 4, y + 13),
-				80, 20, new TranslatableText("lambdamap.marker.new.player_pos"), btn -> {
+				80, 20, Text.translatable("lambdamap.marker.new.player_pos"), btn -> {
 			BlockPos pos = this.client.player.getBlockPos();
 			this.xFieldWidget.setText(String.valueOf(pos.getX()));
 			this.zFieldWidget.setText(String.valueOf(pos.getZ()));
@@ -98,7 +97,7 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 			String text = this.nameField.getText();
 			markers.addMarker(this.typeButton.getMarkerType(), MarkerSource.USER,
 					parseInt(this.xFieldWidget), 0, parseInt(this.zFieldWidget),
-					180.f, text.isEmpty() ? null : new LiteralText(text));
+					180.f, text.isEmpty() ? null : Text.literal(text));
 			list.rebuildList();
 			this.init();
 		});
@@ -125,9 +124,9 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 		textField.setRenderTextProvider((displayedText, offset) -> {
 			try {
 				Integer.parseInt(textField.getText());
-				return OrderedText.method_30747(displayedText, Style.EMPTY);
+				return OrderedText.styledForwardsVisitedString(displayedText, Style.EMPTY);
 			} catch (NumberFormatException e) {
-				return OrderedText.method_30747(displayedText, Style.EMPTY.withColor(Formatting.RED));
+				return OrderedText.styledForwardsVisitedString(displayedText, Style.EMPTY.withColor(Formatting.RED));
 			}
 		});
 	}

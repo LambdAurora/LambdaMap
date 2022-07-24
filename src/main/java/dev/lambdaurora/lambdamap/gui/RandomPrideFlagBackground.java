@@ -18,6 +18,9 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.Tessellator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormats;
 import dev.lambdaurora.spruceui.background.Background;
 import dev.lambdaurora.spruceui.background.SimpleColorBackground;
 import dev.lambdaurora.spruceui.util.ColorUtil;
@@ -26,9 +29,6 @@ import io.github.queerbric.pride.PrideFlag;
 import io.github.queerbric.pride.PrideFlagShapes;
 import io.github.queerbric.pride.PrideFlags;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
@@ -61,9 +61,9 @@ public class RandomPrideFlagBackground implements Background {
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
 		if (this.flag.getShape() == PrideFlagShapes.get(new Identifier("pride", "horizontal_stripes"))) {
 			RenderSystem.disableTexture();
-			var model = matrices.peek().getModel();
+			var model = matrices.peek().getPosition();
 			var tessellator = Tessellator.getInstance();
-			var vertices = tessellator.getBuffer();
+			var vertices = tessellator.getBufferBuilder();
 			vertices.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
 
 			int width = widget.getWidth();
