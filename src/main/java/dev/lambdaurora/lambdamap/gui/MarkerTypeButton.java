@@ -18,15 +18,15 @@
 package dev.lambdaurora.lambdamap.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
@@ -38,7 +38,7 @@ public class MarkerTypeButton extends SpruceButtonWidget {
 	private MarkerType type;
 
 	public MarkerTypeButton(Position position, MarkerType type, Consumer<MarkerType> changeListener) {
-		super(position, 20, 20, LiteralText.EMPTY, btn -> {
+		super(position, 20, 20, Text.empty(), btn -> {
 			MarkerType next = MarkerType.next(((MarkerTypeButton) btn).type);
 			((MarkerTypeButton) btn).type = next;
 			changeListener.accept(next);
@@ -83,7 +83,7 @@ public class MarkerTypeButton extends SpruceButtonWidget {
 		matrices.push();
 		matrices.translate(this.getX() + 9, this.getY() + 11, 5);
 		matrices.scale(2, 2, 1);
-		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 		this.type.render(matrices, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
 		immediate.draw();
 		matrices.pop();

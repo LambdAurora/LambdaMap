@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
 import dev.lambdaurora.lambdamap.map.MapChunk;
@@ -26,7 +27,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
@@ -243,7 +243,7 @@ public class WorldMapRenderer {
 	public static void vertex(VertexConsumer vertices, Matrix4f model, float x, float y,
 	                          float u, float v, int light) {
 		vertices.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
-				.texture(u, v).light(light).next();
+				.uv(u, v).light(light).next();
 	}
 
 	/**
@@ -425,7 +425,7 @@ public class WorldMapRenderer {
 		public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
 		                   int offsetX, int offsetY,
 		                   float width, float height, int light) {
-			var model = matrices.peek().getModel();
+			var model = matrices.peek().getPosition();
 			var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
 			float uOffset = offsetX / 128.f;

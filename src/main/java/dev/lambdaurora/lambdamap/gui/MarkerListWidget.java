@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.lambdamap.map.marker.Marker;
 import dev.lambdaurora.lambdamap.map.marker.MarkerManager;
 import dev.lambdaurora.lambdamap.map.marker.MarkerSource;
@@ -31,12 +32,11 @@ import dev.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceParentWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceTextFieldWidget;
 import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +91,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 			this.addNameFieldWidget();
 			this.addPositionFieldWidgets();
 
-			this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, new LiteralText("X").formatted(Formatting.RED),
+			this.children.add(new SpruceButtonWidget(Position.of(this, this.getWidth() - 24, 2), 20, 20, Text.literal("X").formatted(Formatting.RED),
 					btn -> {
 						// Force Deletion using SHIFT key to skip the confirmation dialog, might be worth making configurable?
 						if(GLFW.glfwGetKey(GLFW.glfwGetCurrentContext(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS ||
@@ -104,13 +104,13 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		}
 
 		private void addNameFieldWidget() {
-			var fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, new LiteralText("Marker Name Field"));
+			var fieldWidget = new SpruceTextFieldWidget(Position.of(this, 32, 2), this.getWidth() / 2 - 48, 20, Text.literal("Marker Name Field"));
 			if (this.marker.getName() != null)
 				fieldWidget.setText(this.marker.getName().getString());
 			if (this.marker.getSource() != MarkerSource.BANNER)
 				fieldWidget.setChangedListener(newName -> {
 					if (newName.isEmpty()) this.marker.setName(null);
-					else this.marker.setName(new LiteralText(newName));
+					else this.marker.setName(Text.literal(newName));
 				});
 			else {
 				fieldWidget.setActive(false);
@@ -118,7 +118,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 					Style style = Style.EMPTY;
 					if (this.marker.getName() != null)
 						style = this.marker.getName().getStyle();
-					return OrderedText.method_30747(displayedText, style);
+					return OrderedText.styledForwardsVisitedString(displayedText, style);
 				});
 			}
 			this.children.add(fieldWidget);
@@ -127,13 +127,13 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		private void addPositionFieldWidgets() {
 			int x = this.getWidth() / 2;
 
-			var xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, new LiteralText("X Field"));
+			var xField = new SpruceTextFieldWidget(Position.of(this, x + 12, 2), 48, 20, Text.literal("X Field"));
 			xField.setText(String.valueOf(this.marker.getX()));
 			xField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
 			xField.setChangedListener(input -> this.marker.setX(SpruceUtil.parseIntFromString(input)));
 			this.children.add(xField);
 
-			var zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, new LiteralText("Z Field"));
+			var zField = new SpruceTextFieldWidget(Position.of(this, x + 64 + 16, 2), 48, 20, Text.literal("Z Field"));
 			zField.setText(String.valueOf(this.marker.getZ()));
 			zField.setTextPredicate(SpruceTextFieldWidget.INTEGER_INPUT_PREDICATE);
 			zField.setChangedListener(input -> this.marker.setZ(SpruceUtil.parseIntFromString(input)));
@@ -288,11 +288,11 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			int light = LightmapTextureManager.pack(15, 15);
 
-			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 
 			float textY = this.getY() + this.getHeight() / 2.f - 5;
 
-			Matrix4f model = matrices.peek().getModel();
+			Matrix4f model = matrices.peek().getPosition();
 
 			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
 			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);

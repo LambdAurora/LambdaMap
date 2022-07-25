@@ -17,17 +17,17 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.background.EmptyBackground;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.screen.ScreenTexts;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.ScreenTexts;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class ConfirmDeletionWidget extends SpruceContainerWidget {
@@ -58,12 +58,12 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
 	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		this.forEach(child -> child.render(matrices, mouseX, mouseY, delta));
 
-		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 
-		String name = this.markerEntry.marker.getName() == null ? "" : this.markerEntry.marker.getName().asString();
-		OrderedText prompt = new TranslatableText("lambdamap.marker.confirm_deletion.prompt",
-				new TranslatableText("lambdamap.marker.confirm_deletion.prompt.action").formatted(Formatting.RED),
-				name.equals("") ? new TranslatableText("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
+		String name = this.markerEntry.marker.getName() == null ? "" : this.markerEntry.marker.getName().getString();
+		OrderedText prompt = Text.translatable("lambdamap.marker.confirm_deletion.prompt",
+				Text.translatable("lambdamap.marker.confirm_deletion.prompt.action").formatted(Formatting.RED),
+				name.equals("") ? Text.translatable("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
 				.asOrderedText();
 
 		DrawableHelper.drawCenteredTextWithShadow(matrices, this.client.textRenderer, prompt, this.getX() + this.getWidth() / 2, this.getHeight() / 3, 0xffffffff);
