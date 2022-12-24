@@ -34,8 +34,8 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Axis;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
 
 public class MapHud implements AutoCloseable {
 	private static final Text NORTH = Text.translatable("lambdamap.compass.short.north");
@@ -156,7 +156,7 @@ public class MapHud implements AutoCloseable {
 		float vEnd = 1.f;
 		if (!this.config.isNorthLocked()) {
 			matrices.translate(64, 64, 0);
-			matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-this.client.player.getYaw(delta) + 180));
+			matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(-this.client.player.getYaw(delta) + 180));
 			matrices.translate(-64, -64, 0);
 		}
 		// Translate so map is centred
@@ -168,7 +168,7 @@ public class MapHud implements AutoCloseable {
 		float offsetZ = (float) (renderPosZ - lerped.getZ());
 		matrices.translate(offsetX, offsetZ, 0);
 
-		var model = matrices.peek().getPosition();
+		var model = matrices.peek().getModel();
 		var vertices = immediate.getBuffer(this.mapRenderLayer);
 		WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
 		WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
@@ -186,7 +186,7 @@ public class MapHud implements AutoCloseable {
 
 				matrices.translate(x, z, 1.f);
 				if (!this.config.isNorthLocked())
-					matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.client.player.getYaw(delta) - 180));
+					matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(this.client.player.getYaw(delta) - 180));
 				marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
 				matrices.pop();
 			});
@@ -212,7 +212,7 @@ public class MapHud implements AutoCloseable {
 			var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
 			int strWidth = this.client.textRenderer.getWidth(str);
 			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130 + decorator.getCoordinatesOffset(), ColorUtil.WHITE, true,
-					matrices.peek().getPosition(), immediate, false, 0, light);
+					matrices.peek().getModel(), immediate, false, 0, light);
 			immediate.draw();
 		} else {
 			matrices.translate(0.f, 0.f, 1.2f);
@@ -232,13 +232,13 @@ public class MapHud implements AutoCloseable {
 	private void renderStaticCompassIndicators(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
 		int fontHeight = this.client.textRenderer.fontHeight;
 		this.client.textRenderer.draw(NORTH, 64 - this.client.textRenderer.getWidth(NORTH) / 2.f, 0, 0xffff0000, true,
-				matrices.peek().getPosition(), vertexConsumers, false, 0, light);
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 		this.client.textRenderer.draw(SOUTH, 64 - this.client.textRenderer.getWidth(SOUTH) / 2.f, HUD_SIZE - fontHeight, ColorUtil.WHITE, true,
-				matrices.peek().getPosition(), vertexConsumers, false, 0, light);
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 		this.client.textRenderer.draw(EAST, HUD_SIZE - this.client.textRenderer.getWidth(EAST), 64 - fontHeight / 2.f, ColorUtil.WHITE, true,
-				matrices.peek().getPosition(), vertexConsumers, false, 0, light);
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 		this.client.textRenderer.draw(WEST, 0, 64 - fontHeight / 2.f, ColorUtil.WHITE, true,
-				matrices.peek().getPosition(), vertexConsumers, false, 0, light);
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 	}
 
 	private void renderDynamicCompassIndicators(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
@@ -258,7 +258,7 @@ public class MapHud implements AutoCloseable {
 		y = MathHelper.clamp(y, 0, HUD_SIZE - this.client.textRenderer.fontHeight);
 
 		this.client.textRenderer.draw(text, x, y, text == NORTH ? 0xffff0000 : ColorUtil.WHITE, true,
-				matrices.peek().getPosition(), vertexConsumers, false, 0, light);
+				matrices.peek().getModel(), vertexConsumers, false, 0, light);
 	}
 
 	@Override

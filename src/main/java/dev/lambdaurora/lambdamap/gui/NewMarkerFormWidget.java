@@ -124,9 +124,9 @@ public class NewMarkerFormWidget extends SpruceContainerWidget {
 		textField.setRenderTextProvider((displayedText, offset) -> {
 			try {
 				Integer.parseInt(textField.getText());
-				return OrderedText.styledForwardsVisitedString(displayedText, Style.EMPTY);
+				return OrderedText.forward(displayedText, Style.EMPTY);
 			} catch (NumberFormatException e) {
-				return OrderedText.styledForwardsVisitedString(displayedText, Style.EMPTY.withColor(Formatting.RED));
+				return OrderedText.forward(displayedText, Style.EMPTY.withColor(Formatting.RED));
 			}
 		});
 	}

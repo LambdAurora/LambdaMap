@@ -31,11 +31,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.map.MapState;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.LogManager;
@@ -102,7 +103,7 @@ public class WorldMap {
 	}
 
 	public Registry<Biome> getBiomeRegistry() {
-		return this.getRegistryManager().get(Registry.BIOME_KEY);
+		return this.getRegistryManager().get(RegistryKeys.BIOME);
 	}
 
 	public double getViewX() {

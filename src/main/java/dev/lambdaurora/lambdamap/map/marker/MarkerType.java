@@ -32,10 +32,14 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Axis;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.AxisAngle4f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,11 +89,11 @@ public class MarkerType {
 	@Environment(EnvType.CLIENT)
 	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float rotation, @Nullable Text text, int light) {
 		matrices.push();
-		matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(rotation));
+		matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(rotation));
 		matrices.scale(4.f, 4.f, 3.f);
 		matrices.translate(-0.125, 0.125, 0.0);
 		VertexConsumer vertices = vertexConsumers.getBuffer(this.renderLayer);
-		Matrix4f model = matrices.peek().getPosition();
+		Matrix4f model = matrices.peek().getModel();
 		WorldMapRenderer.vertex(vertices, model, -1.f, 1.f, this.uMin, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, 1.f, this.uMax, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, -1.f, this.uMax, this.vMax, light);
@@ -105,7 +109,7 @@ public class MarkerType {
 			matrices.scale(scale, scale, -1.f);
 			matrices.translate(0.f, 0.f, 0.10000000149011612D);
 
-			model = matrices.peek().getPosition();
+			model = matrices.peek().getModel();
 			textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, false, 0xaa000000, light);
 			matrices.pop();
 		}

@@ -29,10 +29,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
@@ -452,7 +453,7 @@ public class MapChunk implements AutoCloseable {
 			var paletteNbt = nbt.getList("palette", NbtType.COMPOUND);
 			var palette = new Int2ObjectOpenHashMap<BlockState>();
 			for (int i = 0; i < paletteNbt.size(); i++) {
-				palette.put(i + 1, NbtHelper.toBlockState(paletteNbt.getCompound(i)));
+				palette.put(i + 1, NbtHelper.toBlockState(Registries.BLOCK.asLookup(), paletteNbt.getCompound(i)));
 			}
 
 			int bits = Math.max(4, MathHelper.log2DeBruijn(paletteNbt.size() + 1));
@@ -492,6 +493,6 @@ public class MapChunk implements AutoCloseable {
 	private static boolean filterBlockState(BlockState state) {
 		var client = MinecraftClient.getInstance();
 
-		return ((BlockColorsAccessor) client.getBlockColors()).getProviders().get(Registry.BLOCK.getRawId(state.getBlock())) != null;
+		return ((BlockColorsAccessor) client.getBlockColors()).getProviders().get(Registries.BLOCK.getRawId(state.getBlock())) != null;
 	}
 }

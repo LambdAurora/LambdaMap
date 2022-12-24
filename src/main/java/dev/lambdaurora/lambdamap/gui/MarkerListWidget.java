@@ -38,8 +38,8 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -118,7 +118,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 					Style style = Style.EMPTY;
 					if (this.marker.getName() != null)
 						style = this.marker.getName().getStyle();
-					return OrderedText.styledForwardsVisitedString(displayedText, style);
+					return OrderedText.forward(displayedText, style);
 				});
 			}
 			this.children.add(fieldWidget);
@@ -292,7 +292,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			float textY = this.getY() + this.getHeight() / 2.f - 5;
 
-			Matrix4f model = matrices.peek().getPosition();
+			Matrix4f model = matrices.peek().getModel();
 
 			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
 			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);

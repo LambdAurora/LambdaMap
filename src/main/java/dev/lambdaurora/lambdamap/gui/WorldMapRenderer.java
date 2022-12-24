@@ -30,9 +30,9 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -425,7 +425,7 @@ public class WorldMapRenderer {
 		public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
 		                   int offsetX, int offsetY,
 		                   float width, float height, int light) {
-			var model = matrices.peek().getPosition();
+			var model = matrices.peek().getModel();
 			var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
 			float uOffset = offsetX / 128.f;
