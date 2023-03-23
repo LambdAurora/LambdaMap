@@ -9,7 +9,6 @@
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "MapColorAccessor",
-    "MinecraftClientMixin",
     "PersistentStateManagerAccessor",
     "WorldChunkMixin"
   ],
