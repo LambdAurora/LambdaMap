@@ -6,6 +6,7 @@
     "BiomeAccessAccessor",
     "BlockColorsAccessor",
     "ChunkDeltaUpdateS2CPacketAccessor",
+    "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
     "ClientPlayNetworkHandlerMixin",
     "MapColorAccessor",
