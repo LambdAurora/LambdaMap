@@ -110,7 +110,7 @@ public class MarkerType {
 			matrices.translate(0.f, 0.f, 0.10000000149011612D);
 
 			model = matrices.peek().getModel();
-			textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, false, 0xaa000000, light);
+			textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0xaa000000, light);
 			matrices.pop();
 		}
 	}

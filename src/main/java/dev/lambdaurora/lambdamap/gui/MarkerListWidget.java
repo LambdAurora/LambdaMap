@@ -31,6 +31,7 @@ import dev.lambdaurora.spruceui.widget.SpruceWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceParentWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceTextFieldWidget;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -294,8 +295,8 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			Matrix4f model = matrices.peek().getModel();
 
-			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, false, 0, light);
-			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, false, 0, light);
+			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
+			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
 
 			immediate.draw();
 		}
