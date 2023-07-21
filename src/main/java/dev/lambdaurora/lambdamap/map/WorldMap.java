@@ -154,7 +154,7 @@ public class WorldMap {
 		else {
 			var mapColor = MapColorAccessor.getColors()[color / 4];
 			if (LambdaMap.get().getConfig().shouldRenderBiomeColors()) {
-				if (mapColor == MapColor.WATER_BLUE) {
+				if (mapColor == MapColor.WATER) {
 					var biome = chunk.getBiome(index);
 					if (biome != null) {
 						return this.calculateWaterColor(x, z, biome, color & 3, mode);

@@ -32,9 +32,9 @@ import dev.lambdaurora.spruceui.widget.container.SpruceEntryListWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceParentWidget;
 import dev.lambdaurora.spruceui.widget.text.SpruceTextFieldWidget;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -284,8 +284,8 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		/* Rendering */
 
 		@Override
-		protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-			this.forEach(widget -> widget.render(matrices, mouseX, mouseY, delta));
+		protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+			this.forEach(widget -> widget.render(graphics, mouseX, mouseY, delta));
 
 			int light = LightmapTextureManager.pack(15, 15);
 
@@ -293,7 +293,7 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 
 			float textY = this.getY() + this.getHeight() / 2.f - 5;
 
-			Matrix4f model = matrices.peek().getModel();
+			Matrix4f model = graphics.getMatrices().peek().getModel();
 
 			this.client.textRenderer.draw("X: ", this.getX() + this.getWidth() / 2.f, textY, 0xffffffff, true, model, immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
 			this.client.textRenderer.draw("Z: ", this.getX() + this.getWidth() / 2.f + 48 + 20, textY, 0xffffffff, true, model, immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
@@ -302,8 +302,8 @@ public class MarkerListWidget extends SpruceEntryListWidget<MarkerListWidget.Mar
 		}
 
 		@Override
-		protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-			fill(matrices, this.getX(), this.getY(), this.getX() + this.parent.getInnerWidth(), this.getY() + this.getHeight() - 2, 0x55555555);
+		protected void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+			graphics.fill(this.getX(), this.getY(), this.getX() + this.parent.getInnerWidth(), this.getY() + this.getHeight() - 2, 0x55555555);
 		}
 	}
 }

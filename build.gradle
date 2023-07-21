@@ -1,9 +1,9 @@
 plugins {
-	id 'org.quiltmc.loom' version '1.0.+'
+	id 'org.quiltmc.loom' version '1.2.+'
 	id 'java-library'
 	id 'maven-publish'
-	id 'com.github.johnrengelman.shadow' version '7.1.0'
-	id 'org.quiltmc.gradle.licenser' version '1.1.+'
+	id 'com.github.johnrengelman.shadow' version '8.1.+'
+	id 'org.quiltmc.gradle.licenser' version '2.0.+'
 }
 
 group = project.maven_group
@@ -73,8 +73,8 @@ dependencies {
 		exclude group: 'net.fabricmc.fabric-api'
 	})
 
-	shadow 'com.electronwill.night-config:core:3.6.4'
-	shadow "com.electronwill.night-config:toml:3.6.4"
+	shadow 'com.electronwill.night-config:core:3.6.6'
+	shadow "com.electronwill.night-config:toml:3.6.6"
 }
 
 java {
@@ -117,7 +117,7 @@ shadowJar {
 
 	relocate 'com.electronwill.nightconfig', 'dev.lambdaurora.lambdamap.shadow.nightconfig'
 }
-prepareRemapJar.dependsOn(shadowJar)
+remapJar.dependsOn(shadowJar)
 
 // configure the maven publication
 publishing {

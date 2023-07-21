@@ -29,7 +29,7 @@ import dev.lambdaurora.spruceui.util.ColorUtil;
 import dev.lambdaurora.spruceui.util.ScissorManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -109,7 +109,7 @@ public class MapHud implements AutoCloseable {
 		this.renderPosZ = this.client.player.getBlockPos().getZ();
 	}
 
-	public void render(MatrixStack matrices, int light, float delta) {
+	public void render(GuiGraphics graphics, int light, float delta) {
 		if (!this.isVisible() || this.client.currentScreen != null && this.client.currentScreen.isPauseScreen())
 			return;
 
@@ -118,27 +118,27 @@ public class MapHud implements AutoCloseable {
 		float scaleCompensation = newScaleFactor / scaleFactor;
 
 		int width = (int) (this.client.getWindow().getFramebufferWidth() / scaleFactor);
-		matrices.push();
-		matrices.translate(width - HUD_SIZE * scaleCompensation, 0, -20);
-		matrices.scale(scaleCompensation, scaleCompensation, 1);
+		graphics.getMatrices().push();
+		graphics.getMatrices().translate(width - HUD_SIZE * scaleCompensation, 0, -20);
+		graphics.getMatrices().scale(scaleCompensation, scaleCompensation, 1);
 
 		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 
 		HudDecorator decorator = this.config.getHudDecorator();
 		int margin = decorator.getMargin();
 
-		matrices.translate(-margin * 2, 0, -1);
+		graphics.getMatrices().translate(-margin * 2, 0, -1);
 
-		matrices.push();
+		graphics.getMatrices().push();
 		if (!this.client.options.debugEnabled) {
 			RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
 		} else {
 			RenderSystem.setShaderColor(0.25f, 0.25f, 0.25f, 0.5f);
 		}
-		decorator.render(matrices, immediate, HUD_SIZE + margin * 2, HUD_SIZE + margin * 2);
-		matrices.pop();
+		decorator.render(graphics, immediate, HUD_SIZE + margin * 2, HUD_SIZE + margin * 2);
+		graphics.getMatrices().pop();
 
-		matrices.translate(margin, margin, 1);
+		graphics.getMatrices().translate(margin, margin, 1);
 
 		{
 			int i = (int) ((double) this.client.getWindow().getFramebufferWidth() / newScaleFactor);
@@ -149,27 +149,27 @@ public class MapHud implements AutoCloseable {
 		int textureWidth = this.texture.getImage().getWidth();
 		int textureHeight = this.texture.getImage().getHeight();
 
-		matrices.push();
+		graphics.getMatrices().push();
 
 		float uStart = 0.f;
 		float uEnd = 1.f;
 		float vStart = 0.f;
 		float vEnd = 1.f;
 		if (!this.config.isNorthLocked()) {
-			matrices.translate(64, 64, 0);
-			matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(-this.client.player.getYaw(delta) + 180));
-			matrices.translate(-64, -64, 0);
+			graphics.getMatrices().translate(64, 64, 0);
+			graphics.getMatrices().multiply(Axis.Z_POSITIVE.rotationDegrees(-this.client.player.getYaw(delta) + 180));
+			graphics.getMatrices().translate(-64, -64, 0);
 		}
 		// Translate so map is centred
-		matrices.translate(-32, -32, 0);
+		graphics.getMatrices().translate(-32, -32, 0);
 
 		// Translate by offset from position that map was last rendered from
 		var lerped = this.client.player.getLerpedPos(delta);
 		float offsetX = (float) (renderPosX - lerped.getX());
 		float offsetZ = (float) (renderPosZ - lerped.getZ());
-		matrices.translate(offsetX, offsetZ, 0);
+		graphics.getMatrices().translate(offsetX, offsetZ, 0);
 
-		var model = matrices.peek().getModel();
+		var model = graphics.getMatrices().peek().getModel();
 		var vertices = immediate.getBuffer(this.mapRenderLayer);
 		WorldMapRenderer.vertex(vertices, model, 0.f, textureHeight, uStart, vEnd, light);
 		WorldMapRenderer.vertex(vertices, model, textureWidth, textureHeight, uEnd, vEnd, light);
@@ -180,30 +180,30 @@ public class MapHud implements AutoCloseable {
 			int cornerX = renderPosX - (textureWidth / 2);
 			int cornerZ = renderPosZ - (textureHeight / 2);
 			LambdaMap.get().getMap().getMarkerManager().forEachInBox(cornerX, cornerZ, textureWidth, textureHeight, marker -> {
-				matrices.push();
+				graphics.getMatrices().push();
 
 				float x = (float) (marker.getX() - cornerX);
 				float z = (float) (marker.getZ() - cornerZ);
 
-				matrices.translate(x, z, 1.f);
+				graphics.getMatrices().translate(x, z, 1.f);
 				if (!this.config.isNorthLocked())
-					matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(this.client.player.getYaw(delta) - 180));
-				marker.getType().render(matrices, immediate, marker.getRotation(), marker.getName(), light);
-				matrices.pop();
+					graphics.getMatrices().multiply(Axis.Z_POSITIVE.rotationDegrees(this.client.player.getYaw(delta) - 180));
+				marker.getType().render(graphics, immediate, marker.getRotation(), marker.getName(), light);
+				graphics.getMatrices().pop();
 			});
 		}
-		matrices.pop();
+		graphics.getMatrices().pop();
 
-		this.renderPlayerIcon(matrices, immediate, light, delta);
+		this.renderPlayerIcon(graphics, immediate, light, delta);
 		immediate.draw();
 
 		ScissorManager.pop();
 
 		if (this.config.isDirectionIndicatorsVisible()) {
 			if (this.config.isNorthLocked()) {
-				this.renderStaticCompassIndicators(matrices, immediate, light);
+				this.renderStaticCompassIndicators(graphics.getMatrices(), immediate, light);
 			} else {
-				this.renderDynamicCompassIndicators(matrices, immediate, light, delta);
+				this.renderDynamicCompassIndicators(graphics.getMatrices(), immediate, light, delta);
 			}
 			immediate.draw();
 		}
@@ -213,21 +213,21 @@ public class MapHud implements AutoCloseable {
 			var str = String.format("X: %d Y: %d Z: %d", pos.getX(), pos.getY(), pos.getZ());
 			int strWidth = this.client.textRenderer.getWidth(str);
 			this.client.textRenderer.draw(str, 64 - strWidth / 2.f, 130 + decorator.getCoordinatesOffset(), ColorUtil.WHITE, true,
-					matrices.peek().getModel(), immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
+					graphics.getMatrices().peek().getModel(), immediate, TextRenderer.TextLayerType.NORMAL, 0, light);
 			immediate.draw();
 		} else {
-			matrices.translate(0.f, 0.f, 1.2f);
-			DrawableHelper.fill(matrices, 0, 0, 128, 128, 0x88000000);
+			graphics.getMatrices().translate(0.f, 0.f, 1.2f);
+			graphics.fill(0, 0, 128, 128, 0x88000000);
 		}
-		matrices.pop();
+		graphics.getMatrices().pop();
 		ScissorManager.popScaleFactor();
 	}
 
-	private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
-		matrices.push();
-		matrices.translate(64.f, 64.f, 1.1f);
-		MarkerType.PLAYER.render(matrices, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
-		matrices.pop();
+	private void renderPlayerIcon(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, int light, float delta) {
+		graphics.getMatrices().push();
+		graphics.getMatrices().translate(64.f, 64.f, 1.1f);
+		MarkerType.PLAYER.render(graphics, vertexConsumers, this.config.isNorthLocked() ? this.client.player.getYaw(delta) : 180, null, light);
+		graphics.getMatrices().pop();
 	}
 
 	private void renderStaticCompassIndicators(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {

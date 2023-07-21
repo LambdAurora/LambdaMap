@@ -17,10 +17,8 @@
 
 package dev.lambdaurora.lambdamap.gui.hud;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public class SimpleTexturedHudDecorator extends HudDecorator {
@@ -48,9 +46,8 @@ public class SimpleTexturedHudDecorator extends HudDecorator {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, int width, int height) {
-		RenderSystem.setShaderTexture(0, this.texture);
-		DrawableHelper.drawTexture(matrices, 0, 0, width, height + this.bottomHeight, 0, 0,
+	public void render(GuiGraphics graphics, VertexConsumerProvider.Immediate immediate, int width, int height) {
+		graphics.drawTexture(this.texture, 0, 0, width, height + this.bottomHeight, 0, 0,
 				width, height + this.bottomHeight, width, height + this.bottomHeight);
 	}
 }

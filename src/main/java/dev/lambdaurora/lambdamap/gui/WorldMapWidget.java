@@ -24,9 +24,9 @@ import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.navigation.NavigationDirection;
 import dev.lambdaurora.spruceui.util.ScissorManager;
 import dev.lambdaurora.spruceui.widget.AbstractSpruceWidget;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -116,15 +116,15 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 	/* Rendering */
 
 	@Override
-	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		ScissorManager.push(this.getX(), this.getY(), this.getWidth(), this.getHeight() - 10);
-		matrices.push();
-		matrices.translate(this.getX(), this.getY(), 0);
-		matrices.scale(this.scale, this.scale, 1.f);
+		graphics.getMatrices().push();
+		graphics.getMatrices().translate(this.getX(), this.getY(), 0);
+		graphics.getMatrices().scale(this.scale, this.scale, 1.f);
 		var immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
-		this.renderer.render(matrices, immediate, delta);
+		this.renderer.render(graphics, immediate, delta);
 		immediate.draw();
-		matrices.pop();
+		graphics.getMatrices().pop();
 		ScissorManager.pop();
 
 		int mouseXOffset = mouseX - this.getX();
@@ -136,7 +136,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
 			float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
 			float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
-			drawCenteredText(matrices, this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
+			graphics.drawCenteredShadowedText(this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
 					this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 
 			var chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
@@ -147,8 +147,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 					var id = registry.getId(biome);
 					if (id != null) {
 						int width = this.client.textRenderer.getWidth(id.toString());
-						this.client.textRenderer.drawWithShadow(matrices, id.toString(),
-								this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+						graphics.drawShadowedText(this.client.textRenderer, id.toString(), this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
 					}
 				}
 			}
@@ -158,6 +157,6 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		if (this.intScale < 0) {
 			scale = -this.intScale + ":1";
 		}
-		this.client.textRenderer.drawWithShadow(matrices, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
+		graphics.drawShadowedText(this.client.textRenderer, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
 	}
 }

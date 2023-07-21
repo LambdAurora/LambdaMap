@@ -24,7 +24,7 @@ import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.lambdamap.map.WorldMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -212,20 +212,20 @@ public class WorldMapRenderer {
 		}
 	}
 
-	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float delta) {
-		DrawableHelper.fill(matrices, 0, 0, this.width, this.height, 0xff000000);
+	public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, float delta) {
+		graphics.fill(0, 0, this.width, this.height, 0xff000000);
 
 		int light = LightmapTextureManager.pack(15, 15);
-		this.textureManager.render(matrices, vertexConsumers, light);
+		this.textureManager.render(graphics, vertexConsumers, light);
 
 		this.worldMap.getMarkerManager().forEachInBox(this.cornerViewX - 5, this.cornerViewZ - 5,
 				this.scaledWidth() + 10, this.scaledHeight() + 10,
-				marker -> marker.render(matrices, vertexConsumers, this.cornerViewX, this.cornerViewZ, this.scale, light));
+				marker -> marker.render(graphics, vertexConsumers, this.cornerViewX, this.cornerViewZ, this.scale, light));
 
-		this.renderPlayerIcon(matrices, vertexConsumers, light, delta);
+		this.renderPlayerIcon(graphics, vertexConsumers, light, delta);
 	}
 
-	private void renderPlayerIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float delta) {
+	private void renderPlayerIcon(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, int light, float delta) {
 		var client = MinecraftClient.getInstance();
 
 		var pos = client.player.getBlockPos();
@@ -234,10 +234,10 @@ public class WorldMapRenderer {
 				|| this.cornerViewX + this.scaledWidth() < pos.getX() || this.cornerViewZ + this.scaledHeight() < pos.getZ())
 			return;
 
-		matrices.push();
-		matrices.translate((pos.getX() - this.cornerViewX) / (float) this.scale, (pos.getZ() - this.cornerViewZ) / (float) this.scale, 1.1f);
-		MarkerType.PLAYER.render(matrices, vertexConsumers, client.player.getYaw(delta), null, light);
-		matrices.pop();
+		graphics.getMatrices().push();
+		graphics.getMatrices().translate((pos.getX() - this.cornerViewX) / (float) this.scale, (pos.getZ() - this.cornerViewZ) / (float) this.scale, 1.1f);
+		MarkerType.PLAYER.render(graphics, vertexConsumers, client.player.getYaw(delta), null, light);
+		graphics.getMatrices().pop();
 	}
 
 	public static void vertex(VertexConsumer vertices, Matrix4f model, float x, float y,
@@ -326,7 +326,7 @@ public class WorldMapRenderer {
 			LOGGER.debug("Took {}ms to update {} textures.", (System.currentTimeMillis() - start), count);
 		}
 
-		public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+		public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, int light) {
 			int scale = WorldMapRenderer.this.scale;
 			float originX = -((WorldMapRenderer.this.cornerViewX & 127) / (float) scale);
 			float originZ = -((WorldMapRenderer.this.cornerViewZ & 127) / (float) scale);
@@ -355,7 +355,7 @@ public class WorldMapRenderer {
 						width = WorldMapRenderer.this.width - (originX + x * 128);
 					}
 
-					line[x].render(matrices, vertexConsumers, Math.round(originX + x * 128), Math.round(originZ + z * 128), offsetX, offsetZ, width, height, light);
+					line[x].render(graphics, vertexConsumers, Math.round(originX + x * 128), Math.round(originZ + z * 128), offsetX, offsetZ, width, height, light);
 					offsetX = 0;
 				}
 
@@ -422,10 +422,10 @@ public class WorldMapRenderer {
 			this.texture.upload();
 		}
 
-		public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float originX, float originY,
+		public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, float originX, float originY,
 		                   int offsetX, int offsetY,
 		                   float width, float height, int light) {
-			var model = matrices.peek().getModel();
+			var model = graphics.getMatrices().peek().getModel();
 			var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 
 			float uOffset = offsetX / 128.f;

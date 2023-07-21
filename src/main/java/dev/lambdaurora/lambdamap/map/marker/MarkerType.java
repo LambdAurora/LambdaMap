@@ -26,20 +26,16 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Axis;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
-import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,31 +83,31 @@ public class MarkerType {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, float rotation, @Nullable Text text, int light) {
-		matrices.push();
-		matrices.multiply(Axis.Z_POSITIVE.rotationDegrees(rotation));
-		matrices.scale(4.f, 4.f, 3.f);
-		matrices.translate(-0.125, 0.125, 0.0);
+	public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, float rotation, @Nullable Text text, int light) {
+		graphics.getMatrices().push();
+		graphics.getMatrices().multiply(Axis.Z_POSITIVE.rotationDegrees(rotation));
+		graphics.getMatrices().scale(4.f, 4.f, 3.f);
+		graphics.getMatrices().translate(-0.125, 0.125, 0.0);
 		VertexConsumer vertices = vertexConsumers.getBuffer(this.renderLayer);
-		Matrix4f model = matrices.peek().getModel();
+		Matrix4f model = graphics.getMatrices().peek().getModel();
 		WorldMapRenderer.vertex(vertices, model, -1.f, 1.f, this.uMin, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, 1.f, this.uMax, this.vMin, light);
 		WorldMapRenderer.vertex(vertices, model, 1.f, -1.f, this.uMax, this.vMax, light);
 		WorldMapRenderer.vertex(vertices, model, -1.f, -1.f, this.uMin, this.vMax, light);
-		matrices.pop();
+		graphics.getMatrices().pop();
 
 		if (text != null) {
 			TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 			float textWidth = textRenderer.getWidth(text);
 			float scale = MathHelper.clamp(48.f / textWidth, 0.f, 6.f / 9.f);
-			matrices.push();
-			matrices.translate(-textWidth * scale / 2.0f, 4.f, 0.02500000037252903D);
-			matrices.scale(scale, scale, -1.f);
-			matrices.translate(0.f, 0.f, 0.10000000149011612D);
+			graphics.getMatrices().push();
+			graphics.getMatrices().translate(-textWidth * scale / 2.0f, 4.f, 0.02500000037252903D);
+			graphics.getMatrices().scale(scale, scale, -1.f);
+			graphics.getMatrices().translate(0.f, 0.f, 0.10000000149011612D);
 
-			model = matrices.peek().getModel();
+			model = graphics.getMatrices().peek().getModel();
 			textRenderer.draw(text, 0.f, 0.f, 0xffffffff, false, model, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0xaa000000, light);
-			matrices.pop();
+			graphics.getMatrices().pop();
 		}
 	}
 

@@ -19,8 +19,8 @@ package dev.lambdaurora.lambdamap.gui.hud;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -63,5 +63,5 @@ public abstract class HudDecorator {
 		return 0;
 	}
 
-	public abstract void render(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, int width, int height);
+	public abstract void render(GuiGraphics graphics, VertexConsumerProvider.Immediate immediate, int width, int height);
 }

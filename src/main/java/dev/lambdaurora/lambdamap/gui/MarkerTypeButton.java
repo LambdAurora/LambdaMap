@@ -17,15 +17,14 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.marker.MarkerType;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
@@ -79,23 +78,22 @@ public class MarkerTypeButton extends SpruceButtonWidget {
 	}
 
 	@Override
-	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		matrices.push();
-		matrices.translate(this.getX() + 9, this.getY() + 11, 5);
-		matrices.scale(2, 2, 1);
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+		graphics.getMatrices().push();
+		graphics.getMatrices().translate(this.getX() + 9, this.getY() + 11, 5);
+		graphics.getMatrices().scale(2, 2, 1);
 		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
-		this.type.render(matrices, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
+		this.type.render(graphics, immediate, 180.f, null, LightmapTextureManager.pack(15, 15));
 		immediate.draw();
-		matrices.pop();
+		graphics.getMatrices().pop();
 	}
 
 	@Override
-	protected void renderBackground(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	protected void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		if (this.isFocused()) {
 			int width = this.getWidth();
 			int height = this.getHeight();
-			RenderSystem.setShaderTexture(0, FOCUSED_TEXTURE);
-			drawTexture(matrices, this.getX(), this.getY(), 0, 0, width, height, width, height);
+			graphics.drawTexture(FOCUSED_TEXTURE, this.getX(), this.getY(), 0, 0, width, height, width, height);
 		}
 	}
 }

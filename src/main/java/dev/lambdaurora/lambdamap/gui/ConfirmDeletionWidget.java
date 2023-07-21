@@ -22,11 +22,10 @@ import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.background.EmptyBackground;
 import dev.lambdaurora.spruceui.widget.SpruceButtonWidget;
 import dev.lambdaurora.spruceui.widget.container.SpruceContainerWidget;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.CommonTexts;
 import net.minecraft.text.OrderedText;
-import net.minecraft.text.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -43,20 +42,20 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
 		int fixedWidth = this.getWidth() / 2 - 2 * spacing;
 
 		SpruceButtonWidget deleteButton = new SpruceButtonWidget(Position.of(this, spacing + offset, fixedY),
-				fixedWidth, 20, ScreenTexts.PROCEED, button -> {
+				fixedWidth, 20, CommonTexts.PROCEED, button -> {
 			this.markerEntry.parent.removeMarker(markerEntry);
 			parent.switchBack();
 		});
 		SpruceButtonWidget cancelButton = new SpruceButtonWidget(Position.of(this, getWidth() / 2 + spacing - offset, fixedY),
-				fixedWidth, 20, ScreenTexts.CANCEL, button -> parent.switchBack());
+				fixedWidth, 20, CommonTexts.CANCEL, button -> parent.switchBack());
 
 		this.addChild(deleteButton);
 		this.addChild(cancelButton);
 	}
 
 	@Override
-	protected void renderWidget(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		this.forEach(child -> child.render(matrices, mouseX, mouseY, delta));
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+		this.forEach(child -> child.render(graphics, mouseX, mouseY, delta));
 
 		VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBufferBuilder());
 
@@ -66,7 +65,7 @@ public class ConfirmDeletionWidget extends SpruceContainerWidget {
 				name.equals("") ? Text.translatable("lambdamap.marker.confirm_deletion.prompt.unnamed") : name)
 				.asOrderedText();
 
-		DrawableHelper.drawCenteredTextWithShadow(matrices, this.client.textRenderer, prompt, this.getX() + this.getWidth() / 2, this.getHeight() / 3, 0xffffffff);
+		graphics.drawCenteredShadowedText(this.client.textRenderer, prompt, this.getX() + this.getWidth() / 2, this.getHeight() / 3, 0xffffffff);
 
 		immediate.draw();
 	}

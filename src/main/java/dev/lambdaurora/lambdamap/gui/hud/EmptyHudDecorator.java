@@ -18,8 +18,8 @@
 package dev.lambdaurora.lambdamap.gui.hud;
 
 import dev.lambdaurora.lambdamap.LambdaMap;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public final class EmptyHudDecorator extends HudDecorator {
@@ -35,6 +35,6 @@ public final class EmptyHudDecorator extends HudDecorator {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, VertexConsumerProvider.Immediate immediate, int width, int height) {
+	public void render(GuiGraphics graphics, VertexConsumerProvider.Immediate immediate, int width, int height) {
 	}
 }

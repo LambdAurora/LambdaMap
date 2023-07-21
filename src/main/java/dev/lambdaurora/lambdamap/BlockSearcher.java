@@ -65,7 +65,7 @@ public class BlockSearcher {
 			do {
 				this.pos.setY(--this.height);
 				this.state = chunk.getBlockState(this.pos);
-			} while (this.state.getMapColor(this.world, this.pos) == MapColor.CLEAR && this.height > minimumY);
+			} while (this.state.getMapColor(this.world, this.pos) == MapColor.NONE && this.height > minimumY);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class BlockSearcher {
 		if (this.state.isAir()) {
 			brokeThroughCeil = true;
 		}
-		while ((!brokeThroughCeil || this.state.getMapColor(this.world, this.pos) == MapColor.CLEAR)
+		while ((!brokeThroughCeil || this.state.getMapColor(this.world, this.pos) == MapColor.NONE)
 				&& this.height > this.world.getBottomSectionCoord()) {
 			this.pos.setY(--this.height);
 			this.state = chunk.getBlockState(this.pos);

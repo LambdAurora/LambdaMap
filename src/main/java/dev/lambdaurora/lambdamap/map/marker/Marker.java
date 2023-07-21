@@ -21,8 +21,8 @@ import com.electronwill.nightconfig.core.Config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapBannerMarker;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
@@ -160,14 +160,14 @@ public class Marker {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
-		matrices.push();
+	public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, int startX, int startZ, float scale, int light) {
+		graphics.getMatrices().push();
 		int x = this.getX() - startX;
 		int z = this.getZ() - startZ;
 
-		matrices.translate(x / scale, z / scale, 1.f);
-		this.getType().render(matrices, vertexConsumers, this.getRotation(), this.getName(), light);
-		matrices.pop();
+		graphics.getMatrices().translate(x / scale, z / scale, 1.f);
+		this.getType().render(graphics, vertexConsumers, this.getRotation(), this.getName(), light);
+		graphics.getMatrices().pop();
 	}
 
 	public NbtCompound toNbt() {

@@ -239,7 +239,7 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 				var biome = world.getBiome(searcher.pos);
 				int shade;
 
-				if (mapColor == MapColor.WATER_BLUE) {
+				if (mapColor == MapColor.WATER) {
 					double shadeTest = (double) searcher.getWaterDepth() * 0.1D + (double) (xOffset + zOffset & 1) * 0.2D;
 					shade = 1;
 					if (shadeTest < 0.5D) {
