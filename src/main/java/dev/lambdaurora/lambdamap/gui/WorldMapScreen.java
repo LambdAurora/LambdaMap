@@ -50,10 +50,8 @@ public class WorldMapScreen extends SpruceScreen {
 			tabs.getList().setBackground(RandomPrideFlagBackground.random());
 			tabs.addTabEntry(Text.translatable("lambdamap.tabs.world_map"), Text.translatable("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
 					(width, height) -> new WorldMapWidget(Position.origin(), width, height));
-			if (this.mod.getConfig().isMarkerEditorVisible()) {
-				tabs.addTabEntry(Text.translatable("lambdamap.tabs.markers"), Text.translatable("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
-						(width, height) -> new MarkerTabWidget(mod, Position.origin(), width, height));
-			}
+			tabs.addTabEntry(Text.translatable("lambdamap.tabs.markers"), Text.translatable("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
+					(width, height) -> new MarkerTabWidget(mod, Position.origin(), width, height));
 			tabs.addTabEntry(Text.translatable("lambdamap.tabs.config"), Text.translatable("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
 					this::buildConfigTab);
 		}
@@ -65,8 +63,6 @@ public class WorldMapScreen extends SpruceScreen {
 
 		list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.general", true, null));
 		list.addSingleOptionEntry(this.mod.getConfig().getRenderBiomeColorsOption());
-		list.addSingleOptionEntry(this.mod.getConfig().getShowMarkerEditorOption());
-		list.addSingleOptionEntry(this.mod.getConfig().getDoFullscreenOption());
 		list.addSingleOptionEntry(new SpruceSeparatorOption("lambdamap.config.category.hud", true, null));
 		list.addSingleOptionEntry(this.mod.getConfig().getShowHudOption());
 		list.addOptionEntry(this.mod.getConfig().getHudScaleOption(), null);

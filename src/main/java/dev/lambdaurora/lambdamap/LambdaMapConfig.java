@@ -45,7 +45,6 @@ import java.nio.file.Paths;
 public final class LambdaMapConfig {
 	private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
 	private static final boolean DEFAULT_SHOW_HUD = true;
-	private static final boolean DEFAULT_SHOW_MARKER_EDITOR = true;
 	private static final boolean DEFAULT_FULLSCREEN = false;
 	private static final int DEFAULT_HUD_SCALE = 2;
 	private static final boolean DEFAULT_SHOW_DIRECTION_INDICATORS = true;
@@ -60,7 +59,6 @@ public final class LambdaMapConfig {
 
 	private final SpruceOption renderBiomeColorsOption;
 	private final SpruceOption showHudOption;
-	private final SpruceOption showMarkerEditorOption;
 	private final SpruceOption doFullscreenOption;
 	private final SpruceOption hudScaleOption;
 	private final SpruceOption northLockOption;
@@ -69,7 +67,6 @@ public final class LambdaMapConfig {
 
 	private boolean renderBiomeColors;
 	private boolean showHud;
-	private boolean showMarkerEditor;
 	private boolean doFullscreen;
 	private int hudScale;
 	private boolean northLock;
@@ -88,8 +85,6 @@ public final class LambdaMapConfig {
 		}, null, true);
 		this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
 				this::isHudVisible, this::setHudVisible, null, true);
-		this.showMarkerEditorOption = new SpruceCheckboxBooleanOption("lambdamap.config.show_marker_editor",
-				this::isMarkerEditorVisible, this::setMarkerEditorVisible, null, true);
 		this.doFullscreenOption = new SpruceCheckboxBooleanOption("lambdamap.config.fullscreen",
 				this::isFullscreen, this::setDoFullscreen, null, true);
 		this.hudScaleOption = new SpruceCyclingOption("lambdamap.config.hud.scale",
@@ -123,7 +118,6 @@ public final class LambdaMapConfig {
 
 		this.renderBiomeColors = this.config.getOrElse("map.render_biome_colors", DEFAULT_RENDER_BIOME_COLORS);
 		this.showHud = this.config.getOrElse("map.hud.visible", DEFAULT_SHOW_HUD);
-		this.showMarkerEditor = this.config.getOrElse("map.config.show_marker_editor", DEFAULT_SHOW_MARKER_EDITOR);
 		this.doFullscreen = this.config.getOrElse("map.config.fullscreen", DEFAULT_FULLSCREEN);
 		this.hudScale = MathHelper.clamp(this.config.getIntOrElse("map.hud.scale", DEFAULT_HUD_SCALE), 1, 3);
 		this.northLock = this.config.getOrElse("map.hud.north_lock", DEFAULT_NORTH_LOCK);
@@ -185,19 +179,6 @@ public final class LambdaMapConfig {
 
 	public SpruceOption getShowHudOption() {
 		return this.showHudOption;
-	}
-
-	public void setMarkerEditorVisible(Boolean visible) {
-		this.showMarkerEditor = visible;
-		this.config.set("map.config.show_marker_editor", visible);
-	}
-
-	public Boolean isMarkerEditorVisible() {
-		return this.showMarkerEditor;
-	}
-
-	public SpruceOption getShowMarkerEditorOption() {
-		return this.showMarkerEditorOption;
 	}
 
 	public void setDoFullscreen(Boolean visible) {
