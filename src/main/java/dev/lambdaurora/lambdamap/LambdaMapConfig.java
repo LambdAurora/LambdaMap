@@ -45,8 +45,8 @@ import java.nio.file.Paths;
 public final class LambdaMapConfig {
 	private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
 	private static final boolean DEFAULT_SHOW_HUD = true;
-	private static final boolean DEFAULT_SHOW_MARKER_EDITOR = false;
-	private static final boolean DEFAULT_FULLSCREEN = true;
+	private static final boolean DEFAULT_SHOW_MARKER_EDITOR = true;
+	private static final boolean DEFAULT_FULLSCREEN = false;
 	private static final int DEFAULT_HUD_SCALE = 2;
 	private static final boolean DEFAULT_SHOW_DIRECTION_INDICATORS = true;
 	private static final boolean DEFAULT_NORTH_LOCK = false;
