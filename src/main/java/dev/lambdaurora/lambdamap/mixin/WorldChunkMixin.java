@@ -26,10 +26,17 @@ import org.spongepowered.asm.mixin.Unique;
 public class WorldChunkMixin implements WorldChunkExtension {
 	@Unique
 	private boolean lambdamap$dirty;
+	@Unique
+	private boolean lambdamap$biomeDirty = true;
 
 	@Override
 	public boolean lambdamap$isDirty() {
 		return this.lambdamap$dirty;
+	}
+
+	@Override
+	public boolean lambdamap$isBiomeDirty() {
+		return this.lambdamap$biomeDirty;
 	}
 
 	@Override
@@ -40,5 +47,6 @@ public class WorldChunkMixin implements WorldChunkExtension {
 	@Override
 	public void lambdamap$markClean() {
 		this.lambdamap$dirty = false;
+		this.lambdamap$biomeDirty = false;
 	}
 }

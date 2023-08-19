@@ -39,6 +39,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
@@ -236,7 +237,11 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 				}
 
 				var mapColor = searcher.getState().getMapColor(world, searcher.pos);
-				var biome = world.getBiome(searcher.pos);
+				Biome biome = null;
+				if (chunk instanceof WorldChunkExtension extendedChunk && extendedChunk.lambdamap$isBiomeDirty()) {
+					biome = world.getBiome(searcher.pos).value();
+				}
+
 				int shade;
 
 				if (mapColor == MapColor.WATER) {
@@ -263,7 +268,7 @@ public class LambdaMap implements ClientModInitializer, ClientLifecycleEvents.Re
 				lastHeights[xOffset] = searcher.getHeight();
 				int x = mapChunkStartX + xOffset;
 				int z = mapChunkStartZ + zOffset;
-				if (mapChunk.putPixelAndPreserve(x, z, (byte) (mapColor.id * 4 + shade), biome.value(), searcher.getState())) {
+				if (mapChunk.putPixelAndPreserve(x, z, (byte) (mapColor.id * 4 + shade), biome, searcher.getState())) {
 					this.hud.markDirty();
 				}
 			}
