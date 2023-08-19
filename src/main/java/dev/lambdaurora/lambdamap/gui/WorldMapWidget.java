@@ -19,7 +19,6 @@ package dev.lambdaurora.lambdamap.gui;
 
 import com.mojang.blaze3d.vertex.Tessellator;
 import dev.lambdaurora.lambdamap.LambdaMap;
-import dev.lambdaurora.lambdamap.map.MapChunk;
 import dev.lambdaurora.spruceui.Position;
 import dev.lambdaurora.spruceui.navigation.NavigationDirection;
 import dev.lambdaurora.spruceui.util.ScissorManager;
@@ -27,7 +26,6 @@ import dev.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
