@@ -88,6 +88,14 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 
 	@Override
 	protected boolean onMouseClick(double mouseX, double mouseY, int button) {
+		double mouseXOffset = mouseX - this.getX();
+		double mouseYOffset = mouseY - this.getY();
+
+		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > this.renderer.height() * this.scale) {
+			mod.getConfig().setDoFullscreen(!mod.getConfig().isFullscreen());
+			client.setScreen(new WorldMapScreen());
+		}
+
 		return button == GLFW.GLFW_MOUSE_BUTTON_1;
 	}
 
@@ -133,41 +141,30 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 			scaleCompensation = this.renderer.scale();
 		}
 
-		// BlanketCon Demo Disclaimer
-		if (mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale) {
-			String demoText = "BlanketCon 2023";
-			int width = this.client.textRenderer.getWidth(demoText);
-			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
-		} else {
-			String demoText = "Issues: #bc23-bugs";
-			int width = this.client.textRenderer.getWidth(demoText);
-			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
-		}
-
 		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
 			float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
 			float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
 			graphics.drawCenteredShadowedText(this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
 					this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
-
-//			var chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
-//			if (chunk != null) {
-//				var biome = chunk.getBiome((int) x, (int) z);
-//				var registry = this.renderer.worldMap().getBiomeRegistry();
-//				if (biome != null && registry != null) {
-//					var id = registry.getId(biome);
-//					if (id != null) {
-//						int width = this.client.textRenderer.getWidth(id.toString());
-//						graphics.drawShadowedText(this.client.textRenderer, id.toString(), this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
-//					}
-//				}
-//			}
 		}
 
-		var scale = "1:" + this.renderer.scale();
-		if (this.intScale < 0) {
-			scale = -this.intScale + ":1";
+		// BlanketCon Info Texts Setup
+		if (mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale) {
+			String demoText = "BlanketCon 2023";
+			int width = this.client.textRenderer.getWidth(demoText);
+			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+
+			var scale = "1:" + this.renderer.scale();
+			if (this.intScale < 0) {
+				scale = -this.intScale + ":1";
+			}
+			graphics.drawShadowedText(this.client.textRenderer, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
+		} else {
+			String demoText = "Issues: #bc23-bugs";
+			int width = this.client.textRenderer.getWidth(demoText);
+			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+			graphics.drawShadowedText(this.client.textRenderer, "LambdaMap", this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
+			graphics.drawCenteredShadowedText(this.client.textRenderer, "[Toggle Fullscreen]", this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 		}
-		graphics.drawShadowedText(this.client.textRenderer, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
 	}
 }

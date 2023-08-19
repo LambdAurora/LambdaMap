@@ -2,6 +2,7 @@
   "lambdamap.config.category.general": "General",
   "lambdamap.config.render_biome_colors":  "Render Biome Colors",
   "lambdamap.config.show_marker_editor":  "Show Marker Editor",
+  "lambdamap.config.fullscreen":  "Fullscreen World Map",
   "lambdamap.config.category.hud": "HUD",
   "lambdamap.config.hud.visible": "Show HUD",
   "lambdamap.config.hud.scale": "Scale",
