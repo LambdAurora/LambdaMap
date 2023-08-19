@@ -59,7 +59,6 @@ public final class LambdaMapConfig {
 
 	private final SpruceOption renderBiomeColorsOption;
 	private final SpruceOption showHudOption;
-	private final SpruceOption doFullscreenOption;
 	private final SpruceOption hudScaleOption;
 	private final SpruceOption northLockOption;
 	private final SpruceOption directionIndicatorsOption;
@@ -67,7 +66,7 @@ public final class LambdaMapConfig {
 
 	private boolean renderBiomeColors;
 	private boolean showHud;
-	private boolean doFullscreen;
+	private boolean worldMapFullscreen;
 	private int hudScale;
 	private boolean northLock;
 	private boolean showDirectionIndicators;
@@ -85,8 +84,6 @@ public final class LambdaMapConfig {
 		}, null, true);
 		this.showHudOption = new SpruceCheckboxBooleanOption("lambdamap.config.hud.visible",
 				this::isHudVisible, this::setHudVisible, null, true);
-		this.doFullscreenOption = new SpruceCheckboxBooleanOption("lambdamap.config.fullscreen",
-				this::isFullscreen, this::setDoFullscreen, null, true);
 		this.hudScaleOption = new SpruceCyclingOption("lambdamap.config.hud.scale",
 				amount -> this.setHudScale((this.hudScale + amount) % 4), option -> option.getDisplayText(Text.literal(String.valueOf(this.getHudScale()))),
 				Text.translatable("lambdamap.config.hud.scale.tooltip"));
@@ -118,7 +115,6 @@ public final class LambdaMapConfig {
 
 		this.renderBiomeColors = this.config.getOrElse("map.render_biome_colors", DEFAULT_RENDER_BIOME_COLORS);
 		this.showHud = this.config.getOrElse("map.hud.visible", DEFAULT_SHOW_HUD);
-		this.doFullscreen = this.config.getOrElse("map.config.fullscreen", DEFAULT_FULLSCREEN);
 		this.hudScale = MathHelper.clamp(this.config.getIntOrElse("map.hud.scale", DEFAULT_HUD_SCALE), 1, 3);
 		this.northLock = this.config.getOrElse("map.hud.north_lock", DEFAULT_NORTH_LOCK);
 		this.showDirectionIndicators = this.config.getOrElse("map.hud.direction_indicators", DEFAULT_SHOW_DIRECTION_INDICATORS);
@@ -131,6 +127,7 @@ public final class LambdaMapConfig {
 					return null;
 				}).map(HudDecorators::get)
 				.orElse(HudDecorators.MAP);
+		this.worldMapFullscreen = this.config.getOrElse("map.config.world_map.fullscreen", DEFAULT_FULLSCREEN);
 
 		LOGGER.info("Configuration loaded.");
 	}
@@ -150,6 +147,8 @@ public final class LambdaMapConfig {
 		this.setHudVisible(DEFAULT_SHOW_HUD);
 		this.setHudScale(DEFAULT_HUD_SCALE);
 		this.setNorthLock(DEFAULT_NORTH_LOCK);
+		this.setDirectionIndicatorsVisible(DEFAULT_SHOW_DIRECTION_INDICATORS);
+		this.setHudDecorator(HudDecorators.MAP);
 	}
 
 	public boolean shouldRenderBiomeColors() {
@@ -179,19 +178,6 @@ public final class LambdaMapConfig {
 
 	public SpruceOption getShowHudOption() {
 		return this.showHudOption;
-	}
-
-	public void setDoFullscreen(Boolean visible) {
-		this.doFullscreen = visible;
-		this.config.set("map.config.fullscreen", visible);
-	}
-
-	public Boolean isFullscreen() {
-		return this.doFullscreen;
-	}
-
-	public SpruceOption getDoFullscreenOption() {
-		return this.doFullscreenOption;
 	}
 
 	/**
@@ -266,5 +252,14 @@ public final class LambdaMapConfig {
 
 	public SpruceOption getHudDecoratorOption() {
 		return this.hudDecoratorOption;
+	}
+
+	public void setWorldMapFullscreen(boolean visible) {
+		this.worldMapFullscreen = visible;
+		this.config.set("map.config.fullscreen", visible);
+	}
+
+	public Boolean isWorldMapFullscreen() {
+		return this.worldMapFullscreen;
 	}
 }

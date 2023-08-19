@@ -43,7 +43,7 @@ public class WorldMapScreen extends SpruceScreen {
 	protected void init() {
 		super.init();
 
-		if (mod.getConfig().isFullscreen()) {
+		if (this.mod.getConfig().isWorldMapFullscreen()) {
 			this.addDrawableChild(new WorldMapWidget(Position.origin(), width, height));
 		} else {
 			SpruceTabbedWidget tabs = this.addDrawableChild(new SpruceTabbedWidget(Position.origin(), this.width, this.height, Text.literal("LambdaMap")));
@@ -51,7 +51,7 @@ public class WorldMapScreen extends SpruceScreen {
 			tabs.addTabEntry(Text.translatable("lambdamap.tabs.world_map"), Text.translatable("lambdamap.tabs.world_map.description").formatted(Formatting.GRAY),
 					(width, height) -> new WorldMapWidget(Position.origin(), width, height));
 			tabs.addTabEntry(Text.translatable("lambdamap.tabs.markers"), Text.translatable("lambdamap.tabs.markers.description").formatted(Formatting.GRAY),
-					(width, height) -> new MarkerTabWidget(mod, Position.origin(), width, height));
+					(width, height) -> new MarkerTabWidget(this.mod, Position.origin(), width, height));
 			tabs.addTabEntry(Text.translatable("lambdamap.tabs.config"), Text.translatable("lambdamap.tabs.config.description").formatted(Formatting.GRAY),
 					this::buildConfigTab);
 		}
