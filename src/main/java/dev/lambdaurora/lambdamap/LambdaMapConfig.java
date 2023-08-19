@@ -45,6 +45,7 @@ import java.nio.file.Paths;
 public final class LambdaMapConfig {
 	private static final boolean DEFAULT_RENDER_BIOME_COLORS = true;
 	private static final boolean DEFAULT_SHOW_HUD = true;
+	private static final boolean DEFAULT_FULLSCREEN = false;
 	private static final int DEFAULT_HUD_SCALE = 2;
 	private static final boolean DEFAULT_SHOW_DIRECTION_INDICATORS = true;
 	private static final boolean DEFAULT_NORTH_LOCK = false;
@@ -65,6 +66,7 @@ public final class LambdaMapConfig {
 
 	private boolean renderBiomeColors;
 	private boolean showHud;
+	private boolean worldMapFullscreen;
 	private int hudScale;
 	private boolean northLock;
 	private boolean showDirectionIndicators;
@@ -125,6 +127,7 @@ public final class LambdaMapConfig {
 					return null;
 				}).map(HudDecorators::get)
 				.orElse(HudDecorators.MAP);
+		this.worldMapFullscreen = this.config.getOrElse("map.config.world_map.fullscreen", DEFAULT_FULLSCREEN);
 
 		LOGGER.info("Configuration loaded.");
 	}
@@ -144,6 +147,8 @@ public final class LambdaMapConfig {
 		this.setHudVisible(DEFAULT_SHOW_HUD);
 		this.setHudScale(DEFAULT_HUD_SCALE);
 		this.setNorthLock(DEFAULT_NORTH_LOCK);
+		this.setDirectionIndicatorsVisible(DEFAULT_SHOW_DIRECTION_INDICATORS);
+		this.setHudDecorator(HudDecorators.MAP);
 	}
 
 	public boolean shouldRenderBiomeColors() {
@@ -247,5 +252,14 @@ public final class LambdaMapConfig {
 
 	public SpruceOption getHudDecoratorOption() {
 		return this.hudDecoratorOption;
+	}
+
+	public void setWorldMapFullscreen(boolean visible) {
+		this.worldMapFullscreen = visible;
+		this.config.set("map.config.fullscreen", visible);
+	}
+
+	public Boolean isWorldMapFullscreen() {
+		return this.worldMapFullscreen;
 	}
 }

@@ -89,6 +89,14 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 
 	@Override
 	protected boolean onMouseClick(double mouseX, double mouseY, int button) {
+		double mouseXOffset = mouseX - this.getX();
+		double mouseYOffset = mouseY - this.getY();
+
+		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > this.renderer.height() * this.scale) {
+			this.mod.getConfig().setWorldMapFullscreen(!this.mod.getConfig().isWorldMapFullscreen());
+			this.client.setScreen(new WorldMapScreen());
+		}
+
 		return button == GLFW.GLFW_MOUSE_BUTTON_1;
 	}
 
@@ -133,7 +141,9 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		if (this.renderer.scale() != 1) {
 			scaleCompensation = this.renderer.scale();
 		}
-		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
+
+		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale
+				&& mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
 			float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
 			float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
 			graphics.drawCenteredShadowedText(this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
@@ -153,10 +163,26 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 			}
 		}
 
-		var scale = "1:" + this.renderer.scale();
-		if (this.intScale < 0) {
-			scale = -this.intScale + ":1";
+		if (!this.mod.getConfig().isWorldMapFullscreen()
+				|| mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale) {
+			var scale = "1:" + this.renderer.scale();
+			if (this.intScale < 0) {
+				scale = -this.intScale + ":1";
+			}
+			graphics.drawShadowedText(this.client.textRenderer, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
 		}
-		graphics.drawShadowedText(this.client.textRenderer, scale, this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
+
+		if (mouseXOffset > 0 && mouseYOffset >= this.renderer.height() * this.scale) {
+			if (this.mod.getConfig().isWorldMapFullscreen())
+				graphics.drawShadowedText(this.client.textRenderer, "LambdaMap",
+						this.getX(), this.getY() + this.getHeight() - 9,
+						0xffffffff
+				);
+			else
+				graphics.drawCenteredShadowedText(this.client.textRenderer, "[Toggle Fullscreen]",
+						this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9,
+						0xffffffff
+				);
+		}
 	}
 }
