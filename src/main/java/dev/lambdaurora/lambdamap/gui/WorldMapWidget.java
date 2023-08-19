@@ -27,6 +27,7 @@ import dev.lambdaurora.spruceui.widget.AbstractSpruceWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
@@ -133,24 +134,36 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		if (this.renderer.scale() != 1) {
 			scaleCompensation = this.renderer.scale();
 		}
+
+		// BlanketCon Demo Disclaimer
+		if (mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale) {
+			String demoText = "BlanketCon 2023";
+			int width = this.client.textRenderer.getWidth(demoText);
+			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+		} else {
+			String demoText = "Issues: #bc23-bugs";
+			int width = this.client.textRenderer.getWidth(demoText);
+			graphics.drawShadowedText(this.client.textRenderer, demoText, this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+		}
+
 		if (mouseXOffset > 0 && mouseXOffset < this.renderer.width() * this.scale && mouseYOffset > 0 && mouseYOffset < this.renderer.height() * this.scale) {
 			float x = this.renderer.cornerX() + mouseXOffset * scaleCompensation;
 			float z = this.renderer.cornerZ() + mouseYOffset * scaleCompensation;
 			graphics.drawCenteredShadowedText(this.client.textRenderer, String.format("X: %.1f Z: %.1f", x, z),
 					this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 
-			var chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
-			if (chunk != null) {
-				var biome = chunk.getBiome((int) x, (int) z);
-				var registry = this.renderer.worldMap().getBiomeRegistry();
-				if (biome != null && registry != null) {
-					var id = registry.getId(biome);
-					if (id != null) {
-						int width = this.client.textRenderer.getWidth(id.toString());
-						graphics.drawShadowedText(this.client.textRenderer, id.toString(), this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
-					}
-				}
-			}
+//			var chunk = this.renderer.worldMap().getChunk(MapChunk.blockToChunk((int) x), MapChunk.blockToChunk((int) z));
+//			if (chunk != null) {
+//				var biome = chunk.getBiome((int) x, (int) z);
+//				var registry = this.renderer.worldMap().getBiomeRegistry();
+//				if (biome != null && registry != null) {
+//					var id = registry.getId(biome);
+//					if (id != null) {
+//						int width = this.client.textRenderer.getWidth(id.toString());
+//						graphics.drawShadowedText(this.client.textRenderer, id.toString(), this.getX() + this.getWidth() - 5 - width, this.getY() + this.getHeight() - 9, 0xffffffff);
+//					}
+//				}
+//			}
 		}
 
 		var scale = "1:" + this.renderer.scale();
