@@ -17,6 +17,7 @@
 
 package dev.lambdaurora.lambdamap.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.lambdaurora.lambdamap.LambdaMap;
 import dev.lambdaurora.lambdamap.map.ChunkGetterMode;
@@ -29,7 +30,6 @@ import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.util.math.MatrixStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -213,7 +213,7 @@ public class WorldMapRenderer {
 	}
 
 	public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, float delta) {
-		graphics.fill(0, 0, this.width, this.height, 0xff000000);
+		graphics.fill(0, 0, this.width, this.height, 0x44000000);
 
 		int light = LightmapTextureManager.pack(15, 15);
 		this.textureManager.render(graphics, vertexConsumers, light);
@@ -240,8 +240,12 @@ public class WorldMapRenderer {
 		graphics.getMatrices().pop();
 	}
 
-	public static void vertex(VertexConsumer vertices, Matrix4f model, float x, float y,
-	                          float u, float v, int light) {
+	public static void vertex(
+			VertexConsumer vertices, Matrix4f model,
+			float x, float y,
+			float u, float v,
+			int light
+	) {
 		vertices.vertex(model, x, y, 0.f).color(255, 255, 255, 255)
 				.uv(u, v).light(light).next();
 	}
@@ -422,9 +426,12 @@ public class WorldMapRenderer {
 			this.texture.upload();
 		}
 
-		public void render(GuiGraphics graphics, VertexConsumerProvider vertexConsumers, float originX, float originY,
-		                   int offsetX, int offsetY,
-		                   float width, float height, int light) {
+		public void render(
+				GuiGraphics graphics, VertexConsumerProvider vertexConsumers,
+				float originX, float originY,
+				int offsetX, int offsetY,
+				float width, float height, int light
+		) {
 			var model = graphics.getMatrices().peek().getModel();
 			var vertices = vertexConsumers.getBuffer(this.mapRenderLayer);
 

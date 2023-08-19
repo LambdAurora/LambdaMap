@@ -30,7 +30,7 @@
     "depends": [
       {
         "id": "minecraft",
-        "versions": ">=1.20"
+        "versions": "~1.20"
       },
       {
         "id": "quilt_loader",
