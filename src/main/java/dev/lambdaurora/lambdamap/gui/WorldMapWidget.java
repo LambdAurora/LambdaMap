@@ -162,7 +162,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 			}
 		}
 
-		if (!mod.getConfig().isFullscreen() || mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale)
+		if (mouseXOffset <= 0 || mouseYOffset < this.renderer.height() * this.scale)
 		{
 			var scale = "1:" + this.renderer.scale();
 			if (this.intScale < 0) {
@@ -172,7 +172,7 @@ public class WorldMapWidget extends AbstractSpruceWidget {
 		}
 
 		if (mouseXOffset > 0 && mouseYOffset >= this.renderer.height() * this.scale) {
-			if (mod.getConfig().isFullscreen()) graphics.drawShadowedText(this.client.textRenderer, "LambdaMap", this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
+			graphics.drawShadowedText(this.client.textRenderer, "LambdaMap", this.getX(), this.getY() + this.getHeight() - 9, 0xffffffff);
 			graphics.drawCenteredShadowedText(this.client.textRenderer, "[Toggle Fullscreen]", this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() - 9, 0xffffffff);
 		}
 	}
